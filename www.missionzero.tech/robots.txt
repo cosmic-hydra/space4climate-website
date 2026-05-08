@@ -1,0 +1,12 @@
+User-agent: *
+Allow: /
+
+User-agent: AhrefsBot
+Allow: /
+
+User-agent: AhrefsSiteAudit
+Allow: /
+
+Sitemap: https://www.missionzero.tech/sitemap.xml
+
+Sitemap: https://www.missionzero.tech/sitemap.xml
