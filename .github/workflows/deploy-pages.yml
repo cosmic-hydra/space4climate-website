@@ -25,14 +25,43 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Check whether Pages site is enabled
+        id: pages-site
+        uses: actions/github-script@v7
+        with:
+          script: |
+            try {
+              await github.rest.repos.getPages({
+                owner: context.repo.owner,
+                repo: context.repo.repo
+              })
+              core.setOutput('enabled', 'true')
+            } catch (error) {
+              if (error.status === 404) {
+                core.warning('GitHub Pages is not enabled for this repository yet. Skipping deployment.')
+                core.setOutput('enabled', 'false')
+                return
+              }
+              throw error
+            }
+
       - name: Setup Pages
         uses: actions/configure-pages@v5
+        if: steps.pages-site.outputs.enabled == 'true'
+        with:
+          enablement: false
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
+        if: steps.pages-site.outputs.enabled == 'true'
         with:
           path: ./www.missionzero.tech
 
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+        if: steps.pages-site.outputs.enabled == 'true'
+
+      - name: Deployment skipped
+        if: steps.pages-site.outputs.enabled != 'true'
+        run: echo "GitHub Pages is not enabled for this repository. Enable Pages with GitHub Actions in repository settings, then rerun."
