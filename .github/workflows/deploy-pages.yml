@@ -53,7 +53,7 @@ jobs:
         uses: actions/upload-pages-artifact@v3
         if: steps.pages-site.outputs.enabled == 'true'
         with:
-          path: ./www.missionzero.tech
+          path: ./space4climate
 
       - name: Deploy to GitHub Pages
         id: deployment
