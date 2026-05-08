@@ -48,8 +48,6 @@ jobs:
       - name: Setup Pages
         uses: actions/configure-pages@v5
         if: steps.pages-site.outputs.enabled == 'true'
-        with:
-          enablement: false
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
