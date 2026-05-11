@@ -42,9 +42,11 @@ body {
 /* Prevent Webflow scroll-reveal animations from hiding custom sections */
 .commonboard-hero,
 .board-section,
-.guidelines-section,
-.guidelines-grid,
-.guideline-card,
+.instructions-cta-section,
+.instructions-cta-inner,
+.instructions-cta-icon,
+.instructions-cta-title,
+.instructions-cta-text,
 .commonboard-stats,
 .stat-item {
   visibility: visible !important;
@@ -181,7 +183,8 @@ body {
 /* ===== BOARD SECTION ===== */
 .board-section {
   padding: 4rem 0 5rem;
-  background: #f7f9fc;
+  background: #ffffff;
+  border-top: 1px solid rgba(62, 140, 255, 0.08);
 }
 
 .board-container {
@@ -200,7 +203,8 @@ body {
 .section-title {
   font-size: 1.75rem;
   font-weight: 700;
-  color: #1a1a2e;
+  color: #0f1f3d;
+  letter-spacing: -0.01em;
 }
 
 .btn-primary {
@@ -223,39 +227,10 @@ body {
   box-shadow: 0 6px 18px rgba(62, 140, 255, 0.4);
 }
 
-/* ===== GUIDELINES SECTION ===== */
-.guidelines-section {
-  background: linear-gradient(180deg, #f0f4ff 0%, #e8f0fe 100%);
+/* ===== INSTRUCTIONS CTA SECTION ===== */
+.instructions-cta-section {
+  background: linear-gradient(150deg, #0f0c29 0%, #1a1a4e 50%, #0d2137 100%);
   padding: 5rem 0;
-  /* Ensure this section remains visible regardless of Webflow animation state */
-  display: block !important;
-  visibility: visible !important;
-  opacity: 1 !important;
-  position: relative;
-}
-
-.guidelines-grid {
-  display: grid !important;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1.75rem;
-  margin-top: 2.5rem;
-  visibility: visible !important;
-  opacity: 1 !important;
-}
-
-@media (max-width: 1024px) {
-  .guidelines-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-.guideline-card {
-  background: #ffffff;
-  padding: 2rem;
-  border-radius: 1.25rem;
-  box-shadow: 0 4px 20px rgba(30, 40, 100, 0.07);
-  border: 1px solid rgba(62, 140, 255, 0.08);
-  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
   display: block !important;
   visibility: visible !important;
   opacity: 1 !important;
@@ -263,55 +238,80 @@ body {
   overflow: hidden;
 }
 
-.guideline-card::before {
+.instructions-cta-section::before {
   content: '';
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 3px;
-  background: linear-gradient(90deg, #3e8cff, #8affb4);
-  opacity: 0;
-  transition: opacity 0.25s ease;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 20% 50%, rgba(62, 140, 255, 0.15) 0%, transparent 55%),
+    radial-gradient(ellipse at 80% 30%, rgba(138, 255, 160, 0.10) 0%, transparent 55%);
+  pointer-events: none;
 }
 
-.guideline-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 12px 40px rgba(62, 140, 255, 0.15);
-  border-color: rgba(62, 140, 255, 0.25);
+.instructions-cta-inner {
+  position: relative;
+  z-index: 1;
+  max-width: 680px;
+  margin: 0 auto;
+  text-align: center;
+  padding: 0 2rem;
 }
 
-.guideline-card:hover::before {
-  opacity: 1;
-}
-
-.guideline-number {
-  width: 44px;
-  height: 44px;
-  background: linear-gradient(135deg, #3e8cff 0%, #5ba0ff 100%);
-  color: #ffffff;
-  border-radius: 50%;
-  display: flex;
+.instructions-cta-icon {
+  display: inline-flex;
   align-items: center;
   justify-content: center;
+  width: 4rem;
+  height: 4rem;
+  background: rgba(62, 140, 255, 0.15);
+  border: 1px solid rgba(62, 140, 255, 0.35);
+  border-radius: 50%;
+  font-size: 1.6rem;
+  margin-bottom: 1.5rem;
+}
+
+.instructions-cta-title {
+  font-size: 2rem;
   font-weight: 800;
-  font-size: 1rem;
-  margin-bottom: 1.25rem;
-  box-shadow: 0 4px 12px rgba(62, 140, 255, 0.35);
-  flex-shrink: 0;
+  color: #ffffff;
+  margin-bottom: 1rem;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
 }
 
-.guideline-title {
+.instructions-cta-text {
   font-size: 1.05rem;
-  font-weight: 700;
-  color: #1a1a2e;
-  margin-bottom: 0.6rem;
+  color: #a0aec0;
+  margin-bottom: 2.25rem;
+  line-height: 1.7;
 }
 
-.guideline-text {
-  font-size: 0.9rem;
-  color: #5a6478;
-  line-height: 1.7;
+.instructions-cta-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  background: linear-gradient(135deg, #3e8cff 0%, #5ba0ff 100%);
+  color: #ffffff;
+  padding: 0.9rem 2rem;
+  border-radius: 0.65rem;
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 1rem;
+  transition: all 0.25s ease;
+  box-shadow: 0 4px 16px rgba(62, 140, 255, 0.35);
+  letter-spacing: 0.01em;
+}
+
+.instructions-cta-link:hover {
+  background: linear-gradient(135deg, #2d6dd4 0%, #4a8ee8 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 28px rgba(62, 140, 255, 0.5);
+}
+
+.instructions-cta-link svg {
+  width: 1rem;
+  height: 1rem;
+  flex-shrink: 0;
 }
 
 @media (max-width: 768px) {
@@ -338,10 +338,6 @@ body {
     flex-direction: column;
     align-items: flex-start;
     gap: 1rem;
-  }
-
-  .guidelines-grid {
-    grid-template-columns: 1fr;
   }
 }
 </style>
@@ -688,54 +684,15 @@ body {
 </div>
 
 <!-- How to Book Section -->
-<div class="guidelines-section">
-  <div class="board-container">
-    <div class="section-header">
-      <h2 class="section-title">How to Book a Slot</h2>
-    </div>
-
-    <div class="guidelines-grid">
-      <div class="guideline-card">
-        <div class="guideline-number">1</div>
-        <h3 class="guideline-title">Browse the Timeline</h3>
-        <p class="guideline-text">Use the week navigation arrows to browse available sessions. The current week is shown by default, with today's column highlighted in blue.</p>
-      </div>
-
-      <div class="guideline-card">
-        <div class="guideline-number">2</div>
-        <h3 class="guideline-title">Pick Your Slot</h3>
-        <p class="guideline-text">Click any white "Available" slot on the calendar. Slots in the past are greyed out. Each slot represents a one-hour session window.</p>
-      </div>
-
-      <div class="guideline-card">
-        <div class="guideline-number">3</div>
-        <h3 class="guideline-title">Enter Your Details</h3>
-        <p class="guideline-text">Fill in your name, contact email or phone, and an optional note about your session topic or purpose. Then click "Book Slot" to confirm.</p>
-      </div>
-
-      <div class="guideline-card">
-        <div class="guideline-number">4</div>
-        <h3 class="guideline-title">View or Cancel</h3>
-        <p class="guideline-text">Click any booked slot (shown in blue) to view its details. You can cancel the booking from the details view if plans change.</p>
-      </div>
-
-      <div class="guideline-card">
-        <div class="guideline-number">5</div>
-        <h3 class="guideline-title">Share Your Availability</h3>
-        <p class="guideline-text">Switch to <strong>✅ My Availability</strong> mode, enter your name, and click slots when you are free. Hit <em>📤 Export My Availability</em> to get a shareable code, then send it to your team.</p>
-      </div>
-
-      <div class="guideline-card">
-        <div class="guideline-number">6</div>
-        <h3 class="guideline-title">See Team Overlaps</h3>
-        <p class="guideline-text">In <strong>👥 Team View</strong> mode, paste codes from team members using <em>📥 Import Team Member</em>. The calendar highlights slots where multiple people are free, making it easy to find a shared time.</p>
-      </div>
-    </div>
-
-    <div style="text-align: center; margin-top: 3rem;">
-      <p style="font-size: 1.1rem; color: #5a5a6e; margin-bottom: 1.5rem;">Have a question or need a custom session?</p>
-      <a href="contact.html" class="btn-primary" style="font-size: 1.1rem; padding: 1rem 2rem;">Contact Us</a>
-    </div>
+<div class="instructions-cta-section">
+  <div class="instructions-cta-inner">
+    <div class="instructions-cta-icon">📖</div>
+    <h2 class="instructions-cta-title">New to CommonBoard?</h2>
+    <p class="instructions-cta-text">Learn how to book sessions, share your availability, and coordinate with your team — all in one place.</p>
+    <a href="commonboard-instructions.html" class="instructions-cta-link">
+      View Detailed Instructions
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+    </a>
   </div>
 </div>
 
