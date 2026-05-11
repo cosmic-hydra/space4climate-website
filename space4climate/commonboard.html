@@ -464,7 +464,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <div class="commonboard-hero">
   <div class="commonboard-content">
     <h1 class="commonboard-title">CommonBoard</h1>
-    <p class="commonboard-subtitle">Book your community session on our shared timeline. Click any available slot, add your name and contact details, and connect with the Space4Climate community.</p>
+    <p class="commonboard-subtitle">Book community sessions, mark your availability, and discover when your team is free — all on one shared timeline.</p>
 
     <div class="commonboard-stats">
       <div class="stat-item">
@@ -486,8 +486,32 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <!-- Timeline Calendar Section -->
 <div class="board-section">
   <div class="board-container">
+
+    <!-- Mode toggle -->
+    <div class="mode-toggle" id="mode-toggle" role="tablist" aria-label="Calendar mode">
+      <button class="mode-btn active" data-mode="booking" role="tab" aria-selected="true">📅 Book Session</button>
+      <button class="mode-btn" data-mode="availability" role="tab" aria-selected="false">✅ My Availability</button>
+      <button class="mode-btn" data-mode="team" role="tab" aria-selected="false">👥 Team View</button>
+    </div>
+
+    <!-- Availability user bar (shown in My Availability + Team View modes) -->
+    <div id="avail-user-bar" class="avail-user-bar" aria-label="Availability settings">
+      <div class="avail-user-inner">
+        <label for="avail-name">Your Name:</label>
+        <input type="text" id="avail-name" placeholder="e.g. Jane Smith" maxlength="60" autocomplete="name"/>
+        <button class="btn-primary" id="btn-save-avail-name" style="padding:0.45rem 1rem;font-size:0.9rem;">Save</button>
+      </div>
+      <div class="avail-actions">
+        <button class="btn-secondary" id="btn-export-avail" style="font-size:0.88rem;">📤 Export My Availability</button>
+        <button class="btn-secondary" id="btn-import-avail" style="font-size:0.88rem;">📥 Import Team Member</button>
+      </div>
+    </div>
+
+    <!-- Imported members list (shown in Team View) -->
+    <div id="imported-members-wrap" style="display:none;"></div>
+
     <div class="section-header">
-      <h2 class="section-title">Session Timeline</h2>
+      <h2 class="section-title" id="calendar-section-title">Session Timeline</h2>
       <div class="week-nav">
         <button class="btn-nav" id="prev-week" aria-label="Previous week">&#8592; Previous</button>
         <span class="week-label" id="week-label"></span>
@@ -497,6 +521,16 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     <div class="calendar-scroll">
       <div class="calendar-wrap" id="calendar-wrap"></div>
     </div>
+
+    <!-- Team view legend -->
+    <div id="team-legend" class="team-legend" style="display:none;" aria-label="Availability legend">
+      <strong>Legend:</strong>
+      <span><span class="legend-swatch" style="background:#c8e6c9;"></span>1 person free</span>
+      <span><span class="legend-swatch" style="background:#66bb6a;"></span>2 people free</span>
+      <span><span class="legend-swatch" style="background:#2e7d32;"></span>3+ people free</span>
+      <span><span class="legend-swatch" style="background:linear-gradient(135deg,#3e8cff,#5ba0ff);"></span>Booked session</span>
+    </div>
+
   </div>
 </div>
 
@@ -534,14 +568,14 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 
       <div class="guideline-card">
         <div class="guideline-number">5</div>
-        <h3 class="guideline-title">Be Considerate</h3>
-        <p class="guideline-text">Please only book slots you genuinely intend to use and cancel promptly if you can no longer attend, so others in the community can take advantage.</p>
+        <h3 class="guideline-title">Share Your Availability</h3>
+        <p class="guideline-text">Switch to <strong>✅ My Availability</strong> mode, enter your name, and click slots when you are free. Hit <em>📤 Export My Availability</em> to get a shareable code, then send it to your team.</p>
       </div>
 
       <div class="guideline-card">
         <div class="guideline-number">6</div>
-        <h3 class="guideline-title">Need Help?</h3>
-        <p class="guideline-text">If you have questions about your booking or need to arrange a special session outside the standard slots, reach out via our contact page.</p>
+        <h3 class="guideline-title">See Team Overlaps</h3>
+        <p class="guideline-text">In <strong>👥 Team View</strong> mode, paste codes from team members using <em>📥 Import Team Member</em>. The calendar highlights slots where multiple people are free, making it easy to find a shared time.</p>
       </div>
     </div>
 
@@ -595,6 +629,41 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     <div class="form-actions">
       <button type="button" class="btn-secondary" id="btn-close-view">Close</button>
       <button type="button" class="btn-danger" id="btn-delete-booking">Cancel Booking</button>
+    </div>
+  </div>
+</div>
+
+<!-- Export Availability Modal -->
+<div id="export-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="export-modal-title" hidden>
+  <div class="modal-box">
+    <button class="modal-close" id="export-modal-close" aria-label="Close">&times;</button>
+    <h3 class="modal-title" id="export-modal-title">Share My Availability</h3>
+    <p style="color:#5a5a6e;font-size:0.95rem;margin-bottom:1rem;">Copy this code and share it with your team. They can paste it into <strong>Import Team Member</strong> on their device to see your availability in the Team View.</p>
+    <div class="form-group">
+      <label for="export-code-field">Your Availability Code</label>
+      <textarea id="export-code-field" rows="6" readonly style="font-family:monospace;font-size:0.78rem;word-break:break-all;background:#f8f9fa;"></textarea>
+    </div>
+    <div class="form-actions">
+      <button type="button" class="btn-secondary" id="export-modal-close-btn">Close</button>
+      <button type="button" class="btn-primary" id="btn-copy-code">📋 Copy to Clipboard</button>
+    </div>
+  </div>
+</div>
+
+<!-- Import Availability Modal -->
+<div id="import-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="import-modal-title" hidden>
+  <div class="modal-box">
+    <button class="modal-close" id="import-modal-close" aria-label="Close">&times;</button>
+    <h3 class="modal-title" id="import-modal-title">Import Team Member Availability</h3>
+    <p style="color:#5a5a6e;font-size:0.95rem;margin-bottom:1rem;">Paste the availability code shared by a team member to add their schedule to your Team View.</p>
+    <div class="form-group">
+      <label for="import-code-field">Availability Code</label>
+      <textarea id="import-code-field" rows="6" placeholder="Paste the code here…" style="font-family:monospace;font-size:0.78rem;word-break:break-all;"></textarea>
+    </div>
+    <p class="form-error" id="import-error" hidden></p>
+    <div class="form-actions">
+      <button type="button" class="btn-secondary" id="import-modal-close-btn">Cancel</button>
+      <button type="button" class="btn-primary" id="btn-do-import">Import</button>
     </div>
   </div>
 </div>
@@ -914,6 +983,216 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     text-align: left;
   }
 }
+
+/* ---- Mode toggle ---- */
+.mode-toggle {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.75rem;
+  flex-wrap: wrap;
+}
+
+.mode-btn {
+  padding: 0.55rem 1.2rem;
+  border-radius: 2rem;
+  border: 1px solid #d0d0dc;
+  background: #f0f0f5;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #5a5a6e;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.mode-btn.active {
+  background: #3e8cff;
+  border-color: #3e8cff;
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(62, 140, 255, 0.3);
+}
+
+.mode-btn:hover:not(.active) {
+  background: #e0e0ec;
+}
+
+/* ---- Availability user bar ---- */
+.avail-user-bar {
+  display: none;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  background: #f0f7ff;
+  border: 1px solid #b3d4ff;
+  border-radius: 0.75rem;
+  padding: 1rem 1.25rem;
+  margin-bottom: 1.5rem;
+}
+
+.avail-user-inner {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  flex: 1;
+}
+
+.avail-user-inner label {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: #1a1a2e;
+  white-space: nowrap;
+}
+
+.avail-user-inner input {
+  border: 1px solid #b3d4ff;
+  border-radius: 0.4rem;
+  padding: 0.45rem 0.75rem;
+  font-size: 0.9rem;
+  font-family: inherit;
+  color: #1a1a2e;
+  min-width: 160px;
+  background: #fff;
+}
+
+.avail-user-inner input:focus {
+  outline: none;
+  border-color: #3e8cff;
+  box-shadow: 0 0 0 3px rgba(62, 140, 255, 0.15);
+}
+
+.avail-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+/* ---- Availability slot colours ---- */
+.cal-slot.slot-avail-mine {
+  background: #e8f5e9;
+  color: #2e7d32;
+  font-weight: 600;
+  font-size: 0.78rem;
+}
+
+.cal-slot.slot-avail-toggle {
+  cursor: pointer;
+  color: #b0b0b0;
+}
+
+.cal-slot.slot-avail-toggle:hover {
+  background: #f0faf0;
+  color: #388e3c;
+}
+
+.cal-slot.slot-avail-mine.slot-avail-toggle:hover {
+  background: #ffebee;
+  color: #c62828;
+}
+
+.cal-slot.slot-heat-1 {
+  background: #c8e6c9;
+  color: #1b5e20;
+  font-weight: 600;
+  font-size: 0.78rem;
+}
+
+.cal-slot.slot-heat-2 {
+  background: #66bb6a;
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 0.78rem;
+}
+
+.cal-slot.slot-heat-3 {
+  background: #2e7d32;
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 0.78rem;
+}
+
+/* ---- Team legend ---- */
+.team-legend {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  font-size: 0.85rem;
+  color: #5a5a6e;
+  margin-top: 1rem;
+  padding: 0.75rem 1rem;
+  background: #f8f9fa;
+  border-radius: 0.5rem;
+}
+
+.legend-swatch {
+  width: 18px;
+  height: 18px;
+  border-radius: 3px;
+  display: inline-block;
+  vertical-align: middle;
+  margin-right: 4px;
+}
+
+/* ---- Imported members list ---- */
+.imported-members {
+  margin-top: 1rem;
+  font-size: 0.9rem;
+}
+
+.imported-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: #e8f5e9;
+  color: #2e7d32;
+  border-radius: 1rem;
+  padding: 0.3rem 0.75rem;
+  margin: 0.25rem;
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
+.imported-tag button {
+  background: none;
+  border: none;
+  color: #c62828;
+  cursor: pointer;
+  font-size: 1rem;
+  line-height: 1;
+  padding: 0;
+}
+
+/* ---- Toast notification ---- */
+.cb-toast {
+  position: fixed;
+  bottom: 1.5rem;
+  left: 50%;
+  transform: translateX(-50%) translateY(0);
+  background: #1a1a2e;
+  color: #ffffff;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  font-size: 0.95rem;
+  font-weight: 500;
+  z-index: 10000;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+  opacity: 1;
+  transition: opacity 0.4s ease, transform 0.4s ease;
+  pointer-events: none;
+}
+
+.cb-toast.cb-toast-hide {
+  opacity: 0;
+  transform: translateX(-50%) translateY(0.5rem);
+}
+
+@media (max-width: 768px) {
+  .avail-user-bar {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
 </style>
 
 <script>
@@ -921,16 +1200,19 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   'use strict';
 
   /* ---- Constants ---- */
-  var STORAGE_KEY = 'cb_bookings_v1';
-  var HOURS = [9, 10, 11, 12, 13, 14, 15, 16, 17]; // 9am–5pm (slot starts at each hour)
+  var STORAGE_KEY     = 'cb_bookings_v1';
+  var AVAIL_KEY       = 'cb_availability_v1';
+  var IMPORTED_KEY    = 'cb_imported_availabilities_v1';
+  var AVAIL_NAME_KEY  = 'cb_avail_name_v1';
+  var HOURS    = [9, 10, 11, 12, 13, 14, 15, 16, 17]; // 9am–5pm
   var DAY_NAMES = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-  var SLOTS_PER_WEEK = HOURS.length * 7;
 
   /* ---- State ---- */
   var currentWeekMonday = getMonday(new Date());
   var activeSlotKey = null;
+  var currentMode = 'booking'; // 'booking' | 'availability' | 'team'
 
-  /* ---- Storage helpers ---- */
+  /* ---- Storage helpers: bookings ---- */
   function loadBookings() {
     try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); }
     catch (e) { return {}; }
@@ -938,6 +1220,36 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 
   function saveBookings(data) {
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); }
+    catch (e) {}
+  }
+
+  /* ---- Storage helpers: availability ---- */
+  function loadMyAvailability() {
+    try { return JSON.parse(localStorage.getItem(AVAIL_KEY) || '{}'); }
+    catch (e) { return {}; }
+  }
+
+  function saveMyAvailability(data) {
+    try { localStorage.setItem(AVAIL_KEY, JSON.stringify(data)); }
+    catch (e) {}
+  }
+
+  function loadImported() {
+    try { return JSON.parse(localStorage.getItem(IMPORTED_KEY) || '{}'); }
+    catch (e) { return {}; }
+  }
+
+  function saveImported(data) {
+    try { localStorage.setItem(IMPORTED_KEY, JSON.stringify(data)); }
+    catch (e) {}
+  }
+
+  function loadAvailName() {
+    return localStorage.getItem(AVAIL_NAME_KEY) || '';
+  }
+
+  function saveAvailName(name) {
+    try { localStorage.setItem(AVAIL_NAME_KEY, name); }
     catch (e) {}
   }
 
@@ -958,22 +1270,22 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   }
 
   function slotKey(date, hour) {
-    var y = date.getFullYear();
+    var y  = date.getFullYear();
     var mo = String(date.getMonth() + 1).padStart(2, '0');
     var dy = String(date.getDate()).padStart(2, '0');
-    var h = String(hour).padStart(2, '0');
+    var h  = String(hour).padStart(2, '0');
     return y + '-' + mo + '-' + dy + 'T' + h + ':00';
   }
 
   function formatHour(h) {
-    if (h === 0) return '12:00 AM';
-    if (h < 12) return h + ':00 AM';
+    if (h === 0)  return '12:00 AM';
+    if (h < 12)   return h + ':00 AM';
     if (h === 12) return '12:00 PM';
     return (h - 12) + ':00 PM';
   }
 
   function formatSlotLabel(date, hour) {
-    var days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+    var days   = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
     var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
     return days[date.getDay()] + ', ' + months[date.getMonth()] + ' ' + date.getDate() +
            ' · ' + formatHour(hour) + ' – ' + formatHour(hour + 1);
@@ -988,19 +1300,17 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   }
 
   function formatTimestamp(isoStr) {
-    try {
-      var d = new Date(isoStr);
-      return d.toLocaleString();
-    } catch(e) { return isoStr; }
+    try { return new Date(isoStr).toLocaleString(); }
+    catch (e) { return isoStr; }
   }
 
   /* ---- Stats ---- */
   function updateStats() {
     var bookings = loadBookings();
-    var keys = Object.keys(bookings);
+    var keys  = Object.keys(bookings);
     var total = keys.length;
 
-    var now = new Date();
+    var now    = new Date();
     var monday = getMonday(now);
     var sunday = addDays(monday, 6);
     sunday.setHours(23, 59, 59, 999);
@@ -1027,42 +1337,48 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
       }
     }
 
-    document.getElementById('stat-total').textContent = total;
-    document.getElementById('stat-week').textContent = weekCount;
+    document.getElementById('stat-total').textContent     = total;
+    document.getElementById('stat-week').textContent      = weekCount;
     document.getElementById('stat-available').textContent = available;
   }
 
-  /* ---- Calendar rendering ---- */
-  function renderCalendar() {
-    var bookings = loadBookings();
-    var now = new Date();
-    var today = new Date(now);
+  /* ---- Build calendar grid header rows (shared) ---- */
+  function buildCalendarHeader(grid) {
+    var today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    document.getElementById('week-label').textContent = formatWeekRange(currentWeekMonday);
-
-    var wrap = document.getElementById('calendar-wrap');
-    var grid = document.createElement('div');
-    grid.className = 'calendar-grid';
-
-    // Header row: empty corner + day headers
     var corner = document.createElement('div');
     corner.className = 'cal-header-empty';
     grid.appendChild(corner);
 
+    var months2 = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
     for (var di = 0; di < 7; di++) {
       var dayDate = addDays(currentWeekMonday, di);
-      var cell = document.createElement('div');
+      var cell    = document.createElement('div');
       cell.className = 'cal-day-header';
-      var isToday = (dayDate.getTime() === today.getTime());
-      if (isToday) cell.classList.add('is-today');
-      var months2 = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-      cell.innerHTML = '<span>' + DAY_NAMES[di] + '</span><br><span style="font-size:0.75rem;font-weight:400;">' +
+      if (dayDate.getTime() === today.getTime()) cell.classList.add('is-today');
+      cell.innerHTML = '<span>' + DAY_NAMES[di] + '</span><br>' +
+        '<span style="font-size:0.75rem;font-weight:400;">' +
         months2[dayDate.getMonth()] + ' ' + dayDate.getDate() + '</span>';
       grid.appendChild(cell);
     }
+  }
 
-    // Time rows
+  /* ---- Booking calendar ---- */
+  function renderCalendar() {
+    var bookings = loadBookings();
+    var now   = new Date();
+    var today = new Date(now);
+    today.setHours(0, 0, 0, 0);
+
+    document.getElementById('week-label').textContent = formatWeekRange(currentWeekMonday);
+    document.getElementById('calendar-section-title').textContent = 'Session Timeline';
+
+    var wrap = document.getElementById('calendar-wrap');
+    var grid = document.createElement('div');
+    grid.className = 'calendar-grid';
+    buildCalendarHeader(grid);
+
     for (var hi = 0; hi < HOURS.length; hi++) {
       var hour = HOURS[hi];
       var timeLabel = document.createElement('div');
@@ -1071,17 +1387,16 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
       grid.appendChild(timeLabel);
 
       for (var dj = 0; dj < 7; dj++) {
-        var cellDate = addDays(currentWeekMonday, dj);
+        var cellDate     = addDays(currentWeekMonday, dj);
         var slotDateTime = new Date(cellDate);
         slotDateTime.setHours(hour, 0, 0, 0);
-        var key = slotKey(cellDate, hour);
-
+        var key      = slotKey(cellDate, hour);
         var slotCell = document.createElement('div');
         slotCell.className = 'cal-slot';
 
         var isToday2 = (cellDate.getTime() === today.getTime());
-        var isPast = slotDateTime <= now;
-        var booking = bookings[key];
+        var isPast   = slotDateTime <= now;
+        var booking  = bookings[key];
 
         if (isPast) {
           slotCell.classList.add('slot-past');
@@ -1115,13 +1430,275 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     updateStats();
   }
 
+  /* ---- Availability calendar (my availability + team heatmap) ---- */
+  function getCombinedAvailability() {
+    var myName = loadAvailName().trim();
+    var myAvail  = loadMyAvailability();
+    var imported = loadImported();
+    var combined = {};
+
+    if (myName) {
+      Object.keys(myAvail).forEach(function (k) {
+        if (myAvail[k]) {
+          combined[k] = combined[k] || [];
+          combined[k].push(myName);
+        }
+      });
+    }
+
+    Object.keys(imported).forEach(function (personName) {
+      var avail = imported[personName];
+      Object.keys(avail).forEach(function (k) {
+        if (avail[k]) {
+          combined[k] = combined[k] || [];
+          combined[k].push(personName);
+        }
+      });
+    });
+
+    return combined;
+  }
+
+  function renderAvailabilityCalendar(mode) {
+    var bookings = loadBookings();
+    var myAvail  = loadMyAvailability();
+    var combined = (mode === 'team') ? getCombinedAvailability() : null;
+
+    var now   = new Date();
+    var today = new Date(now);
+    today.setHours(0, 0, 0, 0);
+
+    document.getElementById('week-label').textContent = formatWeekRange(currentWeekMonday);
+    document.getElementById('calendar-section-title').textContent =
+      (mode === 'team') ? 'Team Availability Overview' : 'My Availability';
+
+    var wrap = document.getElementById('calendar-wrap');
+    var grid = document.createElement('div');
+    grid.className = 'calendar-grid';
+    buildCalendarHeader(grid);
+
+    for (var hi = 0; hi < HOURS.length; hi++) {
+      var hour = HOURS[hi];
+      var timeLabel = document.createElement('div');
+      timeLabel.className = 'cal-time-label';
+      timeLabel.textContent = formatHour(hour);
+      grid.appendChild(timeLabel);
+
+      for (var dj = 0; dj < 7; dj++) {
+        var cellDate     = addDays(currentWeekMonday, dj);
+        var slotDateTime = new Date(cellDate);
+        slotDateTime.setHours(hour, 0, 0, 0);
+        var key      = slotKey(cellDate, hour);
+        var slotCell = document.createElement('div');
+        slotCell.className = 'cal-slot';
+
+        var isPast = slotDateTime <= now;
+
+        if (mode === 'availability') {
+          var isMarked = !!myAvail[key];
+          if (isPast) {
+            slotCell.classList.add('slot-past');
+            if (isMarked) {
+              slotCell.classList.add('slot-avail-mine');
+              slotCell.textContent = '✓';
+            }
+          } else {
+            slotCell.classList.add('slot-avail-toggle');
+            if (isMarked) {
+              slotCell.classList.add('slot-avail-mine');
+              slotCell.textContent = '✓ Free';
+              slotCell.setAttribute('title', 'Click to mark as unavailable');
+            } else {
+              slotCell.textContent = 'Click to mark free';
+              slotCell.setAttribute('title', 'Click to mark yourself as available');
+            }
+            (function (k) {
+              slotCell.addEventListener('click', function () {
+                var avail = loadMyAvailability();
+                if (avail[k]) {
+                  delete avail[k];
+                } else {
+                  avail[k] = true;
+                }
+                saveMyAvailability(avail);
+                renderCalendarForMode();
+              });
+            })(key);
+          }
+
+        } else if (mode === 'team') {
+          var people = combined[key] || [];
+          var count  = people.length;
+
+          if (bookings[key]) {
+            slotCell.classList.add('slot-booked');
+            slotCell.textContent = bookings[key].name;
+            slotCell.setAttribute('title', 'Booked by ' + bookings[key].name);
+            if (!isPast) {
+              (function (k) {
+                slotCell.addEventListener('click', function () { openViewModal(k); });
+              })(key);
+            }
+          } else if (isPast) {
+            slotCell.classList.add('slot-past');
+            if (count > 0) {
+              slotCell.classList.add('slot-heat-' + Math.min(count, 3));
+              slotCell.textContent = count === 1 ? '✓' : count + ' free';
+            }
+          } else if (count > 0) {
+            slotCell.classList.add('slot-heat-' + Math.min(count, 3));
+            slotCell.textContent = count === 1 ? people[0] : count + ' people';
+            slotCell.setAttribute('title', people.join(', ') + ' available');
+          } else {
+            slotCell.classList.add('slot-available');
+            slotCell.textContent = '—';
+          }
+        }
+
+        grid.appendChild(slotCell);
+      }
+    }
+
+    wrap.innerHTML = '';
+    wrap.appendChild(grid);
+  }
+
+  /* ---- Mode switching ---- */
+  function renderCalendarForMode() {
+    if (currentMode === 'booking') {
+      renderCalendar();
+    } else {
+      renderAvailabilityCalendar(currentMode);
+      updateStats();
+    }
+  }
+
+  function setMode(mode) {
+    currentMode = mode;
+
+    // Update toggle buttons
+    var btns = document.querySelectorAll('#mode-toggle .mode-btn');
+    btns.forEach(function (btn) {
+      var isActive = btn.dataset.mode === mode;
+      btn.classList.toggle('active', isActive);
+      btn.setAttribute('aria-selected', isActive ? 'true' : 'false');
+    });
+
+    // Show/hide availability bar
+    var availBar = document.getElementById('avail-user-bar');
+    if (availBar) availBar.style.display = (mode !== 'booking') ? 'flex' : 'none';
+
+    // Show/hide imported members list
+    var importWrap = document.getElementById('imported-members-wrap');
+    if (importWrap) {
+      importWrap.style.display = (mode === 'team') ? 'block' : 'none';
+      if (mode === 'team') renderImportedMembersList();
+    }
+
+    // Show/hide team legend
+    var legend = document.getElementById('team-legend');
+    if (legend) legend.style.display = (mode === 'team') ? 'flex' : 'none';
+
+    renderCalendarForMode();
+  }
+
+  /* ---- Imported members list ---- */
+  function renderImportedMembersList() {
+    var wrap = document.getElementById('imported-members-wrap');
+    if (!wrap) return;
+    var imported = loadImported();
+    var names = Object.keys(imported);
+
+    if (names.length === 0) {
+      wrap.innerHTML = '<p style="font-size:0.9rem;color:#8a9ab0;margin-bottom:1rem;">No team members imported yet. Use <strong>📥 Import Team Member</strong> to add someone\'s availability.</p>';
+      return;
+    }
+
+    var html = '<div class="imported-members"><span style="font-size:0.9rem;font-weight:600;color:#1a1a2e;">Team members: </span>';
+    names.forEach(function (name) {
+      html += '<span class="imported-tag">' + escapeHtml(name) +
+              ' <button type="button" data-remove="' + escapeAttr(name) + '" aria-label="Remove ' + escapeAttr(name) + '">×</button></span>';
+    });
+    html += '</div>';
+    wrap.innerHTML = html;
+
+    wrap.querySelectorAll('[data-remove]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var n = btn.getAttribute('data-remove');
+        var imp = loadImported();
+        delete imp[n];
+        saveImported(imp);
+        renderImportedMembersList();
+        renderCalendarForMode();
+      });
+    });
+  }
+
+  function escapeHtml(str) {
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  function escapeAttr(str) {
+    return String(str).replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
+
+  /* ---- Toast notification ---- */
+  var toastTimer = null;
+  function showToast(message) {
+    var existing = document.getElementById('cb-toast-el');
+    if (existing) existing.remove();
+    if (toastTimer) clearTimeout(toastTimer);
+
+    var el = document.createElement('div');
+    el.id = 'cb-toast-el';
+    el.className = 'cb-toast';
+    el.setAttribute('role', 'status');
+    el.setAttribute('aria-live', 'polite');
+    el.textContent = message;
+    document.body.appendChild(el);
+
+    toastTimer = setTimeout(function () {
+      el.classList.add('cb-toast-hide');
+      setTimeout(function () { if (el.parentNode) el.remove(); }, 450);
+    }, 3000);
+  }
+
+  /* ---- Export/Import ---- */
+  function exportAvailability() {
+    var name = loadAvailName().trim();
+    if (!name) { return null; }
+    var avail = loadMyAvailability();
+    var payload = { name: name, availability: avail, exportedAt: new Date().toISOString() };
+    try { return btoa(unescape(encodeURIComponent(JSON.stringify(payload)))); }
+    catch (e) { return null; }
+  }
+
+  function importAvailabilityCode(code) {
+    try {
+      var payload = JSON.parse(decodeURIComponent(escape(atob(code.trim()))));
+      if (!payload || typeof payload.name !== 'string' || typeof payload.availability !== 'object') {
+        return { success: false, error: 'Invalid code format. Please paste the full code.' };
+      }
+      var imp = loadImported();
+      imp[payload.name] = payload.availability;
+      saveImported(imp);
+      return { success: true, name: payload.name };
+    } catch (e) {
+      return { success: false, error: 'Could not read the code. Make sure you copied it completely.' };
+    }
+  }
+
   /* ---- Booking modal ---- */
   function openBookingModal(key, date, hour) {
     activeSlotKey = key;
     document.getElementById('modal-slot-label').textContent = formatSlotLabel(date, hour);
-    document.getElementById('book-name').value = '';
+    document.getElementById('book-name').value    = '';
     document.getElementById('book-contact').value = '';
-    document.getElementById('book-note').value = '';
+    document.getElementById('book-note').value    = '';
     var errEl = document.getElementById('form-error');
     errEl.hidden = true;
     errEl.textContent = '';
@@ -1136,10 +1713,10 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 
   document.getElementById('booking-form').addEventListener('submit', function (e) {
     e.preventDefault();
-    var name = document.getElementById('book-name').value.trim();
+    var name    = document.getElementById('book-name').value.trim();
     var contact = document.getElementById('book-contact').value.trim();
-    var note = document.getElementById('book-note').value.trim();
-    var errEl = document.getElementById('form-error');
+    var note    = document.getElementById('book-note').value.trim();
+    var errEl   = document.getElementById('form-error');
 
     if (!name) {
       errEl.textContent = 'Please enter your full name.';
@@ -1162,9 +1739,9 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     }
 
     bookings[activeSlotKey] = {
-      name: name,
-      contact: contact,
-      note: note || '',
+      name:     name,
+      contact:  contact,
+      note:     note || '',
       bookedAt: new Date().toISOString()
     };
     saveBookings(bookings);
@@ -1178,24 +1755,24 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     if (e.target === this) closeBookingModal();
   });
 
-  /* ---- View modal ---- */
+  /* ---- View booking modal ---- */
   function openViewModal(key) {
     var bookings = loadBookings();
     var b = bookings[key];
     if (!b) return;
     activeSlotKey = key;
 
-    // Parse key to display label
-    var parts = key.split('T');
+    var parts     = key.split('T');
     var dateParts = parts[0].split('-');
-    var hour = parseInt(parts[1].split(':')[0], 10);
+    var hour      = parseInt(parts[1].split(':')[0], 10);
     var d = new Date(parseInt(dateParts[0], 10), parseInt(dateParts[1], 10) - 1, parseInt(dateParts[2], 10));
-    document.getElementById('view-slot-label').textContent = formatSlotLabel(d, hour);
-    document.getElementById('view-name').textContent = b.name;
-    document.getElementById('view-contact').textContent = b.contact;
-    document.getElementById('view-note').textContent = b.note || '—';
-    document.getElementById('view-booked-at').textContent = formatTimestamp(b.bookedAt);
-    document.getElementById('view-modal').hidden = false;
+
+    document.getElementById('view-slot-label').textContent   = formatSlotLabel(d, hour);
+    document.getElementById('view-name').textContent         = b.name;
+    document.getElementById('view-contact').textContent      = b.contact;
+    document.getElementById('view-note').textContent         = b.note || '—';
+    document.getElementById('view-booked-at').textContent    = formatTimestamp(b.bookedAt);
+    document.getElementById('view-modal').hidden             = false;
   }
 
   function closeViewModal() {
@@ -1222,19 +1799,135 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   /* ---- Week navigation ---- */
   document.getElementById('prev-week').addEventListener('click', function () {
     currentWeekMonday = addDays(currentWeekMonday, -7);
-    renderCalendar();
+    renderCalendarForMode();
   });
 
   document.getElementById('next-week').addEventListener('click', function () {
     currentWeekMonday = addDays(currentWeekMonday, 7);
-    renderCalendar();
+    renderCalendarForMode();
+  });
+
+  /* ---- Mode toggle ---- */
+  document.querySelectorAll('#mode-toggle .mode-btn').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      setMode(btn.dataset.mode);
+    });
+  });
+
+  /* ---- Availability user bar ---- */
+  // Pre-populate name from storage
+  var storedName = loadAvailName();
+  if (storedName) document.getElementById('avail-name').value = storedName;
+
+  document.getElementById('btn-save-avail-name').addEventListener('click', function () {
+    var n = document.getElementById('avail-name').value.trim();
+    saveAvailName(n);
+    renderCalendarForMode();
+  });
+
+  document.getElementById('avail-name').addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      var n = this.value.trim();
+      saveAvailName(n);
+      renderCalendarForMode();
+    }
+  });
+
+  /* ---- Export modal ---- */
+  document.getElementById('btn-export-avail').addEventListener('click', function () {
+    var name = document.getElementById('avail-name').value.trim();
+    if (name) saveAvailName(name);
+    var code = exportAvailability();
+    if (!code) {
+      showToast('⚠️ Please enter your name before exporting.');
+      document.getElementById('avail-name').focus();
+      return;
+    }
+    document.getElementById('export-code-field').value = code;
+    document.getElementById('export-modal').hidden = false;
+  });
+
+  document.getElementById('export-modal-close').addEventListener('click', function () {
+    document.getElementById('export-modal').hidden = true;
+  });
+  document.getElementById('export-modal-close-btn').addEventListener('click', function () {
+    document.getElementById('export-modal').hidden = true;
+  });
+  document.getElementById('export-modal').addEventListener('click', function (e) {
+    if (e.target === this) document.getElementById('export-modal').hidden = true;
+  });
+
+  document.getElementById('btn-copy-code').addEventListener('click', function () {
+    var field = document.getElementById('export-code-field');
+    field.select();
+    try {
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(field.value).then(function () {
+          document.getElementById('btn-copy-code').textContent = '✅ Copied!';
+          setTimeout(function () {
+            document.getElementById('btn-copy-code').textContent = '📋 Copy to Clipboard';
+          }, 2000);
+        });
+      } else {
+        document.execCommand('copy');
+        document.getElementById('btn-copy-code').textContent = '✅ Copied!';
+        setTimeout(function () {
+          document.getElementById('btn-copy-code').textContent = '📋 Copy to Clipboard';
+        }, 2000);
+      }
+    } catch (e) {}
+  });
+
+  /* ---- Import modal ---- */
+  document.getElementById('btn-import-avail').addEventListener('click', function () {
+    document.getElementById('import-code-field').value = '';
+    document.getElementById('import-error').hidden = true;
+    document.getElementById('import-modal').hidden = false;
+    document.getElementById('import-code-field').focus();
+  });
+
+  document.getElementById('import-modal-close').addEventListener('click', function () {
+    document.getElementById('import-modal').hidden = true;
+  });
+  document.getElementById('import-modal-close-btn').addEventListener('click', function () {
+    document.getElementById('import-modal').hidden = true;
+  });
+  document.getElementById('import-modal').addEventListener('click', function (e) {
+    if (e.target === this) document.getElementById('import-modal').hidden = true;
+  });
+
+  document.getElementById('btn-do-import').addEventListener('click', function () {
+    var code   = document.getElementById('import-code-field').value.trim();
+    var errEl  = document.getElementById('import-error');
+    errEl.hidden = true;
+
+    if (!code) {
+      errEl.textContent = 'Please paste a code first.';
+      errEl.hidden = false;
+      return;
+    }
+
+    var result = importAvailabilityCode(code);
+    if (!result.success) {
+      errEl.textContent = result.error;
+      errEl.hidden = false;
+      return;
+    }
+
+    document.getElementById('import-modal').hidden = true;
+    renderImportedMembersList();
+    renderCalendarForMode();
+    showToast('✅ Added ' + result.name + '\'s availability to the Team View.');
   });
 
   /* ---- Keyboard accessibility ---- */
   document.addEventListener('keydown', function (e) {
     if (e.key === 'Escape') {
       if (!document.getElementById('booking-modal').hidden) closeBookingModal();
-      if (!document.getElementById('view-modal').hidden) closeViewModal();
+      if (!document.getElementById('view-modal').hidden)    closeViewModal();
+      if (!document.getElementById('export-modal').hidden)  document.getElementById('export-modal').hidden = true;
+      if (!document.getElementById('import-modal').hidden)  document.getElementById('import-modal').hidden = true;
     }
   });
 
