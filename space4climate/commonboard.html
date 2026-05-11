@@ -42,9 +42,11 @@ body {
 /* Prevent Webflow scroll-reveal animations from hiding custom sections */
 .commonboard-hero,
 .board-section,
-.guidelines-section,
-.guidelines-grid,
-.guideline-card,
+.instructions-cta-section,
+.instructions-cta-inner,
+.instructions-cta-icon,
+.instructions-cta-title,
+.instructions-cta-text,
 .commonboard-stats,
 .stat-item {
   visibility: visible !important;
@@ -181,7 +183,8 @@ body {
 /* ===== BOARD SECTION ===== */
 .board-section {
   padding: 4rem 0 5rem;
-  background: #f7f9fc;
+  background: #ffffff;
+  border-top: 1px solid rgba(62, 140, 255, 0.08);
 }
 
 .board-container {
@@ -200,7 +203,8 @@ body {
 .section-title {
   font-size: 1.75rem;
   font-weight: 700;
-  color: #1a1a2e;
+  color: #0f1f3d;
+  letter-spacing: -0.01em;
 }
 
 .btn-primary {
@@ -223,39 +227,10 @@ body {
   box-shadow: 0 6px 18px rgba(62, 140, 255, 0.4);
 }
 
-/* ===== GUIDELINES SECTION ===== */
-.guidelines-section {
-  background: linear-gradient(180deg, #f0f4ff 0%, #e8f0fe 100%);
+/* ===== INSTRUCTIONS CTA SECTION ===== */
+.instructions-cta-section {
+  background: linear-gradient(150deg, #0f0c29 0%, #1a1a4e 50%, #0d2137 100%);
   padding: 5rem 0;
-  /* Ensure this section remains visible regardless of Webflow animation state */
-  display: block !important;
-  visibility: visible !important;
-  opacity: 1 !important;
-  position: relative;
-}
-
-.guidelines-grid {
-  display: grid !important;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1.75rem;
-  margin-top: 2.5rem;
-  visibility: visible !important;
-  opacity: 1 !important;
-}
-
-@media (max-width: 1024px) {
-  .guidelines-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-.guideline-card {
-  background: #ffffff;
-  padding: 2rem;
-  border-radius: 1.25rem;
-  box-shadow: 0 4px 20px rgba(30, 40, 100, 0.07);
-  border: 1px solid rgba(62, 140, 255, 0.08);
-  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
   display: block !important;
   visibility: visible !important;
   opacity: 1 !important;
@@ -263,55 +238,80 @@ body {
   overflow: hidden;
 }
 
-.guideline-card::before {
+.instructions-cta-section::before {
   content: '';
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 3px;
-  background: linear-gradient(90deg, #3e8cff, #8affb4);
-  opacity: 0;
-  transition: opacity 0.25s ease;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 20% 50%, rgba(62, 140, 255, 0.15) 0%, transparent 55%),
+    radial-gradient(ellipse at 80% 30%, rgba(138, 255, 160, 0.10) 0%, transparent 55%);
+  pointer-events: none;
 }
 
-.guideline-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 12px 40px rgba(62, 140, 255, 0.15);
-  border-color: rgba(62, 140, 255, 0.25);
+.instructions-cta-inner {
+  position: relative;
+  z-index: 1;
+  max-width: 680px;
+  margin: 0 auto;
+  text-align: center;
+  padding: 0 2rem;
 }
 
-.guideline-card:hover::before {
-  opacity: 1;
-}
-
-.guideline-number {
-  width: 44px;
-  height: 44px;
-  background: linear-gradient(135deg, #3e8cff 0%, #5ba0ff 100%);
-  color: #ffffff;
-  border-radius: 50%;
-  display: flex;
+.instructions-cta-icon {
+  display: inline-flex;
   align-items: center;
   justify-content: center;
+  width: 4rem;
+  height: 4rem;
+  background: rgba(62, 140, 255, 0.15);
+  border: 1px solid rgba(62, 140, 255, 0.35);
+  border-radius: 50%;
+  font-size: 1.6rem;
+  margin-bottom: 1.5rem;
+}
+
+.instructions-cta-title {
+  font-size: 2rem;
   font-weight: 800;
-  font-size: 1rem;
-  margin-bottom: 1.25rem;
-  box-shadow: 0 4px 12px rgba(62, 140, 255, 0.35);
-  flex-shrink: 0;
+  color: #ffffff;
+  margin-bottom: 1rem;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
 }
 
-.guideline-title {
+.instructions-cta-text {
   font-size: 1.05rem;
-  font-weight: 700;
-  color: #1a1a2e;
-  margin-bottom: 0.6rem;
+  color: #a0aec0;
+  margin-bottom: 2.25rem;
+  line-height: 1.7;
 }
 
-.guideline-text {
-  font-size: 0.9rem;
-  color: #5a6478;
-  line-height: 1.7;
+.instructions-cta-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  background: linear-gradient(135deg, #3e8cff 0%, #5ba0ff 100%);
+  color: #ffffff;
+  padding: 0.9rem 2rem;
+  border-radius: 0.65rem;
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 1rem;
+  transition: all 0.25s ease;
+  box-shadow: 0 4px 16px rgba(62, 140, 255, 0.35);
+  letter-spacing: 0.01em;
+}
+
+.instructions-cta-link:hover {
+  background: linear-gradient(135deg, #2d6dd4 0%, #4a8ee8 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 28px rgba(62, 140, 255, 0.5);
+}
+
+.instructions-cta-link svg {
+  width: 1rem;
+  height: 1rem;
+  flex-shrink: 0;
 }
 
 @media (max-width: 768px) {
@@ -339,14 +339,10 @@ body {
     align-items: flex-start;
     gap: 1rem;
   }
-
-  .guidelines-grid {
-    grid-template-columns: 1fr;
-  }
 }
 </style>
 
-</head><body class="u-body"><div class="w-embed"><style>
+<style>.s4c-login-nav-btn{display:inline-flex;align-items:center;padding:0.45rem 0.9rem;border-radius:0.5rem;font-size:0.875rem;font-weight:600;text-decoration:none;color:inherit;border:1.5px solid currentColor;opacity:0.85;white-space:nowrap;transition:opacity 0.2s,background 0.2s;margin-right:0.5rem;}.s4c-login-nav-btn:hover{opacity:1;}</style></head><body class="u-body"><div class="w-embed"><style>
   textarea {
     resize: vertical;
   }
@@ -605,7 +601,7 @@ body {
   <g mask="url(#mask0_5622_8)">
     <path d="M39.3619 21.1235H43.0425L35.0025 30.3361L44.4619 42.8744H37.0562L31.2516 35.2715L24.6173 42.8744H20.9333L29.5322 33.0172L20.4619 21.1252H28.0562L33.2951 28.0732L39.3619 21.1235ZM38.0676 40.6664H40.1076L26.9419 23.2167H24.7545L38.0676 40.6664Z" fill="currentColor"/>
   </g>
-</svg></div></a><a aria-label="Bluesky" href="https://bsky.app/profile/space4climate.org" target="_blank" class="nav_social_link w-inline-block"><img src="https://cdn.prod.website-files.com/65b810933000b6b25fd78458/680bb33c8d83a27eab505a80_footer-icon.png" loading="lazy" alt="" class="footer_social_visual u-cover-absolute"/></a></div><div class="footer_bottom_list u-hflex-between-bottom u-gap-3 u-column-7"><div class="footer_copyright">© <span class="copyright-year">2025</span> Space4Climate. All rights reserved.</div><a href="legal/privacy-policy.html" class="footer_legal_link u-color-inherit">Legals</a></div></div></div></nav><div id="w-node-_4e0a1f4a-1363-6fe6-0f56-107e07d0fac5-07d0fa4d" class="nav_btn_wrap"><div class="nav_btn_dekstop"><a aria-label="Contact Us" href="contact.html" class="nav_btn_link w-inline-block"><div class="nav_btn_text">Contact</div></a></div><button aria-label="Menu Open" aria-expanded="false" aria-controls="nav-menu" aria-haspopup="menu" id="nav-menu-toggle" class="nav_btn_toggle_wrap"><div class="nav_btn_toggle_icon1 g_svg w-embed"><svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 32 32" fill="none" preserveAspectRatio="xMidYMid meet" aria-hidden="true" role="img">
+</svg></div></a><a aria-label="Bluesky" href="https://bsky.app/profile/space4climate.org" target="_blank" class="nav_social_link w-inline-block"><img src="https://cdn.prod.website-files.com/65b810933000b6b25fd78458/680bb33c8d83a27eab505a80_footer-icon.png" loading="lazy" alt="" class="footer_social_visual u-cover-absolute"/></a></div><div class="footer_bottom_list u-hflex-between-bottom u-gap-3 u-column-7"><div class="footer_copyright">© <span class="copyright-year">2025</span> Space4Climate. All rights reserved.</div><a href="legal/privacy-policy.html" class="footer_legal_link u-color-inherit">Legals</a></div></div></div></nav><div id="w-node-_4e0a1f4a-1363-6fe6-0f56-107e07d0fac5-07d0fa4d" class="nav_btn_wrap"><div class="nav_btn_dekstop"><a href="login.html" class="s4c-login-nav-btn w-inline-block"><div class="nav_btn_text">Log in</div></a><a aria-label="Contact Us" href="contact.html" class="nav_btn_link w-inline-block"><div class="nav_btn_text">Contact</div></a></div><button aria-label="Menu Open" aria-expanded="false" aria-controls="nav-menu" aria-haspopup="menu" id="nav-menu-toggle" class="nav_btn_toggle_wrap"><div class="nav_btn_toggle_icon1 g_svg w-embed"><svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 32 32" fill="none" preserveAspectRatio="xMidYMid meet" aria-hidden="true" role="img">
   <path d="M5.33325 8H26.6666V10.6667H5.33325V8ZM5.33325 14.6667H26.6666V17.3333H5.33325V14.6667ZM5.33325 21.3333H26.6666V24H5.33325V21.3333Z" fill="currentColor"/>
 </svg></div><div class="nav_btn_toggle_icon2 g_svg u-cover-absolute w-embed"><svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 32 32" fill="none" preserveAspectRatio="xMidYMid meet" aria-hidden="true" role="img">
   <path fill-rule="evenodd" clip-rule="evenodd" d="M15.5 14.585L22.0849 8.00002L23.9706 9.88563L17.3856 16.4706L24 23.085L22.1144 24.9706L15.5 18.3562L8.88562 24.9706L7 23.085L13.6144 16.4706L7.02944 9.88563L8.91506 8.00002L15.5 14.585Z" fill="currentColor"/>
@@ -688,54 +684,15 @@ body {
 </div>
 
 <!-- How to Book Section -->
-<div class="guidelines-section">
-  <div class="board-container">
-    <div class="section-header">
-      <h2 class="section-title">How to Book a Slot</h2>
-    </div>
-
-    <div class="guidelines-grid">
-      <div class="guideline-card">
-        <div class="guideline-number">1</div>
-        <h3 class="guideline-title">Browse the Timeline</h3>
-        <p class="guideline-text">Use the week navigation arrows to browse available sessions. The current week is shown by default, with today's column highlighted in blue.</p>
-      </div>
-
-      <div class="guideline-card">
-        <div class="guideline-number">2</div>
-        <h3 class="guideline-title">Pick Your Slot</h3>
-        <p class="guideline-text">Click any white "Available" slot on the calendar. Slots in the past are greyed out. Each slot represents a one-hour session window.</p>
-      </div>
-
-      <div class="guideline-card">
-        <div class="guideline-number">3</div>
-        <h3 class="guideline-title">Enter Your Details</h3>
-        <p class="guideline-text">Fill in your name, contact email or phone, and an optional note about your session topic or purpose. Then click "Book Slot" to confirm.</p>
-      </div>
-
-      <div class="guideline-card">
-        <div class="guideline-number">4</div>
-        <h3 class="guideline-title">View or Cancel</h3>
-        <p class="guideline-text">Click any booked slot (shown in blue) to view its details. You can cancel the booking from the details view if plans change.</p>
-      </div>
-
-      <div class="guideline-card">
-        <div class="guideline-number">5</div>
-        <h3 class="guideline-title">Share Your Availability</h3>
-        <p class="guideline-text">Switch to <strong>✅ My Availability</strong> mode, enter your name, and click slots when you are free. Hit <em>📤 Export My Availability</em> to get a shareable code, then send it to your team.</p>
-      </div>
-
-      <div class="guideline-card">
-        <div class="guideline-number">6</div>
-        <h3 class="guideline-title">See Team Overlaps</h3>
-        <p class="guideline-text">In <strong>👥 Team View</strong> mode, paste codes from team members using <em>📥 Import Team Member</em>. The calendar highlights slots where multiple people are free, making it easy to find a shared time.</p>
-      </div>
-    </div>
-
-    <div style="text-align: center; margin-top: 3rem;">
-      <p style="font-size: 1.1rem; color: #5a5a6e; margin-bottom: 1.5rem;">Have a question or need a custom session?</p>
-      <a href="contact.html" class="btn-primary" style="font-size: 1.1rem; padding: 1rem 2rem;">Contact Us</a>
-    </div>
+<div class="instructions-cta-section">
+  <div class="instructions-cta-inner">
+    <div class="instructions-cta-icon">📖</div>
+    <h2 class="instructions-cta-title">New to CommonBoard?</h2>
+    <p class="instructions-cta-text">Learn how to book sessions, share your availability, and coordinate with your team — all in one place.</p>
+    <a href="commonboard-instructions.html" class="instructions-cta-link">
+      View Detailed Instructions
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+    </a>
   </div>
 </div>
 
@@ -1464,32 +1421,144 @@ body {
 }
 </style>
 
+<!-- Firebase SDK (compat v10) for real-time bookings -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<!-- Firebase config (user must populate firebase-config.js) -->
+<script src="firebase-config.js"></script>
+
 <script>
 (function () {
   'use strict';
 
   /* ---- Constants ---- */
-  var STORAGE_KEY     = 'cb_bookings_v1';
-  var AVAIL_KEY       = 'cb_availability_v1';
-  var IMPORTED_KEY    = 'cb_imported_availabilities_v1';
-  var AVAIL_NAME_KEY  = 'cb_avail_name_v1';
-  var HOURS    = [9, 10, 11, 12, 13, 14, 15, 16, 17]; // 9am–5pm
-  var DAY_NAMES = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  var LS_BOOKINGS_KEY  = 'cb_bookings_v1';      // localStorage fallback key
+  var AVAIL_KEY        = 'cb_availability_v1';
+  var IMPORTED_KEY     = 'cb_imported_availabilities_v1';
+  var AVAIL_NAME_KEY   = 'cb_avail_name_v1';
+  var DEVICE_ID_KEY    = 'cb_device_id';
+  var HOURS            = [9, 10, 11, 12, 13, 14, 15, 16, 17]; // 9 am – 5 pm
+  var DAY_NAMES        = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
   /* ---- State ---- */
   var currentWeekMonday = getMonday(new Date());
-  var activeSlotKey = null;
-  var currentMode = 'booking'; // 'booking' | 'availability' | 'team'
+  var activeSlotKey     = null;
+  var currentMode       = 'booking'; // 'booking' | 'availability' | 'team'
+  var bookingsCache     = {};        // always the source of truth for rendering
+  var db                = null;      // Firestore instance (null = localStorage fallback)
+  var firestoreReady    = false;     // true once first snapshot has arrived
 
-  /* ---- Storage helpers: bookings ---- */
-  function loadBookings() {
-    try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); }
-    catch (e) { return {}; }
+  /* ---- Device ID (for ownership verification) ---- */
+  function getDeviceId() {
+    try {
+      var id = localStorage.getItem(DEVICE_ID_KEY);
+      if (!id) {
+        id = Math.random().toString(36).substr(2, 9) + Date.now().toString(36);
+        localStorage.setItem(DEVICE_ID_KEY, id);
+      }
+      return id;
+    } catch (e) { return 'unknown'; }
   }
 
-  function saveBookings(data) {
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); }
+  /* ---- Firestore initialisation ---- */
+  var IS_PLACEHOLDER_CONFIG = !window.S4C_FIREBASE_CONFIG ||
+    (window.S4C_FIREBASE_CONFIG.apiKey || '').startsWith('REPLACE_');
+
+  if (!IS_PLACEHOLDER_CONFIG) {
+    try {
+      var fbApp = firebase.initializeApp(window.S4C_FIREBASE_CONFIG, 'commonboard');
+      db = firebase.firestore(fbApp);
+
+      // Real-time listener: re-render whenever bookings change
+      db.collection('bookings').onSnapshot(function (snapshot) {
+        bookingsCache = {};
+        snapshot.forEach(function (doc) {
+          bookingsCache[doc.id] = doc.data();
+        });
+        firestoreReady = true;
+        hideFsLoading();
+        renderCalendarForMode();
+        updateStats();
+      }, function (err) {
+        console.error('[CommonBoard] Firestore error:', err);
+        // Fall back to localStorage on error
+        if (!firestoreReady) {
+          bookingsCache = loadBookingsLS();
+          firestoreReady = true;
+          hideFsLoading();
+          renderCalendarForMode();
+          updateStats();
+        }
+      });
+
+      showFsLoading();
+    } catch (initErr) {
+      console.warn('[CommonBoard] Firebase init failed, using localStorage:', initErr);
+      db = null;
+      bookingsCache = loadBookingsLS();
+      renderCalendarForMode();
+      updateStats();
+    }
+  } else {
+    // No config – use localStorage
+    bookingsCache = loadBookingsLS();
+    renderCalendarForMode();
+    updateStats();
+  }
+
+  /* ---- Loading indicator ---- */
+  function showFsLoading() {
+    var el = document.getElementById('calendar-wrap');
+    if (!el) return;
+    el.innerHTML = '<div style="padding:3rem;text-align:center;color:#64748b;font-size:.95rem;">' +
+      '<div style="font-size:2rem;margin-bottom:.75rem;animation:spin .8s linear infinite;display:inline-block">⏳</div>' +
+      '<br>Loading live schedule…</div>';
+  }
+  function hideFsLoading() {
+    // Calendar will be re-rendered by renderCalendarForMode
+  }
+
+  /* ---- localStorage fallback helpers ---- */
+  function loadBookingsLS() {
+    try { return JSON.parse(localStorage.getItem(LS_BOOKINGS_KEY) || '{}'); }
+    catch (e) { return {}; }
+  }
+  function saveBookingsLS(data) {
+    try { localStorage.setItem(LS_BOOKINGS_KEY, JSON.stringify(data)); }
     catch (e) {}
+  }
+
+  /* ---- Firestore CRUD ---- */
+  function saveBooking(key, data) {
+    if (db) {
+      return db.collection('bookings').doc(key).set(data)
+        .catch(function (err) {
+          console.error('[CommonBoard] Save failed:', err);
+          showToast('⚠️ Could not save booking. Please try again.');
+        });
+    } else {
+      bookingsCache[key] = data;
+      saveBookingsLS(bookingsCache);
+      renderCalendarForMode();
+      updateStats();
+      return Promise.resolve();
+    }
+  }
+
+  function deleteBooking(key) {
+    if (db) {
+      return db.collection('bookings').doc(key).delete()
+        .catch(function (err) {
+          console.error('[CommonBoard] Delete failed:', err);
+          showToast('⚠️ Could not cancel booking. Please try again.');
+        });
+    } else {
+      delete bookingsCache[key];
+      saveBookingsLS(bookingsCache);
+      renderCalendarForMode();
+      updateStats();
+      return Promise.resolve();
+    }
   }
 
   /* ---- Storage helpers: availability ---- */
@@ -1497,26 +1566,22 @@ body {
     try { return JSON.parse(localStorage.getItem(AVAIL_KEY) || '{}'); }
     catch (e) { return {}; }
   }
-
   function saveMyAvailability(data) {
     try { localStorage.setItem(AVAIL_KEY, JSON.stringify(data)); }
     catch (e) {}
   }
-
   function loadImported() {
     try { return JSON.parse(localStorage.getItem(IMPORTED_KEY) || '{}'); }
     catch (e) { return {}; }
   }
-
   function saveImported(data) {
     try { localStorage.setItem(IMPORTED_KEY, JSON.stringify(data)); }
     catch (e) {}
   }
-
   function loadAvailName() {
-    return localStorage.getItem(AVAIL_NAME_KEY) || '';
+    try { return localStorage.getItem(AVAIL_NAME_KEY) || ''; }
+    catch (e) { return ''; }
   }
-
   function saveAvailName(name) {
     try { localStorage.setItem(AVAIL_NAME_KEY, name); }
     catch (e) {}
@@ -1524,20 +1589,18 @@ body {
 
   /* ---- Date helpers ---- */
   function getMonday(d) {
-    var day = d.getDay();
+    var day  = d.getDay();
     var diff = (day === 0) ? -6 : 1 - day;
-    var m = new Date(d);
+    var m    = new Date(d);
     m.setDate(d.getDate() + diff);
     m.setHours(0, 0, 0, 0);
     return m;
   }
-
   function addDays(d, n) {
     var r = new Date(d);
     r.setDate(d.getDate() + n);
     return r;
   }
-
   function slotKey(date, hour) {
     var y  = date.getFullYear();
     var mo = String(date.getMonth() + 1).padStart(2, '0');
@@ -1545,21 +1608,19 @@ body {
     var h  = String(hour).padStart(2, '0');
     return y + '-' + mo + '-' + dy + 'T' + h + ':00';
   }
-
   function formatHour(h) {
+    h = ((h % 24) + 24) % 24; // normalise
     if (h === 0)  return '12:00 AM';
     if (h < 12)   return h + ':00 AM';
     if (h === 12) return '12:00 PM';
     return (h - 12) + ':00 PM';
   }
-
   function formatSlotLabel(date, hour) {
     var days   = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
     var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
     return days[date.getDay()] + ', ' + months[date.getMonth()] + ' ' + date.getDate() +
            ' · ' + formatHour(hour) + ' – ' + formatHour(hour + 1);
   }
-
   function formatWeekRange(monday) {
     var sunday = addDays(monday, 6);
     var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
@@ -1567,18 +1628,18 @@ body {
            ' – ' + months[sunday.getMonth()] + ' ' + sunday.getDate() +
            ', ' + sunday.getFullYear();
   }
-
-  function formatTimestamp(isoStr) {
-    try { return new Date(isoStr).toLocaleString(); }
-    catch (e) { return isoStr; }
+  function formatTimestamp(val) {
+    try {
+      // Firestore Timestamp object or ISO string
+      var d = (val && typeof val.toDate === 'function') ? val.toDate() : new Date(val);
+      return d.toLocaleString();
+    } catch (e) { return String(val); }
   }
 
   /* ---- Stats ---- */
   function updateStats() {
-    var bookings = loadBookings();
-    var keys  = Object.keys(bookings);
+    var keys  = Object.keys(bookingsCache);
     var total = keys.length;
-
     var now    = new Date();
     var monday = getMonday(now);
     var sunday = addDays(monday, 6);
@@ -1589,7 +1650,7 @@ body {
       return d >= monday && d <= sunday;
     }).length;
 
-    // Count available future slots (next 4 weeks)
+    // Count future available slots (next 4 weeks)
     var available = 0;
     var checkStart = getMonday(now);
     for (var w = 0; w < 4; w++) {
@@ -1598,28 +1659,25 @@ body {
         for (var hi = 0; hi < HOURS.length; hi++) {
           var slotDate = new Date(day);
           slotDate.setHours(HOURS[hi], 0, 0, 0);
-          if (slotDate > now) {
-            var key = slotKey(day, HOURS[hi]);
-            if (!bookings[key]) available++;
-          }
+          if (slotDate > now && !bookingsCache[slotKey(day, HOURS[hi])]) available++;
         }
       }
     }
 
-    document.getElementById('stat-total').textContent     = total;
-    document.getElementById('stat-week').textContent      = weekCount;
-    document.getElementById('stat-available').textContent = available;
+    var elTotal = document.getElementById('stat-total');
+    var elWeek  = document.getElementById('stat-week');
+    var elAvail = document.getElementById('stat-available');
+    if (elTotal) elTotal.textContent = total;
+    if (elWeek)  elWeek.textContent  = weekCount;
+    if (elAvail) elAvail.textContent = available;
   }
 
-  /* ---- Build calendar grid header rows (shared) ---- */
+  /* ---- Calendar header ---- */
   function buildCalendarHeader(grid) {
-    var today = new Date();
-    today.setHours(0, 0, 0, 0);
-
+    var today  = new Date(); today.setHours(0, 0, 0, 0);
     var corner = document.createElement('div');
     corner.className = 'cal-header-empty';
     grid.appendChild(corner);
-
     var months2 = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
     for (var di = 0; di < 7; di++) {
       var dayDate = addDays(currentWeekMonday, di);
@@ -1627,7 +1685,7 @@ body {
       cell.className = 'cal-day-header';
       if (dayDate.getTime() === today.getTime()) cell.classList.add('is-today');
       cell.innerHTML = '<span>' + DAY_NAMES[di] + '</span><br>' +
-        '<span style="font-size:0.75rem;font-weight:400;">' +
+        '<span style="font-size:.75rem;font-weight:400;">' +
         months2[dayDate.getMonth()] + ' ' + dayDate.getDate() + '</span>';
       grid.appendChild(cell);
     }
@@ -1635,10 +1693,9 @@ body {
 
   /* ---- Booking calendar ---- */
   function renderCalendar() {
-    var bookings = loadBookings();
     var now   = new Date();
-    var today = new Date(now);
-    today.setHours(0, 0, 0, 0);
+    var today = new Date(now); today.setHours(0, 0, 0, 0);
+    var deviceId = getDeviceId();
 
     document.getElementById('week-label').textContent = formatWeekRange(currentWeekMonday);
     document.getElementById('calendar-section-title').textContent = 'Session Timeline';
@@ -1649,35 +1706,38 @@ body {
     buildCalendarHeader(grid);
 
     for (var hi = 0; hi < HOURS.length; hi++) {
-      var hour = HOURS[hi];
+      var hour      = HOURS[hi];
       var timeLabel = document.createElement('div');
-      timeLabel.className = 'cal-time-label';
+      timeLabel.className  = 'cal-time-label';
       timeLabel.textContent = formatHour(hour);
       grid.appendChild(timeLabel);
 
       for (var dj = 0; dj < 7; dj++) {
         var cellDate     = addDays(currentWeekMonday, dj);
-        var slotDateTime = new Date(cellDate);
-        slotDateTime.setHours(hour, 0, 0, 0);
-        var key      = slotKey(cellDate, hour);
-        var slotCell = document.createElement('div');
+        var slotDateTime = new Date(cellDate); slotDateTime.setHours(hour, 0, 0, 0);
+        var key          = slotKey(cellDate, hour);
+        var slotCell     = document.createElement('div');
         slotCell.className = 'cal-slot';
 
         var isToday2 = (cellDate.getTime() === today.getTime());
         var isPast   = slotDateTime <= now;
-        var booking  = bookings[key];
+        var booking  = bookingsCache[key];
 
         if (isPast) {
           slotCell.classList.add('slot-past');
           if (booking) {
             slotCell.classList.add('slot-booked');
             slotCell.textContent = booking.name;
-            slotCell.setAttribute('title', booking.name + ' — ' + booking.contact);
+            slotCell.setAttribute('title', booking.name + ' — ' + (booking.contact || ''));
           }
         } else if (booking) {
           slotCell.classList.add('slot-booked');
           slotCell.textContent = booking.name;
           slotCell.setAttribute('title', 'Click to view: ' + booking.name);
+          // Show a subtle "mine" indicator if booked from this device
+          if (booking.deviceId && booking.deviceId === deviceId) {
+            slotCell.setAttribute('title', 'Your booking – click to view/cancel');
+          }
           (function (k) {
             slotCell.addEventListener('click', function () { openViewModal(k); });
           })(key);
@@ -1696,46 +1756,33 @@ body {
 
     wrap.innerHTML = '';
     wrap.appendChild(grid);
-    updateStats();
   }
 
-  /* ---- Availability calendar (my availability + team heatmap) ---- */
+  /* ---- Availability calendar ---- */
   function getCombinedAvailability() {
-    var myName = loadAvailName().trim();
-    var myAvail  = loadMyAvailability();
+    var myName  = loadAvailName().trim();
+    var myAvail = loadMyAvailability();
     var imported = loadImported();
     var combined = {};
-
     if (myName) {
       Object.keys(myAvail).forEach(function (k) {
-        if (myAvail[k]) {
-          combined[k] = combined[k] || [];
-          combined[k].push(myName);
-        }
+        if (myAvail[k]) { combined[k] = combined[k] || []; combined[k].push(myName); }
       });
     }
-
     Object.keys(imported).forEach(function (personName) {
       var avail = imported[personName];
       Object.keys(avail).forEach(function (k) {
-        if (avail[k]) {
-          combined[k] = combined[k] || [];
-          combined[k].push(personName);
-        }
+        if (avail[k]) { combined[k] = combined[k] || []; combined[k].push(personName); }
       });
     });
-
     return combined;
   }
 
   function renderAvailabilityCalendar(mode) {
-    var bookings = loadBookings();
     var myAvail  = loadMyAvailability();
     var combined = (mode === 'team') ? getCombinedAvailability() : null;
-
-    var now   = new Date();
-    var today = new Date(now);
-    today.setHours(0, 0, 0, 0);
+    var now      = new Date();
+    var today    = new Date(now); today.setHours(0, 0, 0, 0);
 
     document.getElementById('week-label').textContent = formatWeekRange(currentWeekMonday);
     document.getElementById('calendar-section-title').textContent =
@@ -1747,30 +1794,25 @@ body {
     buildCalendarHeader(grid);
 
     for (var hi = 0; hi < HOURS.length; hi++) {
-      var hour = HOURS[hi];
+      var hour      = HOURS[hi];
       var timeLabel = document.createElement('div');
-      timeLabel.className = 'cal-time-label';
+      timeLabel.className   = 'cal-time-label';
       timeLabel.textContent = formatHour(hour);
       grid.appendChild(timeLabel);
 
       for (var dj = 0; dj < 7; dj++) {
         var cellDate     = addDays(currentWeekMonday, dj);
-        var slotDateTime = new Date(cellDate);
-        slotDateTime.setHours(hour, 0, 0, 0);
-        var key      = slotKey(cellDate, hour);
-        var slotCell = document.createElement('div');
+        var slotDateTime = new Date(cellDate); slotDateTime.setHours(hour, 0, 0, 0);
+        var key          = slotKey(cellDate, hour);
+        var slotCell     = document.createElement('div');
         slotCell.className = 'cal-slot';
-
         var isPast = slotDateTime <= now;
 
         if (mode === 'availability') {
           var isMarked = !!myAvail[key];
           if (isPast) {
             slotCell.classList.add('slot-past');
-            if (isMarked) {
-              slotCell.classList.add('slot-avail-mine');
-              slotCell.textContent = '✓';
-            }
+            if (isMarked) { slotCell.classList.add('slot-avail-mine'); slotCell.textContent = '✓'; }
           } else {
             slotCell.classList.add('slot-avail-toggle');
             if (isMarked) {
@@ -1784,11 +1826,7 @@ body {
             (function (k) {
               slotCell.addEventListener('click', function () {
                 var avail = loadMyAvailability();
-                if (avail[k]) {
-                  delete avail[k];
-                } else {
-                  avail[k] = true;
-                }
+                if (avail[k]) { delete avail[k]; } else { avail[k] = true; }
                 saveMyAvailability(avail);
                 renderCalendarForMode();
               });
@@ -1798,11 +1836,10 @@ body {
         } else if (mode === 'team') {
           var people = combined[key] || [];
           var count  = people.length;
-
-          if (bookings[key]) {
+          if (bookingsCache[key]) {
             slotCell.classList.add('slot-booked');
-            slotCell.textContent = bookings[key].name;
-            slotCell.setAttribute('title', 'Booked by ' + bookings[key].name);
+            slotCell.textContent = bookingsCache[key].name;
+            slotCell.setAttribute('title', 'Booked by ' + bookingsCache[key].name);
             if (!isPast) {
               (function (k) {
                 slotCell.addEventListener('click', function () { openViewModal(k); });
@@ -1838,36 +1875,25 @@ body {
       renderCalendar();
     } else {
       renderAvailabilityCalendar(currentMode);
-      updateStats();
     }
   }
 
   function setMode(mode) {
     currentMode = mode;
-
-    // Update toggle buttons
-    var btns = document.querySelectorAll('#mode-toggle .mode-btn');
-    btns.forEach(function (btn) {
+    document.querySelectorAll('#mode-toggle .mode-btn').forEach(function (btn) {
       var isActive = btn.dataset.mode === mode;
       btn.classList.toggle('active', isActive);
       btn.setAttribute('aria-selected', isActive ? 'true' : 'false');
     });
-
-    // Show/hide availability bar
     var availBar = document.getElementById('avail-user-bar');
     if (availBar) availBar.style.display = (mode !== 'booking') ? 'flex' : 'none';
-
-    // Show/hide imported members list
     var importWrap = document.getElementById('imported-members-wrap');
     if (importWrap) {
       importWrap.style.display = (mode === 'team') ? 'block' : 'none';
       if (mode === 'team') renderImportedMembersList();
     }
-
-    // Show/hide team legend
     var legend = document.getElementById('team-legend');
     if (legend) legend.style.display = (mode === 'team') ? 'flex' : 'none';
-
     renderCalendarForMode();
   }
 
@@ -1876,24 +1902,22 @@ body {
     var wrap = document.getElementById('imported-members-wrap');
     if (!wrap) return;
     var imported = loadImported();
-    var names = Object.keys(imported);
-
+    var names    = Object.keys(imported);
     if (names.length === 0) {
-      wrap.innerHTML = '<p style="font-size:0.9rem;color:#8a9ab0;margin-bottom:1rem;">No team members imported yet. Use <strong>📥 Import Team Member</strong> to add someone\'s availability.</p>';
+      wrap.innerHTML = '<p style="font-size:.9rem;color:#8a9ab0;margin-bottom:1rem;">No team members imported yet. Use <strong>📥 Import Team Member</strong> to add someone\'s availability.</p>';
       return;
     }
-
-    var html = '<div class="imported-members"><span style="font-size:0.9rem;font-weight:600;color:#1a1a2e;">Team members: </span>';
+    var html = '<div class="imported-members"><span style="font-size:.9rem;font-weight:600;color:#1a1a2e;">Team members: </span>';
     names.forEach(function (name) {
       html += '<span class="imported-tag">' + escapeHtml(name) +
-              ' <button type="button" data-remove="' + escapeAttr(name) + '" aria-label="Remove ' + escapeAttr(name) + '">×</button></span>';
+              ' <button type="button" data-remove="' + escapeAttr(name) +
+              '" aria-label="Remove ' + escapeAttr(name) + '">×</button></span>';
     });
     html += '</div>';
     wrap.innerHTML = html;
-
     wrap.querySelectorAll('[data-remove]').forEach(function (btn) {
       btn.addEventListener('click', function () {
-        var n = btn.getAttribute('data-remove');
+        var n   = btn.getAttribute('data-remove');
         var imp = loadImported();
         delete imp[n];
         saveImported(imp);
@@ -1903,25 +1927,22 @@ body {
     });
   }
 
+  /* ---- XSS helpers ---- */
   function escapeHtml(str) {
     return String(str)
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;');
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
   }
-
   function escapeAttr(str) {
     return String(str).replace(/"/g, '&quot;').replace(/'/g, '&#39;');
   }
 
-  /* ---- Toast notification ---- */
+  /* ---- Toast ---- */
   var toastTimer = null;
   function showToast(message) {
     var existing = document.getElementById('cb-toast-el');
     if (existing) existing.remove();
     if (toastTimer) clearTimeout(toastTimer);
-
     var el = document.createElement('div');
     el.id = 'cb-toast-el';
     el.className = 'cb-toast';
@@ -1929,18 +1950,17 @@ body {
     el.setAttribute('aria-live', 'polite');
     el.textContent = message;
     document.body.appendChild(el);
-
     toastTimer = setTimeout(function () {
       el.classList.add('cb-toast-hide');
       setTimeout(function () { if (el.parentNode) el.remove(); }, 450);
     }, 3000);
   }
 
-  /* ---- Export/Import ---- */
+  /* ---- Export / Import ---- */
   function exportAvailability() {
-    var name = loadAvailName().trim();
-    if (!name) { return null; }
-    var avail = loadMyAvailability();
+    var name  = loadAvailName().trim();
+    if (!name) return null;
+    var avail   = loadMyAvailability();
     var payload = { name: name, availability: avail, exportedAt: new Date().toISOString() };
     try { return btoa(unescape(encodeURIComponent(JSON.stringify(payload)))); }
     catch (e) { return null; }
@@ -1969,8 +1989,7 @@ body {
     document.getElementById('book-contact').value = '';
     document.getElementById('book-note').value    = '';
     var errEl = document.getElementById('form-error');
-    errEl.hidden = true;
-    errEl.textContent = '';
+    errEl.hidden = true; errEl.textContent = '';
     document.getElementById('booking-modal').hidden = false;
     document.getElementById('book-name').focus();
   }
@@ -1987,35 +2006,37 @@ body {
     var note    = document.getElementById('book-note').value.trim();
     var errEl   = document.getElementById('form-error');
 
-    if (!name) {
-      errEl.textContent = 'Please enter your full name.';
-      errEl.hidden = false;
-      document.getElementById('book-name').focus();
-      return;
-    }
-    if (!contact) {
-      errEl.textContent = 'Please enter your email or phone number.';
-      errEl.hidden = false;
-      document.getElementById('book-contact').focus();
-      return;
-    }
+    if (!name)    { errEl.textContent = 'Please enter your full name.';         errEl.hidden = false; document.getElementById('book-name').focus(); return; }
+    if (!contact) { errEl.textContent = 'Please enter your email or phone.';    errEl.hidden = false; document.getElementById('book-contact').focus(); return; }
 
-    var bookings = loadBookings();
-    if (bookings[activeSlotKey]) {
+    // Re-check: slot may have just been booked by someone else
+    if (bookingsCache[activeSlotKey]) {
       errEl.textContent = 'This slot was just booked by someone else. Please choose another.';
       errEl.hidden = false;
+      closeBookingModal();
+      renderCalendarForMode();
       return;
     }
 
-    bookings[activeSlotKey] = {
-      name:     name,
-      contact:  contact,
-      note:     note || '',
-      bookedAt: new Date().toISOString()
+    var submitBtn = this.querySelector('[type=submit]');
+    submitBtn.disabled = true;
+
+    var data = {
+      name:      name,
+      contact:   contact,
+      note:      note || '',
+      bookedAt:  new Date().toISOString(),
+      deviceId:  getDeviceId()
     };
-    saveBookings(bookings);
-    closeBookingModal();
-    renderCalendar();
+
+    saveBooking(activeSlotKey, data).then(function () {
+      submitBtn.disabled = false;
+      closeBookingModal();
+      // renderCalendarForMode is triggered by Firestore onSnapshot (or inline above for LS)
+      showToast('✅ Slot booked for ' + name + '!');
+    }).catch(function () {
+      submitBtn.disabled = false;
+    });
   });
 
   document.getElementById('modal-close-book').addEventListener('click', closeBookingModal);
@@ -2026,22 +2047,32 @@ body {
 
   /* ---- View booking modal ---- */
   function openViewModal(key) {
-    var bookings = loadBookings();
-    var b = bookings[key];
+    var b = bookingsCache[key];
     if (!b) return;
     activeSlotKey = key;
 
     var parts     = key.split('T');
     var dateParts = parts[0].split('-');
     var hour      = parseInt(parts[1].split(':')[0], 10);
-    var d = new Date(parseInt(dateParts[0], 10), parseInt(dateParts[1], 10) - 1, parseInt(dateParts[2], 10));
+    var d = new Date(
+      parseInt(dateParts[0], 10),
+      parseInt(dateParts[1], 10) - 1,
+      parseInt(dateParts[2], 10)
+    );
 
-    document.getElementById('view-slot-label').textContent   = formatSlotLabel(d, hour);
-    document.getElementById('view-name').textContent         = b.name;
-    document.getElementById('view-contact').textContent      = b.contact;
-    document.getElementById('view-note').textContent         = b.note || '—';
-    document.getElementById('view-booked-at').textContent    = formatTimestamp(b.bookedAt);
-    document.getElementById('view-modal').hidden             = false;
+    document.getElementById('view-slot-label').textContent  = formatSlotLabel(d, hour);
+    document.getElementById('view-name').textContent        = b.name;
+    document.getElementById('view-contact').textContent     = b.contact || '—';
+    document.getElementById('view-note').textContent        = b.note    || '—';
+    document.getElementById('view-booked-at').textContent   = formatTimestamp(b.bookedAt);
+
+    // Show cancel button only if booked from this device
+    var cancelBtn = document.getElementById('btn-delete-booking');
+    if (cancelBtn) {
+      cancelBtn.style.display = (b.deviceId && b.deviceId === getDeviceId()) ? '' : 'none';
+    }
+
+    document.getElementById('view-modal').hidden = false;
   }
 
   function closeViewModal() {
@@ -2057,12 +2088,14 @@ body {
 
   document.getElementById('btn-delete-booking').addEventListener('click', function () {
     if (!activeSlotKey) return;
-    if (!confirm('Are you sure you want to cancel this booking?')) return;
-    var bookings = loadBookings();
-    delete bookings[activeSlotKey];
-    saveBookings(bookings);
+    var key  = activeSlotKey;
+    var name = (bookingsCache[key] && bookingsCache[key].name) || 'this booking';
+    // Use a confirm that works in all contexts
+    if (!window.confirm('Cancel the booking for ' + name + '?')) return;
     closeViewModal();
-    renderCalendar();
+    deleteBooking(key).then(function () {
+      showToast('🗑️ Booking cancelled.');
+    });
   });
 
   /* ---- Week navigation ---- */
@@ -2070,7 +2103,6 @@ body {
     currentWeekMonday = addDays(currentWeekMonday, -7);
     renderCalendarForMode();
   });
-
   document.getElementById('next-week').addEventListener('click', function () {
     currentWeekMonday = addDays(currentWeekMonday, 7);
     renderCalendarForMode();
@@ -2078,13 +2110,10 @@ body {
 
   /* ---- Mode toggle ---- */
   document.querySelectorAll('#mode-toggle .mode-btn').forEach(function (btn) {
-    btn.addEventListener('click', function () {
-      setMode(btn.dataset.mode);
-    });
+    btn.addEventListener('click', function () { setMode(btn.dataset.mode); });
   });
 
   /* ---- Availability user bar ---- */
-  // Pre-populate name from storage
   var storedName = loadAvailName();
   if (storedName) document.getElementById('avail-name').value = storedName;
 
@@ -2093,14 +2122,8 @@ body {
     saveAvailName(n);
     renderCalendarForMode();
   });
-
   document.getElementById('avail-name').addEventListener('keydown', function (e) {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      var n = this.value.trim();
-      saveAvailName(n);
-      renderCalendarForMode();
-    }
+    if (e.key === 'Enter') { e.preventDefault(); saveAvailName(this.value.trim()); renderCalendarForMode(); }
   });
 
   /* ---- Export modal ---- */
@@ -2108,42 +2131,30 @@ body {
     var name = document.getElementById('avail-name').value.trim();
     if (name) saveAvailName(name);
     var code = exportAvailability();
-    if (!code) {
-      showToast('⚠️ Please enter your name before exporting.');
-      document.getElementById('avail-name').focus();
-      return;
-    }
+    if (!code) { showToast('⚠️ Please enter your name before exporting.'); document.getElementById('avail-name').focus(); return; }
     document.getElementById('export-code-field').value = code;
     document.getElementById('export-modal').hidden = false;
   });
 
-  document.getElementById('export-modal-close').addEventListener('click', function () {
-    document.getElementById('export-modal').hidden = true;
-  });
-  document.getElementById('export-modal-close-btn').addEventListener('click', function () {
-    document.getElementById('export-modal').hidden = true;
-  });
-  document.getElementById('export-modal').addEventListener('click', function (e) {
-    if (e.target === this) document.getElementById('export-modal').hidden = true;
-  });
+  document.getElementById('export-modal-close').addEventListener('click', function () { document.getElementById('export-modal').hidden = true; });
+  document.getElementById('export-modal-close-btn').addEventListener('click', function () { document.getElementById('export-modal').hidden = true; });
+  document.getElementById('export-modal').addEventListener('click', function (e) { if (e.target === this) this.hidden = true; });
 
   document.getElementById('btn-copy-code').addEventListener('click', function () {
     var field = document.getElementById('export-code-field');
     field.select();
+    var btn = this;
+    var origText = btn.textContent;
     try {
-      if (navigator.clipboard) {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard.writeText(field.value).then(function () {
-          document.getElementById('btn-copy-code').textContent = '✅ Copied!';
-          setTimeout(function () {
-            document.getElementById('btn-copy-code').textContent = '📋 Copy to Clipboard';
-          }, 2000);
+          btn.textContent = '✅ Copied!';
+          setTimeout(function () { btn.textContent = origText; }, 2000);
         });
       } else {
         document.execCommand('copy');
-        document.getElementById('btn-copy-code').textContent = '✅ Copied!';
-        setTimeout(function () {
-          document.getElementById('btn-copy-code').textContent = '📋 Copy to Clipboard';
-        }, 2000);
+        btn.textContent = '✅ Copied!';
+        setTimeout(function () { btn.textContent = origText; }, 2000);
       }
     } catch (e) {}
   });
@@ -2156,34 +2167,17 @@ body {
     document.getElementById('import-code-field').focus();
   });
 
-  document.getElementById('import-modal-close').addEventListener('click', function () {
-    document.getElementById('import-modal').hidden = true;
-  });
-  document.getElementById('import-modal-close-btn').addEventListener('click', function () {
-    document.getElementById('import-modal').hidden = true;
-  });
-  document.getElementById('import-modal').addEventListener('click', function (e) {
-    if (e.target === this) document.getElementById('import-modal').hidden = true;
-  });
+  document.getElementById('import-modal-close').addEventListener('click', function () { document.getElementById('import-modal').hidden = true; });
+  document.getElementById('import-modal-close-btn').addEventListener('click', function () { document.getElementById('import-modal').hidden = true; });
+  document.getElementById('import-modal').addEventListener('click', function (e) { if (e.target === this) this.hidden = true; });
 
   document.getElementById('btn-do-import').addEventListener('click', function () {
-    var code   = document.getElementById('import-code-field').value.trim();
-    var errEl  = document.getElementById('import-error');
+    var code  = document.getElementById('import-code-field').value.trim();
+    var errEl = document.getElementById('import-error');
     errEl.hidden = true;
-
-    if (!code) {
-      errEl.textContent = 'Please paste a code first.';
-      errEl.hidden = false;
-      return;
-    }
-
+    if (!code) { errEl.textContent = 'Please paste a code first.'; errEl.hidden = false; return; }
     var result = importAvailabilityCode(code);
-    if (!result.success) {
-      errEl.textContent = result.error;
-      errEl.hidden = false;
-      return;
-    }
-
+    if (!result.success) { errEl.textContent = result.error; errEl.hidden = false; return; }
     document.getElementById('import-modal').hidden = true;
     renderImportedMembersList();
     renderCalendarForMode();
@@ -2195,15 +2189,24 @@ body {
     if (e.key === 'Escape') {
       if (!document.getElementById('booking-modal').hidden) closeBookingModal();
       if (!document.getElementById('view-modal').hidden)    closeViewModal();
-      if (!document.getElementById('export-modal').hidden)  document.getElementById('export-modal').hidden = true;
-      if (!document.getElementById('import-modal').hidden)  document.getElementById('import-modal').hidden = true;
+      var exportModal = document.getElementById('export-modal');
+      var importModal = document.getElementById('import-modal');
+      if (exportModal && !exportModal.hidden) exportModal.hidden = true;
+      if (importModal && !importModal.hidden) importModal.hidden = true;
     }
   });
 
-  /* ---- Init ---- */
-  renderCalendar();
+  /* ---- Inject spin animation if not already present ---- */
+  if (!document.getElementById('cb-spin-style')) {
+    var style = document.createElement('style');
+    style.id = 'cb-spin-style';
+    style.textContent = '@keyframes spin{to{transform:rotate(360deg)}}';
+    document.head.appendChild(style);
+  }
+
 })();
 </script>
+
 
 <!-- Footer -->
 <footer class="footer_wrap"><div class="u-embed-css w-embed"><style>
