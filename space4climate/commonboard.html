@@ -569,13 +569,13 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
       <div class="guideline-card">
         <div class="guideline-number">5</div>
         <h3 class="guideline-title">Share Your Availability</h3>
-        <p class="guideline-text">Switch to <strong>My Availability</strong> mode, enter your name, and click slots when you are free. Hit <em>Export My Availability</em> to get a shareable code, then send it to your team.</p>
+        <p class="guideline-text">Switch to <strong>✅ My Availability</strong> mode, enter your name, and click slots when you are free. Hit <em>📤 Export My Availability</em> to get a shareable code, then send it to your team.</p>
       </div>
 
       <div class="guideline-card">
         <div class="guideline-number">6</div>
         <h3 class="guideline-title">See Team Overlaps</h3>
-        <p class="guideline-text">In <strong>Team View</strong> mode, paste codes from team members using <em>Import Team Member</em>. The calendar highlights slots where multiple people are free, making it easy to find a shared time.</p>
+        <p class="guideline-text">In <strong>👥 Team View</strong> mode, paste codes from team members using <em>📥 Import Team Member</em>. The calendar highlights slots where multiple people are free, making it easy to find a shared time.</p>
       </div>
     </div>
 
@@ -1163,6 +1163,30 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   padding: 0;
 }
 
+/* ---- Toast notification ---- */
+.cb-toast {
+  position: fixed;
+  bottom: 1.5rem;
+  left: 50%;
+  transform: translateX(-50%) translateY(0);
+  background: #1a1a2e;
+  color: #ffffff;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  font-size: 0.95rem;
+  font-weight: 500;
+  z-index: 10000;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+  opacity: 1;
+  transition: opacity 0.4s ease, transform 0.4s ease;
+  pointer-events: none;
+}
+
+.cb-toast.cb-toast-hide {
+  opacity: 0;
+  transform: translateX(-50%) translateY(0.5rem);
+}
+
 @media (max-width: 768px) {
   .avail-user-bar {
     flex-direction: column;
@@ -1586,7 +1610,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     var names = Object.keys(imported);
 
     if (names.length === 0) {
-      wrap.innerHTML = '<p style="font-size:0.9rem;color:#8a9ab0;margin-bottom:1rem;">No team members imported yet. Use <strong>Import Team Member</strong> to add someone\'s availability.</p>';
+      wrap.innerHTML = '<p style="font-size:0.9rem;color:#8a9ab0;margin-bottom:1rem;">No team members imported yet. Use <strong>📥 Import Team Member</strong> to add someone\'s availability.</p>';
       return;
     }
 
@@ -1620,6 +1644,27 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 
   function escapeAttr(str) {
     return String(str).replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
+
+  /* ---- Toast notification ---- */
+  var toastTimer = null;
+  function showToast(message) {
+    var existing = document.getElementById('cb-toast-el');
+    if (existing) existing.remove();
+    if (toastTimer) clearTimeout(toastTimer);
+
+    var el = document.createElement('div');
+    el.id = 'cb-toast-el';
+    el.className = 'cb-toast';
+    el.setAttribute('role', 'status');
+    el.setAttribute('aria-live', 'polite');
+    el.textContent = message;
+    document.body.appendChild(el);
+
+    toastTimer = setTimeout(function () {
+      el.classList.add('cb-toast-hide');
+      setTimeout(function () { if (el.parentNode) el.remove(); }, 450);
+    }, 3000);
   }
 
   /* ---- Export/Import ---- */
@@ -1795,7 +1840,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     if (name) saveAvailName(name);
     var code = exportAvailability();
     if (!code) {
-      alert('Please enter your name before exporting.');
+      showToast('⚠️ Please enter your name before exporting.');
       document.getElementById('avail-name').focus();
       return;
     }
@@ -1873,7 +1918,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     document.getElementById('import-modal').hidden = true;
     renderImportedMembersList();
     renderCalendarForMode();
-    alert('Added ' + result.name + '\'s availability to the Team View.');
+    showToast('✅ Added ' + result.name + '\'s availability to the Team View.');
   });
 
   /* ---- Keyboard accessibility ---- */
