@@ -123,6 +123,7 @@ body {
 }
 
 .commonboard-title span {
+  color: #7eb8ff; /* Fallback for browsers without gradient text support */
   background: linear-gradient(90deg, #3e8cff, #8affb4);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -226,7 +227,7 @@ body {
 .guidelines-section {
   background: linear-gradient(180deg, #f0f4ff 0%, #e8f0fe 100%);
   padding: 5rem 0;
-  /* Absolutely ensure this section is always visible */
+  /* Ensure this section remains visible regardless of Webflow animation state */
   display: block !important;
   visibility: visible !important;
   opacity: 1 !important;
@@ -240,6 +241,12 @@ body {
   margin-top: 2.5rem;
   visibility: visible !important;
   opacity: 1 !important;
+}
+
+@media (max-width: 1024px) {
+  .guidelines-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
 .guideline-card {
@@ -307,12 +314,6 @@ body {
   line-height: 1.7;
 }
 
-@media (max-width: 1024px) {
-  .guidelines-grid {
-    grid-template-columns: repeat(2, 1fr) !important;
-  }
-}
-
 @media (max-width: 768px) {
   .commonboard-title {
     font-size: 2.5rem;
@@ -340,7 +341,7 @@ body {
   }
 
   .guidelines-grid {
-    grid-template-columns: 1fr !important;
+    grid-template-columns: 1fr;
   }
 }
 </style>
@@ -613,7 +614,7 @@ body {
 <!-- Hero Section -->
 <div class="commonboard-hero">
   <div class="commonboard-content">
-    <div class="commonboard-badge">🛰️ Space4Climate Community</div>
+    <div class="commonboard-badge"><span aria-hidden="true">🛰️</span> Space4Climate Community</div>
     <h1 class="commonboard-title"><span>CommonBoard</span></h1>
     <p class="commonboard-subtitle">Book community sessions, mark your availability, and discover when your team is free — all on one shared timeline.</p>
 
@@ -672,7 +673,7 @@ body {
     <div class="calendar-scroll">
       <div class="calendar-wrap" id="calendar-wrap"></div>
     </div>
-    <p class="calendar-scroll-hint" id="calendar-scroll-hint" aria-hidden="true">← Scroll left/right to see all days →</p>
+    <p class="calendar-scroll-hint" id="calendar-scroll-hint">← Scroll left/right to see all days →</p>
 
     <!-- Team view legend -->
     <div id="team-legend" class="team-legend" style="display:none;" aria-label="Availability legend">
