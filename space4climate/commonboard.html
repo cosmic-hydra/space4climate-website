@@ -2507,6 +2507,8 @@ body.u-overflow-hidden {
       // Real-time availability listener: populate remoteAvailabilities
       db.collection('availability').onSnapshot(function (snapshot) {
         snapshot.docChanges().forEach(function (change) {
+          // Document IDs are written via availDocId() which uses encodeURIComponent,
+          // so decode here to recover the original display name.
           var personName = decodeURIComponent(change.doc.id);
           if (change.type === 'added' || change.type === 'modified') {
             remoteAvailabilities[personName] = change.doc.data().slots || {};
