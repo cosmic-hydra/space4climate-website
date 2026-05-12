@@ -635,31 +635,37 @@ body {
 <div class="board-section">
   <div class="board-container">
 
-    <!-- Mode toggle -->
-    <div class="mode-toggle" id="mode-toggle" role="tablist" aria-label="Calendar mode">
-      <button class="mode-btn active" data-mode="booking" role="tab" aria-selected="true">📅 Book Session</button>
-      <button class="mode-btn" data-mode="availability" role="tab" aria-selected="false">✅ My Availability</button>
-      <button class="mode-btn" data-mode="team" role="tab" aria-selected="false">👥 Team View</button>
-    </div>
-
-    <!-- Availability user bar (shown in My Availability + Team View modes) -->
-    <div id="avail-user-bar" class="avail-user-bar" aria-label="Availability settings">
-      <div class="avail-user-inner">
-        <label for="avail-name">Your Name:</label>
-        <input type="text" id="avail-name" placeholder="e.g. Jane Smith" maxlength="60" autocomplete="name"/>
-        <button class="btn-primary" id="btn-save-avail-name" style="padding:0.45rem 1rem;font-size:0.9rem;">Save</button>
+    <!-- Name entry banner (always visible) -->
+    <div class="name-entry-banner" id="name-entry-banner">
+      <div class="name-entry-inner">
+        <div class="name-entry-icon">👤</div>
+        <div class="name-entry-body">
+          <label for="avail-name" class="name-entry-label">Your Name</label>
+          <p class="name-entry-hint" id="name-entry-hint">Enter your name to mark your availability and appear in the team view.</p>
+        </div>
+        <div class="name-entry-row">
+          <input type="text" id="avail-name" placeholder="e.g. Jane Smith" maxlength="60" autocomplete="name"/>
+          <button class="btn-primary" id="btn-save-avail-name">Save</button>
+        </div>
       </div>
       <div class="avail-actions">
-        <button class="btn-secondary" id="btn-export-avail" style="font-size:0.88rem;">📤 Export My Availability</button>
-        <button class="btn-secondary" id="btn-import-avail" style="font-size:0.88rem;">📥 Import Team Member</button>
+        <button class="btn-secondary" id="btn-export-avail" style="font-size:0.88rem;">📤 Share My Availability</button>
+        <button class="btn-secondary" id="btn-import-avail" style="font-size:0.88rem;">📥 Add Team Member</button>
       </div>
+    </div>
+
+    <!-- Mode toggle -->
+    <div class="mode-toggle" id="mode-toggle" role="tablist" aria-label="Calendar mode">
+      <button class="mode-btn" data-mode="booking" role="tab" aria-selected="false">📅 Book Session</button>
+      <button class="mode-btn active" data-mode="availability" role="tab" aria-selected="true">✅ My Availability</button>
+      <button class="mode-btn" data-mode="team" role="tab" aria-selected="false">👥 Team View</button>
     </div>
 
     <!-- Imported members list (shown in Team View) -->
     <div id="imported-members-wrap" style="display:none;"></div>
 
     <div class="section-header">
-      <h2 class="section-title" id="calendar-section-title">Session Timeline</h2>
+      <h2 class="section-title" id="calendar-section-title">My Availability</h2>
       <div class="week-nav">
         <button class="btn-nav" id="prev-week" aria-label="Previous week">&#8592; Previous</button>
         <span class="week-label" id="week-label"></span>
@@ -679,6 +685,20 @@ body {
       <span><span class="legend-swatch" style="background:linear-gradient(135deg,#16a34a,#15803d);"></span>3+ people free</span>
       <span><span class="legend-swatch" style="background:linear-gradient(135deg,#3e8cff,#5ba0ff);"></span>Booked session</span>
     </div>
+
+    <!-- Participants section -->
+    <div class="participants-section" id="participants-section">
+      <div class="participants-header">
+        <h3 class="participants-title">👥 Participants</h3>
+        <span class="participants-count" id="participants-count"></span>
+      </div>
+      <div id="participants-list-wrap">
+        <p class="no-participants-msg">No participants yet. Enter your name above and mark your availability to be the first!</p>
+      </div>
+    </div>
+
+    <!-- Drag hint (shown in availability mode) -->
+    <p class="drag-hint" id="drag-hint" style="display:none;">💡 Click and drag across cells to quickly mark multiple time slots.</p>
 
   </div>
 </div>
@@ -748,7 +768,7 @@ body {
   <div class="modal-box">
     <button class="modal-close" id="export-modal-close" aria-label="Close">&times;</button>
     <h3 class="modal-title" id="export-modal-title">Share My Availability</h3>
-    <p style="color:#5a5a6e;font-size:0.95rem;margin-bottom:1rem;">Copy this code and share it with your team. They can paste it into <strong>Import Team Member</strong> on their device to see your availability in the Team View.</p>
+    <p style="color:#5a5a6e;font-size:0.95rem;margin-bottom:1rem;">Copy this code and share it with your team. They can paste it into <strong>Add Team Member</strong> on their device to see your availability in the Team View.</p>
     <div class="form-group">
       <label for="export-code-field">Your Availability Code</label>
       <textarea id="export-code-field" rows="6" readonly style="font-family:monospace;font-size:0.78rem;word-break:break-all;background:#f8f9fa;"></textarea>
@@ -764,7 +784,7 @@ body {
 <div id="import-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="import-modal-title" hidden>
   <div class="modal-box">
     <button class="modal-close" id="import-modal-close" aria-label="Close">&times;</button>
-    <h3 class="modal-title" id="import-modal-title">Import Team Member Availability</h3>
+    <h3 class="modal-title" id="import-modal-title">Add Team Member</h3>
     <p style="color:#5a5a6e;font-size:0.95rem;margin-bottom:1rem;">Paste the availability code shared by a team member to add their schedule to your Team View.</p>
     <div class="form-group">
       <label for="import-code-field">Availability Code</label>
@@ -1219,60 +1239,6 @@ body {
   color: #3e8cff;
 }
 
-/* ===== AVAILABILITY USER BAR ===== */
-.avail-user-bar {
-  display: none;
-  align-items: center;
-  gap: 1rem;
-  flex-wrap: wrap;
-  background: linear-gradient(135deg, #eef5ff, #f0f9ff);
-  border: 1px solid #bfdbfe;
-  border-radius: 0.875rem;
-  padding: 1rem 1.25rem;
-  margin-bottom: 1.5rem;
-  box-shadow: 0 2px 8px rgba(62, 140, 255, 0.08);
-}
-
-.avail-user-inner {
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
-  flex-wrap: wrap;
-  flex: 1;
-}
-
-.avail-user-inner label {
-  font-weight: 700;
-  font-size: 0.88rem;
-  color: #1e40af;
-  white-space: nowrap;
-}
-
-.avail-user-inner input {
-  border: 1.5px solid #bfdbfe;
-  border-radius: 0.5rem;
-  padding: 0.45rem 0.75rem;
-  font-size: 0.9rem;
-  font-family: inherit;
-  color: #1a1a2e;
-  min-width: 160px;
-  background: #fff;
-  transition: border-color 0.2s, box-shadow 0.2s;
-}
-
-.avail-user-inner input:focus {
-  outline: none;
-  border-color: #3e8cff;
-  box-shadow: 0 0 0 3px rgba(62, 140, 255, 0.12);
-}
-
-.avail-actions {
-  display: flex;
-  gap: 0.5rem;
-  flex-wrap: wrap;
-  align-items: center;
-}
-
 /* ===== AVAILABILITY SLOT COLORS ===== */
 .cal-slot.slot-avail-mine {
   background: linear-gradient(135deg, #d1fae5, #a7f3d0);
@@ -1419,6 +1385,251 @@ body {
     text-align: center;
   }
 }
+
+/* ===== NAME ENTRY BANNER ===== */
+.name-entry-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+  background: linear-gradient(135deg, #f0f7ff, #e8f5ff);
+  border: 1.5px solid #bfdbfe;
+  border-radius: 1rem;
+  padding: 1.25rem 1.5rem;
+  margin-bottom: 1.75rem;
+  box-shadow: 0 2px 10px rgba(62, 140, 255, 0.08);
+}
+
+.name-entry-inner {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex: 1;
+  flex-wrap: wrap;
+}
+
+.name-entry-icon {
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.name-entry-body {
+  flex: 1;
+  min-width: 140px;
+}
+
+.name-entry-label {
+  display: block;
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #1e40af;
+  margin-bottom: 0.15rem;
+  letter-spacing: 0.01em;
+}
+
+.name-entry-hint {
+  font-size: 0.82rem;
+  color: #3b82f6;
+  margin: 0;
+}
+
+.name-entry-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+}
+
+.name-entry-row input {
+  border: 1.5px solid #bfdbfe;
+  border-radius: 0.5rem;
+  padding: 0.55rem 0.85rem;
+  font-size: 0.95rem;
+  font-family: inherit;
+  color: #1a1a2e;
+  min-width: 180px;
+  background: #fff;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.name-entry-row input:focus {
+  outline: none;
+  border-color: #3e8cff;
+  box-shadow: 0 0 0 3px rgba(62, 140, 255, 0.12);
+}
+
+.avail-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+/* ===== PARTICIPANTS SECTION ===== */
+.participants-section {
+  margin-top: 2rem;
+  padding-top: 1.75rem;
+  border-top: 1px solid #e8eef8;
+}
+
+.participants-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+}
+
+.participants-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #0f1f3d;
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+.participants-count {
+  background: #3e8cff;
+  color: #fff;
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 0.2rem 0.6rem;
+  border-radius: 1rem;
+  letter-spacing: 0.02em;
+}
+
+.participants-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.participant-card {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  background: #f8fafc;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 0.75rem;
+  padding: 0.75rem 1rem;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  min-width: 160px;
+}
+
+.participant-card:hover {
+  border-color: #93c5fd;
+  box-shadow: 0 2px 8px rgba(62, 140, 255, 0.1);
+}
+
+.participant-card.is-me {
+  background: linear-gradient(135deg, #eff6ff, #dbeafe);
+  border-color: #93c5fd;
+}
+
+.participant-avatar {
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #3e8cff, #8affb4);
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.participant-card.is-me .participant-avatar {
+  background: linear-gradient(135deg, #1d4ed8, #3e8cff);
+}
+
+.participant-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.participant-name {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #1a1a2e;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+}
+
+.you-badge {
+  background: #3e8cff;
+  color: #fff;
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 0.1rem 0.4rem;
+  border-radius: 0.3rem;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.participant-slots {
+  font-size: 0.78rem;
+  color: #64748b;
+  margin-top: 0.1rem;
+}
+
+.no-participants-msg {
+  font-size: 0.92rem;
+  color: #8a9ab0;
+  font-style: italic;
+  margin: 0;
+  padding: 1rem 0;
+}
+
+/* ===== DRAG HINT ===== */
+.drag-hint {
+  font-size: 0.82rem;
+  color: #64748b;
+  margin-top: 0.75rem;
+  padding: 0.5rem 0.85rem;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.5rem;
+  width: fit-content;
+}
+
+/* ===== DRAG CURSOR ===== */
+.cal-slot.slot-avail-toggle,
+.cal-slot.slot-avail-mine {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+@media (max-width: 768px) {
+  .name-entry-banner {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .name-entry-inner {
+    width: 100%;
+  }
+  .name-entry-row {
+    width: 100%;
+  }
+  .name-entry-row input {
+    flex: 1;
+    min-width: 0;
+  }
+  .participants-grid {
+    flex-direction: column;
+  }
+  .participant-card {
+    min-width: unset;
+    width: 100%;
+  }
+}
 </style>
 
 <!-- Firebase SDK (compat v10) for real-time bookings -->
@@ -1443,10 +1654,16 @@ body {
   /* ---- State ---- */
   var currentWeekMonday = getMonday(new Date());
   var activeSlotKey     = null;
-  var currentMode       = 'booking'; // 'booking' | 'availability' | 'team'
+  var currentMode       = 'availability'; // 'booking' | 'availability' | 'team'
   var bookingsCache     = {};        // always the source of truth for rendering
   var db                = null;      // Firestore instance (null = localStorage fallback)
   var firestoreReady    = false;     // true once first snapshot has arrived
+  var remoteAvailabilities = {};     // name → {slotKey: bool} from Firestore availability collection
+
+  /* ---- Drag-to-select state ---- */
+  var isDragging        = false;
+  var dragValue         = null;      // true = marking free, false = unmarking
+  var pendingDragKeys   = {};        // keys changed during current drag gesture
 
   /* ---- Device ID (for ownership verification) ---- */
   function getDeviceId() {
@@ -1489,6 +1706,21 @@ body {
           renderCalendarForMode();
           updateStats();
         }
+      });
+
+      // Real-time listener: availability collection for live participant sync
+      db.collection('availability').onSnapshot(function (snapshot) {
+        remoteAvailabilities = {};
+        snapshot.forEach(function (doc) {
+          var data = doc.data();
+          if (data && typeof data.name === 'string' && data.availability) {
+            remoteAvailabilities[data.name] = data.availability;
+          }
+        });
+        renderParticipantsList();
+        if (currentMode === 'team') renderCalendarForMode();
+      }, function (err) {
+        console.error('[CommonBoard] Availability Firestore error:', err);
       });
 
       showFsLoading();
@@ -1569,6 +1801,18 @@ body {
   function saveMyAvailability(data) {
     try { localStorage.setItem(AVAIL_KEY, JSON.stringify(data)); }
     catch (e) {}
+    // Sync to Firestore availability collection for real-time team view
+    var name = loadAvailName().trim();
+    if (db && name) {
+      var deviceId = getDeviceId();
+      db.collection('availability').doc(deviceId).set({
+        name:       name,
+        availability: data,
+        updatedAt:  new Date().toISOString()
+      }).catch(function (err) {
+        console.error('[CommonBoard] Availability Firestore save failed:', err);
+      });
+    }
   }
   function loadImported() {
     try { return JSON.parse(localStorage.getItem(IMPORTED_KEY) || '{}'); }
@@ -1770,9 +2014,22 @@ body {
       });
     }
     Object.keys(imported).forEach(function (personName) {
+      if (personName === myName) return; // skip if it's the current user (already added from my own data above)
       var avail = imported[personName];
       Object.keys(avail).forEach(function (k) {
         if (avail[k]) { combined[k] = combined[k] || []; combined[k].push(personName); }
+      });
+    });
+    // Merge Firestore remote availability (excluding ourselves to avoid duplication)
+    Object.keys(remoteAvailabilities).forEach(function (personName) {
+      if (personName === myName) return;
+      var avail = remoteAvailabilities[personName];
+      if (!avail) return;
+      Object.keys(avail).forEach(function (k) {
+        if (avail[k]) {
+          combined[k] = combined[k] || [];
+          if (combined[k].indexOf(personName) === -1) combined[k].push(personName);
+        }
       });
     });
     return combined;
@@ -1818,19 +2075,37 @@ body {
             if (isMarked) {
               slotCell.classList.add('slot-avail-mine');
               slotCell.textContent = '✓ Free';
-              slotCell.setAttribute('title', 'Click to mark as unavailable');
+              slotCell.setAttribute('title', 'Click or drag to mark as unavailable');
             } else {
-              slotCell.textContent = 'Click to mark free';
-              slotCell.setAttribute('title', 'Click to mark yourself as available');
+              slotCell.textContent = '+';
+              slotCell.setAttribute('title', 'Click or drag to mark yourself as available');
             }
-            (function (k) {
-              slotCell.addEventListener('click', function () {
-                var avail = loadMyAvailability();
-                if (avail[k]) { delete avail[k]; } else { avail[k] = true; }
-                saveMyAvailability(avail);
-                renderCalendarForMode();
+            (function (k, cell) {
+              cell.dataset.slotKey = k; // used by touchmove drag
+              cell.addEventListener('mousedown', function (e) {
+                e.preventDefault();
+                isDragging      = true;
+                pendingDragKeys = {};
+                var avail       = loadMyAvailability();
+                dragValue       = !avail[k];
+                pendingDragKeys[k] = dragValue;
+                applyDragStyle(cell, dragValue);
               });
-            })(key);
+              cell.addEventListener('mouseover', function () {
+                if (!isDragging) return;
+                pendingDragKeys[k] = dragValue;
+                applyDragStyle(cell, dragValue);
+              });
+              cell.addEventListener('touchstart', function (e) {
+                e.preventDefault();
+                isDragging      = true;
+                pendingDragKeys = {};
+                var avail       = loadMyAvailability();
+                dragValue       = !avail[k];
+                pendingDragKeys[k] = dragValue;
+                applyDragStyle(cell, dragValue);
+              }, { passive: false });
+            })(key, slotCell);
           }
 
         } else if (mode === 'team') {
@@ -1885,8 +2160,6 @@ body {
       btn.classList.toggle('active', isActive);
       btn.setAttribute('aria-selected', isActive ? 'true' : 'false');
     });
-    var availBar = document.getElementById('avail-user-bar');
-    if (availBar) availBar.style.display = (mode !== 'booking') ? 'flex' : 'none';
     var importWrap = document.getElementById('imported-members-wrap');
     if (importWrap) {
       importWrap.style.display = (mode === 'team') ? 'block' : 'none';
@@ -1894,6 +2167,8 @@ body {
     }
     var legend = document.getElementById('team-legend');
     if (legend) legend.style.display = (mode === 'team') ? 'flex' : 'none';
+    var dragHint = document.getElementById('drag-hint');
+    if (dragHint) dragHint.style.display = (mode === 'availability') ? 'block' : 'none';
     renderCalendarForMode();
   }
 
@@ -1904,7 +2179,7 @@ body {
     var imported = loadImported();
     var names    = Object.keys(imported);
     if (names.length === 0) {
-      wrap.innerHTML = '<p style="font-size:.9rem;color:#8a9ab0;margin-bottom:1rem;">No team members imported yet. Use <strong>📥 Import Team Member</strong> to add someone\'s availability.</p>';
+      wrap.innerHTML = '<p style="font-size:.9rem;color:#8a9ab0;margin-bottom:1rem;">No team members imported yet. Use <strong>📥 Add Team Member</strong> to add someone\'s availability.</p>';
       return;
     }
     var html = '<div class="imported-members"><span style="font-size:.9rem;font-weight:600;color:#1a1a2e;">Team members: </span>';
@@ -1925,6 +2200,122 @@ body {
         renderCalendarForMode();
       });
     });
+  }
+
+  /* ---- Drag-to-select helpers ---- */
+  function applyDragStyle(cell, value) {
+    if (value) {
+      cell.classList.remove('slot-avail-toggle');
+      cell.classList.add('slot-avail-mine');
+      cell.textContent = '✓ Free';
+    } else {
+      cell.classList.remove('slot-avail-mine', 'slot-heat-1', 'slot-heat-2', 'slot-heat-3');
+      cell.classList.add('slot-avail-toggle');
+      cell.textContent = '+';
+    }
+  }
+
+  // Commit drag on mouseup / touchend
+  document.addEventListener('mouseup', function () {
+    if (!isDragging) return;
+    isDragging = false;
+    if (Object.keys(pendingDragKeys).length > 0) {
+      var avail = loadMyAvailability();
+      Object.keys(pendingDragKeys).forEach(function (k) {
+        if (pendingDragKeys[k]) { avail[k] = true; } else { delete avail[k]; }
+      });
+      saveMyAvailability(avail);
+      renderCalendarForMode();
+      renderParticipantsList();
+    }
+    pendingDragKeys = {};
+    dragValue = null;
+  });
+  document.addEventListener('touchend', function () {
+    if (!isDragging) return;
+    isDragging = false;
+    if (Object.keys(pendingDragKeys).length > 0) {
+      var avail = loadMyAvailability();
+      Object.keys(pendingDragKeys).forEach(function (k) {
+        if (pendingDragKeys[k]) { avail[k] = true; } else { delete avail[k]; }
+      });
+      saveMyAvailability(avail);
+      renderCalendarForMode();
+      renderParticipantsList();
+    }
+    pendingDragKeys = {};
+    dragValue = null;
+  });
+
+  // Touch drag: follow finger across cells using elementFromPoint
+  document.addEventListener('touchmove', function (e) {
+    if (!isDragging || dragValue === null) return;
+    e.preventDefault();
+    var touch = e.touches[0];
+    var el = document.elementFromPoint(touch.clientX, touch.clientY);
+    if (!el) return;
+    var target = el.classList.contains('cal-slot') ? el : el.closest && el.closest('.cal-slot');
+    if (!target) return;
+    var k = target.dataset.slotKey;
+    if (!k || !(target.classList.contains('slot-avail-toggle') || target.classList.contains('slot-avail-mine'))) return;
+    if (pendingDragKeys[k] === dragValue) return; // already applied
+    pendingDragKeys[k] = dragValue;
+    applyDragStyle(target, dragValue);
+  }, { passive: false });
+
+  /* ---- Participants list ---- */
+  function renderParticipantsList() {
+    var wrap = document.getElementById('participants-list-wrap');
+    if (!wrap) return;
+    var countEl = document.getElementById('participants-count');
+
+    var myName   = loadAvailName().trim();
+    var imported = loadImported();
+
+    // Collect all unique participant names (localStorage imported + Firestore remote)
+    var names = {};
+    if (myName) {
+      names[myName] = { avail: loadMyAvailability(), isMe: true };
+    }
+    Object.keys(imported).forEach(function (n) {
+      if (!names[n]) names[n] = { avail: imported[n], isMe: false };
+    });
+    Object.keys(remoteAvailabilities).forEach(function (n) {
+      if (names[n]) {
+        // Entry already exists (either my own or imported local copy); don't overwrite availability
+        // but ensure isMe flag is set if it matches my name
+        if (n === myName) names[n].isMe = true;
+      } else {
+        // New participant from Firestore
+        names[n] = { avail: remoteAvailabilities[n], isMe: false };
+      }
+    });
+
+    var nameList = Object.keys(names);
+    if (countEl) countEl.textContent = nameList.length > 0 ? nameList.length + ' participant' + (nameList.length !== 1 ? 's' : '') : '';
+
+    if (nameList.length === 0) {
+      wrap.innerHTML = '<p class="no-participants-msg">No participants yet. Enter your name above and mark your availability to be the first!</p>';
+      return;
+    }
+
+    var html = '<div class="participants-grid">';
+    nameList.forEach(function (name) {
+      var info  = names[name];
+      var avail = info.avail || {};
+      var count = Object.keys(avail).filter(function (k) { return avail[k]; }).length;
+      html += '<div class="participant-card' + (info.isMe ? ' is-me' : '') + '">' +
+        '<div class="participant-avatar">' + escapeHtml(name.charAt(0).toUpperCase()) + '</div>' +
+        '<div class="participant-info">' +
+          '<div class="participant-name">' + escapeHtml(name) +
+            (info.isMe ? ' <span class="you-badge">You</span>' : '') +
+          '</div>' +
+          '<div class="participant-slots">' + count + ' slot' + (count !== 1 ? 's' : '') + ' marked</div>' +
+        '</div>' +
+      '</div>';
+    });
+    html += '</div>';
+    wrap.innerHTML = html;
   }
 
   /* ---- XSS helpers ---- */
@@ -2113,17 +2504,43 @@ body {
     btn.addEventListener('click', function () { setMode(btn.dataset.mode); });
   });
 
-  /* ---- Availability user bar ---- */
+  /* ---- Name entry (name-entry-banner) ---- */
   var storedName = loadAvailName();
   if (storedName) document.getElementById('avail-name').value = storedName;
+  // Update hint text if name is already saved
+  if (storedName) {
+    var hintEl = document.getElementById('name-entry-hint');
+    if (hintEl) hintEl.textContent = 'Saved as ' + storedName + '. Update below to change.';
+  }
+
+  // Initial render of participants and drag hint
+  renderParticipantsList();
+  var dragHint = document.getElementById('drag-hint');
+  if (dragHint) dragHint.style.display = 'block'; // default mode is availability
 
   document.getElementById('btn-save-avail-name').addEventListener('click', function () {
     var n = document.getElementById('avail-name').value.trim();
     saveAvailName(n);
+    // Push existing availability to Firestore under new name
+    if (n) saveMyAvailability(loadMyAvailability());
     renderCalendarForMode();
+    renderParticipantsList();
+    var hintEl = document.getElementById('name-entry-hint');
+    if (hintEl) hintEl.textContent = n ? 'Saved as ' + n + '. Update below to change.' : 'Enter your name to mark your availability on the grid below.';
+    if (n) showToast('✅ Name saved: ' + n);
   });
   document.getElementById('avail-name').addEventListener('keydown', function (e) {
-    if (e.key === 'Enter') { e.preventDefault(); saveAvailName(this.value.trim()); renderCalendarForMode(); }
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      var n = this.value.trim();
+      saveAvailName(n);
+      if (n) saveMyAvailability(loadMyAvailability());
+      renderCalendarForMode();
+      renderParticipantsList();
+      var hintEl = document.getElementById('name-entry-hint');
+      if (hintEl) hintEl.textContent = n ? 'Saved as ' + n + '. Update below to change.' : 'Enter your name to mark your availability on the grid below.';
+      if (n) showToast('✅ Name saved: ' + n);
+    }
   });
 
   /* ---- Export modal ---- */
@@ -2181,6 +2598,7 @@ body {
     document.getElementById('import-modal').hidden = true;
     renderImportedMembersList();
     renderCalendarForMode();
+    renderParticipantsList();
     showToast('✅ Added ' + result.name + '\'s availability to the Team View.');
   });
 
