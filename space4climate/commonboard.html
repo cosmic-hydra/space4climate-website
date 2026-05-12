@@ -33,7 +33,8 @@ body {
   min-height: 100vh !important;
 }
 
-.page_code_wrap {
+.page_code_wrap,
+.w-embed {
   overflow: visible !important;
   height: auto !important;
   min-height: 100vh !important;
@@ -45,14 +46,25 @@ body.u-overflow-hidden {
 }
 
 /* Additional fix: Override any Webflow inline styles */
-html[style*="overflow"] {
+html[style*="overflow"],
+html[style*="height"] {
   overflow-y: auto !important;
   overflow-x: hidden !important;
+  height: auto !important;
 }
 
-body[style*="overflow"] {
+body[style*="overflow"],
+body[style*="height"] {
   overflow-y: auto !important;
   overflow-x: hidden !important;
+  height: auto !important;
+}
+
+/* Force all wrapper elements to allow scrolling */
+.page_code_wrap[style*="overflow"],
+.w-embed[style*="overflow"],
+div[style*="overflow: hidden"] {
+  overflow: visible !important;
 }
 
 /* Prevent Webflow scroll-reveal animations from hiding custom sections */
@@ -3611,27 +3623,53 @@ pageFunctions.executeFunctions();
 // Force scroll to work by removing any inline overflow styles added by Webflow
 (function ensureScroll() {
   function forceScrollEnabled() {
-    // Remove any inline overflow styles from html and body
-    if (document.documentElement.style.overflow) {
-      document.documentElement.style.overflow = '';
+    // Target html and body elements
+    const elementsToFix = [
+      document.documentElement,
+      document.body,
+      document.querySelector('.page_code_wrap'),
+      document.querySelector('.w-embed')
+    ];
+
+    elementsToFix.forEach(function(el) {
+      if (!el) return;
+
+      // Remove problematic inline styles
+      if (el.style.overflow) el.style.overflow = '';
+      if (el.style.overflowY) el.style.overflowY = '';
+      if (el.style.overflowX) el.style.overflowX = '';
+      if (el.style.height === '100vh' || el.style.height === '100%') {
+        el.style.height = '';
+      }
+      if (el.style.maxHeight === '100vh' || el.style.maxHeight === '100%') {
+        el.style.maxHeight = '';
+      }
+    });
+
+    // Remove any position:fixed on body that might cause scroll issues
+    if (document.body.style.position === 'fixed') {
+      document.body.style.position = '';
     }
-    if (document.body.style.overflow) {
-      document.body.style.overflow = '';
-    }
-    if (document.body.style.overflowY) {
-      document.body.style.overflowY = '';
-    }
-    if (document.documentElement.style.overflowY) {
-      document.documentElement.style.overflowY = '';
-    }
+
+    // Force scroll bar visibility
+    document.documentElement.style.overflowY = 'auto';
+    document.body.style.overflowY = 'auto';
   }
 
   // Run immediately
   forceScrollEnabled();
 
-  // Run after a short delay to override Webflow
+  // Run after Webflow initializes
   setTimeout(forceScrollEnabled, 100);
   setTimeout(forceScrollEnabled, 500);
+  setTimeout(forceScrollEnabled, 1000);
+  setTimeout(forceScrollEnabled, 2000);
+
+  // Run on window load
+  window.addEventListener('load', forceScrollEnabled);
+
+  // Run on resize (in case mobile orientation changes)
+  window.addEventListener('resize', forceScrollEnabled);
 
   // Monitor for changes using MutationObserver
   const observer = new MutationObserver(function(mutations) {
@@ -3645,6 +3683,19 @@ pageFunctions.executeFunctions();
   // Observe both html and body for style changes
   observer.observe(document.documentElement, { attributes: true, attributeFilter: ['style'] });
   observer.observe(document.body, { attributes: true, attributeFilter: ['style'] });
+
+  // Also observe wrapper elements
+  const pageCodeWrap = document.querySelector('.page_code_wrap');
+  const wEmbed = document.querySelector('.w-embed');
+  if (pageCodeWrap) {
+    observer.observe(pageCodeWrap, { attributes: true, attributeFilter: ['style'] });
+  }
+  if (wEmbed) {
+    observer.observe(wEmbed, { attributes: true, attributeFilter: ['style'] });
+  }
+
+  // Use setInterval as a fallback to continuously enforce scroll
+  setInterval(forceScrollEnabled, 3000);
 })();
 </script>
 
