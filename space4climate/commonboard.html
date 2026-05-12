@@ -44,6 +44,17 @@ body.u-overflow-hidden {
   overflow-y: auto !important;
 }
 
+/* Additional fix: Override any Webflow inline styles */
+html[style*="overflow"] {
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+}
+
+body[style*="overflow"] {
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+}
+
 /* Prevent Webflow scroll-reveal animations from hiding custom sections */
 .commonboard-hero,
 .board-section,
@@ -3596,6 +3607,45 @@ body.u-overflow-hidden {
 <script>
 // Execute pageFunctions after all scripts (including GSAP) have loaded
 pageFunctions.executeFunctions();
+
+// Force scroll to work by removing any inline overflow styles added by Webflow
+(function ensureScroll() {
+  function forceScrollEnabled() {
+    // Remove any inline overflow styles from html and body
+    if (document.documentElement.style.overflow) {
+      document.documentElement.style.overflow = '';
+    }
+    if (document.body.style.overflow) {
+      document.body.style.overflow = '';
+    }
+    if (document.body.style.overflowY) {
+      document.body.style.overflowY = '';
+    }
+    if (document.documentElement.style.overflowY) {
+      document.documentElement.style.overflowY = '';
+    }
+  }
+
+  // Run immediately
+  forceScrollEnabled();
+
+  // Run after a short delay to override Webflow
+  setTimeout(forceScrollEnabled, 100);
+  setTimeout(forceScrollEnabled, 500);
+
+  // Monitor for changes using MutationObserver
+  const observer = new MutationObserver(function(mutations) {
+    mutations.forEach(function(mutation) {
+      if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
+        forceScrollEnabled();
+      }
+    });
+  });
+
+  // Observe both html and body for style changes
+  observer.observe(document.documentElement, { attributes: true, attributeFilter: ['style'] });
+  observer.observe(document.body, { attributes: true, attributeFilter: ['style'] });
+})();
 </script>
 
 <!-- Google Tag Manager (noscript) -->
