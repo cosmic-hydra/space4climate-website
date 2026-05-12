@@ -2413,12 +2413,6 @@ body.u-overflow-hidden {
 }
 </style>
 
-<!-- Firebase SDK (compat v10) for real-time bookings -->
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-<!-- Firebase config (user must populate firebase-config.js) -->
-<script src="firebase-config.js"></script>
-
 <script>
 (function () {
   'use strict';
@@ -2438,9 +2432,6 @@ body.u-overflow-hidden {
   var activeSlotKey     = null;
   var currentMode       = 'availability'; // 'booking' | 'availability' | 'team'
   var bookingsCache     = {};        // always the source of truth for rendering
-  var db                = null;      // Firestore instance (null = localStorage fallback)
-  var firestoreReady    = false;     // true once first snapshot has arrived
-  var remoteAvailabilities = {};     // name → {slotKey: bool} from Firestore availability collection
 
   /* ---- Drag-to-select state ---- */
   var isDragging        = false;
@@ -2470,105 +2461,10 @@ body.u-overflow-hidden {
     } catch (e) { return 'unknown'; }
   }
 
-  /* ---- Firestore initialisation ---- */
-  var IS_PLACEHOLDER_CONFIG = !window.S4C_FIREBASE_CONFIG ||
-    (window.S4C_FIREBASE_CONFIG.apiKey || '').startsWith('REPLACE_');
-
-  if (!IS_PLACEHOLDER_CONFIG) {
-    try {
-      var fbApp = firebase.initializeApp(window.S4C_FIREBASE_CONFIG, 'commonboard');
-      db = firebase.firestore(fbApp);
-
-      // Real-time listener: re-render whenever bookings change
-      db.collection('bookings').onSnapshot(function (snapshot) {
-        bookingsCache = {};
-        snapshot.forEach(function (doc) {
-          bookingsCache[doc.id] = doc.data();
-        });
-        firestoreReady = true;
-        hideFsLoading();
-        renderCalendarImmediate(); // Initial Firestore data load
-        updateStats();
-      }, function (err) {
-        console.error('[CommonBoard] Firestore error:', err);
-        // Fall back to localStorage on error
-        if (!firestoreReady) {
-          bookingsCache = loadBookingsLS();
-          firestoreReady = true;
-          hideFsLoading();
-          renderCalendarImmediate(); // Initial fallback load
-          updateStats();
-        }
-      });
-
-      // Real-time listener: availability collection for live participant sync
-      db.collection('availability').onSnapshot(function (snapshot) {
-        remoteAvailabilities = {};
-        snapshot.forEach(function (doc) {
-          var data = doc.data();
-          if (data && typeof data.name === 'string' && data.availability) {
-            // Union-merge entries that share the same name.  This handles both
-            // legacy documents keyed by deviceId and any case where a person
-            // uses multiple devices simultaneously: their available slots from
-            // all devices are combined (union) rather than the last document
-            // processed silently overwriting the others.
-            // Union semantics: a slot remains "available" if any device for this
-            // person marked it.  Explicit unmarks on one device will not remove
-            // a slot that was marked on another device — last-write-wins only
-            // applies to the Firestore document itself (via saveMyAvailability),
-            // not to this in-memory aggregation of all remote documents.
-            if (remoteAvailabilities[data.name]) {
-              // Create a new merged object to avoid mutating any existing reference.
-              remoteAvailabilities[data.name] = Object.assign(
-                {}, remoteAvailabilities[data.name], data.availability
-              );
-            } else {
-              remoteAvailabilities[data.name] = Object.assign({}, data.availability);
-            }
-          }
-        });
-        renderParticipantsList();
-        if (currentMode === 'team') renderCalendarForMode();
-      }, function (err) {
-        console.error('[CommonBoard] Availability Firestore error:', err);
-      });
-
-      showFsLoading();
-    } catch (initErr) {
-      console.warn('[CommonBoard] Firebase init failed, using localStorage:', initErr);
-      db = null;
-      bookingsCache = loadBookingsLS();
-      renderCalendarImmediate(); // Initial load without Firebase
-      updateStats();
-    }
-  } else {
-    // No config – use localStorage
-    bookingsCache = loadBookingsLS();
-    renderCalendarImmediate(); // Initial load without Firebase
-    updateStats();
-
-    // Show a subtle notice about Firebase not being configured
-    var noticeEl = document.createElement('div');
-    noticeEl.id = 'firebase-notice';
-    noticeEl.style.cssText = 'background:#fff3cd;border:1px solid #ffc107;border-radius:0.5rem;padding:0.75rem 1rem;margin:1rem auto;max-width:900px;color:#856404;font-size:0.875rem;text-align:center;';
-    noticeEl.innerHTML = '<strong>ℹ️ Local Mode:</strong> Firebase is not configured. Bookings are stored locally in your browser and won\'t sync across devices. See <code>firebase-config.js</code> for setup instructions.';
-    var heroSection = document.querySelector('.commonboard-hero');
-    if (heroSection && heroSection.nextSibling) {
-      heroSection.parentNode.insertBefore(noticeEl, heroSection.nextSibling);
-    }
-  }
-
-  /* ---- Loading indicator ---- */
-  function showFsLoading() {
-    var el = document.getElementById('calendar-wrap');
-    if (!el) return;
-    el.innerHTML = '<div style="padding:3rem;text-align:center;color:#64748b;font-size:.95rem;">' +
-      '<div style="font-size:2rem;margin-bottom:.75rem;animation:spin .8s linear infinite;display:inline-block">⏳</div>' +
-      '<br>Loading live schedule…</div>';
-  }
-  function hideFsLoading() {
-    // Calendar will be re-rendered by renderCalendarForMode
-  }
+  /* ---- Initialisation: load from localStorage ---- */
+  bookingsCache = loadBookingsLS();
+  renderCalendarImmediate();
+  updateStats();
 
   /* ---- localStorage fallback helpers ---- */
   function loadBookingsLS() {
@@ -2580,37 +2476,21 @@ body.u-overflow-hidden {
     catch (e) {}
   }
 
-  /* ---- Firestore CRUD ---- */
+  /* ---- Booking CRUD (localStorage) ---- */
   function saveBooking(key, data) {
-    if (db) {
-      return db.collection('bookings').doc(key).set(data)
-        .catch(function (err) {
-          console.error('[CommonBoard] Save failed:', err);
-          showToast('⚠️ Could not save booking. Please try again.');
-        });
-    } else {
-      bookingsCache[key] = data;
-      saveBookingsLS(bookingsCache);
-      renderCalendarImmediate(); // User booking action
-      updateStats();
-      return Promise.resolve();
-    }
+    bookingsCache[key] = data;
+    saveBookingsLS(bookingsCache);
+    renderCalendarImmediate();
+    updateStats();
+    return Promise.resolve();
   }
 
   function deleteBooking(key) {
-    if (db) {
-      return db.collection('bookings').doc(key).delete()
-        .catch(function (err) {
-          console.error('[CommonBoard] Delete failed:', err);
-          showToast('⚠️ Could not cancel booking. Please try again.');
-        });
-    } else {
-      delete bookingsCache[key];
-      saveBookingsLS(bookingsCache);
-      renderCalendarImmediate(); // User delete action
-      updateStats();
-      return Promise.resolve();
-    }
+    delete bookingsCache[key];
+    saveBookingsLS(bookingsCache);
+    renderCalendarImmediate();
+    updateStats();
+    return Promise.resolve();
   }
 
   /* ---- Storage helpers: availability ---- */
@@ -2640,24 +2520,9 @@ body.u-overflow-hidden {
     } catch (e) { return {}; }
   }
   function saveMyAvailability(data) {
-    // Save to the name-specific localStorage key.
     var name = loadAvailName();
     try { localStorage.setItem(availKeyForName(name), JSON.stringify(data)); }
     catch (e) {}
-    // Sync to Firestore using the person's trimmed name as the document key.
-    // Using the name (rather than a device-specific ID) means every device for
-    // the same named person writes to the same document, avoiding the situation
-    // where two devices' entries silently overwrite each other in the view.
-    var trimmedName = name.trim();
-    if (db && trimmedName) {
-      db.collection('availability').doc(availDocId(trimmedName)).set({
-        name:         trimmedName,
-        availability: data,
-        updatedAt:    new Date().toISOString()
-      }).catch(function (err) {
-        console.error('[CommonBoard] Availability Firestore save failed:', err);
-      });
-    }
   }
   function loadImported() {
     try { return JSON.parse(localStorage.getItem(IMPORTED_KEY) || '{}'); }
