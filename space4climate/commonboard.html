@@ -39,6 +39,11 @@ body {
   min-height: 100vh !important;
 }
 
+/* Prevent Webflow nav scroll-lock from blocking page scroll */
+body.u-overflow-hidden {
+  overflow-y: auto !important;
+}
+
 /* Prevent Webflow scroll-reveal animations from hiding custom sections */
 .commonboard-hero,
 .board-section,
@@ -54,6 +59,28 @@ body {
   transform: none !important;
   animation: none !important;
   display: revert;
+}
+
+/* ===== ORBITAL ANIMATION ===== */
+@keyframes cb-orbit {
+  from { transform: rotate(0deg) translateX(90px) rotate(0deg); }
+  to   { transform: rotate(360deg) translateX(90px) rotate(-360deg); }
+}
+@keyframes cb-orbit2 {
+  from { transform: rotate(120deg) translateX(130px) rotate(-120deg); }
+  to   { transform: rotate(480deg) translateX(130px) rotate(-480deg); }
+}
+@keyframes cb-orbit3 {
+  from { transform: rotate(240deg) translateX(165px) rotate(-240deg); }
+  to   { transform: rotate(600deg) translateX(165px) rotate(-600deg); }
+}
+@keyframes cb-pulse {
+  0%, 100% { opacity: 0.6; transform: scale(1); }
+  50%       { opacity: 1;   transform: scale(1.12); }
+}
+@keyframes cb-float {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-10px); }
 }
 
 /* ===== HERO SECTION ===== */
@@ -97,6 +124,114 @@ body {
   max-width: 1200px;
   margin: 0 auto;
   padding: 0 2rem;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 3rem;
+}
+
+/* ===== ORBITAL VISUAL ===== */
+.cb-orbital-wrap {
+  position: relative;
+  width: 340px;
+  height: 340px;
+  flex-shrink: 0;
+}
+.cb-orbital-center {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 2.8rem;
+  animation: cb-pulse 3s ease-in-out infinite, cb-float 6s ease-in-out infinite;
+  z-index: 2;
+}
+.cb-orbit-ring {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  border: 1px solid rgba(62,140,255,0.25);
+}
+.cb-orbit-ring-1 { width: 180px; height: 180px; }
+.cb-orbit-ring-2 { width: 260px; height: 260px; border-color: rgba(138,255,160,0.18); }
+.cb-orbit-ring-3 { width: 330px; height: 330px; border-color: rgba(138,100,255,0.15); }
+.cb-orbit-dot {
+  position: absolute;
+  top: 50%; left: 50%;
+  border-radius: 50%;
+}
+.cb-orbit-dot-1 {
+  width: 8px; height: 8px;
+  background: #3e8cff;
+  margin: -4px;
+  animation: cb-orbit 8s linear infinite;
+  box-shadow: 0 0 8px rgba(62,140,255,0.8);
+}
+.cb-orbit-dot-2 {
+  width: 6px; height: 6px;
+  background: #8affa0;
+  margin: -3px;
+  animation: cb-orbit2 12s linear infinite;
+  box-shadow: 0 0 6px rgba(138,255,160,0.8);
+}
+.cb-orbit-dot-3 {
+  width: 5px; height: 5px;
+  background: #c084fc;
+  margin: -2.5px;
+  animation: cb-orbit3 18s linear infinite;
+  box-shadow: 0 0 6px rgba(192,132,252,0.7);
+}
+
+/* ===== FEATURES SECTION ===== */
+.cb-features-section {
+  background: #f8f9fc;
+  border-top: 1px solid #e8ecf4;
+  border-bottom: 1px solid #e8ecf4;
+  padding: 3.5rem 0;
+}
+.cb-features-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 2rem;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2rem;
+}
+.cb-feature-card {
+  background: #ffffff;
+  border: 1px solid #e8ecf4;
+  border-radius: 1rem;
+  padding: 1.75rem;
+  transition: box-shadow 0.25s ease, transform 0.25s ease, border-color 0.25s ease;
+}
+.cb-feature-card:hover {
+  box-shadow: 0 8px 28px rgba(62,140,255,0.1);
+  transform: translateY(-3px);
+  border-color: rgba(62,140,255,0.35);
+}
+.cb-feature-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 3rem;
+  height: 3rem;
+  background: rgba(62,140,255,0.1);
+  border-radius: 0.75rem;
+  font-size: 1.4rem;
+  margin-bottom: 1rem;
+}
+.cb-feature-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #0f1f3d;
+  margin-bottom: 0.5rem;
+  letter-spacing: -0.01em;
+}
+.cb-feature-desc {
+  font-size: 0.9rem;
+  color: #4a5568;
+  line-height: 1.65;
+  margin: 0;
 }
 
 .commonboard-badge {
@@ -312,6 +447,19 @@ body {
   width: 1rem;
   height: 1rem;
   flex-shrink: 0;
+}
+
+@media (max-width: 900px) {
+  .commonboard-content {
+    grid-template-columns: 1fr;
+  }
+  .cb-orbital-wrap {
+    display: none;
+  }
+  .cb-features-inner {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
 }
 
 @media (max-width: 768px) {
@@ -605,28 +753,660 @@ body {
   <path d="M5.33325 8H26.6666V10.6667H5.33325V8ZM5.33325 14.6667H26.6666V17.3333H5.33325V14.6667ZM5.33325 21.3333H26.6666V24H5.33325V21.3333Z" fill="currentColor"/>
 </svg></div><div class="nav_btn_toggle_icon2 g_svg u-cover-absolute w-embed"><svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 32 32" fill="none" preserveAspectRatio="xMidYMid meet" aria-hidden="true" role="img">
   <path fill-rule="evenodd" clip-rule="evenodd" d="M15.5 14.585L22.0849 8.00002L23.9706 9.88563L17.3856 16.4706L24 23.085L22.1144 24.9706L15.5 18.3562L8.88562 24.9706L7 23.085L13.6144 16.4706L7.02944 9.88563L8.91506 8.00002L15.5 14.585Z" fill="currentColor"/>
-</svg></div></button></div></div></div></div>
+</svg></div></button></div></div></div><div class="u-embed-js w-embed w-script"><script>
+  pageFunctions.addFunction("navigationBehavior", function () {
+    let lastScrollTop = 30;
+    const scrollThreshold = 30;
+
+    function handleNavigation() {
+      const navComponents = document.querySelectorAll(".nav_component");
+      const currentScroll = window.pageYOffset || document.documentElement.scrollTop;
+
+      navComponents.forEach((nav) => {
+        if (currentScroll > scrollThreshold) {
+          nav.classList.add("scrolled");
+        } else {
+          nav.classList.remove("scrolled");
+          nav.classList.remove("move");
+        }
+      });
+
+      if (currentScroll > scrollThreshold) {
+        navComponents.forEach((nav) => {
+          if (currentScroll > lastScrollTop) nav.classList.add("move");
+          else nav.classList.remove("move");
+        });
+      }
+
+      lastScrollTop = currentScroll <= scrollThreshold ? scrollThreshold : currentScroll;
+    }
+
+    let ticking = false;
+    window.addEventListener("scroll", function () {
+      if (ticking) return;
+      window.requestAnimationFrame(function () {
+        handleNavigation();
+        ticking = false;
+      });
+      ticking = true;
+    });
+
+    setTimeout(handleNavigation, 100);
+    handleNavigation();
+    window.addEventListener("load", handleNavigation);
+  });
+
+  function getScrollbarWidth() {
+    const outer = document.createElement("div");
+    outer.style.visibility = "hidden";
+    outer.style.overflow = "scroll";
+    document.body.appendChild(outer);
+
+    const inner = document.createElement("div");
+    outer.appendChild(inner);
+
+    const scrollbarWidth = outer.offsetWidth - inner.offsetWidth;
+    outer.parentNode.removeChild(outer);
+    return scrollbarWidth;
+  }
+
+  // Global state (no cumulative padding bug)
+  window.navigationState = {
+    navMenuOpen: false,
+    openDropdowns: 0,
+    scrollbarWidth: getScrollbarWidth(),
+    _basePaddingRight: null,
+
+    hasOpenElements: function () {
+      return this.navMenuOpen || this.openDropdowns > 0;
+    },
+
+    shouldNavBeOpen: function () {
+      return this.navMenuOpen || this.openDropdowns > 0;
+    },
+
+    _ensureBasePadding: function () {
+      if (this._basePaddingRight == null) {
+        const pr = parseFloat(window.getComputedStyle(document.body).paddingRight) || 0;
+        this._basePaddingRight = pr;
+      }
+    },
+
+    updateState: function () {
+      const navComponent = document.querySelector(".nav_component");
+
+      if (this.hasOpenElements()) {
+        this._ensureBasePadding();
+        document.body.style.paddingRight = this._basePaddingRight + this.scrollbarWidth + "px";
+        document.body.classList.add("u-overflow-hidden");
+      } else {
+        document.body.style.paddingRight = "";
+        document.body.classList.remove("u-overflow-hidden");
+        this._basePaddingRight = null;
+      }
+
+      if (navComponent) {
+        if (this.shouldNavBeOpen()) navComponent.classList.add("open");
+        else navComponent.classList.remove("open");
+      }
+    },
+  };
+
+  pageFunctions.addFunction("navDropdown", function () {
+    const TABLET_BREAKPOINT = 991;
+    let wasMobileOrTablet = window.innerWidth <= TABLET_BREAKPOINT;
+
+    const dropdowns = Array.from(document.querySelectorAll(".nav_dropdown_wrap"));
+
+    // Desktop: one open at a time
+    let activeDesktopDropdown = null;
+    let desktopSwitching = false;
+
+    // Open timing stays like original
+    const OPEN_FILL_DUR = 0.4;
+    const OPEN_CONTENT_DUR = 0.3;
+    const OPEN_CONTENT_DELAY = 0.1;
+
+    // Desktop close (when user closes, not switching): reverse, 50% faster
+    const CLOSE_SPEED_MULT = 0.5;
+
+    function isMobileOrTablet() {
+      return window.innerWidth <= TABLET_BREAKPOINT;
+    }
+    function isDesktop() {
+      return window.innerWidth >= 992;
+    }
+    function safeHasGSAP() {
+      return !!(window.gsap && window.gsap.timeline && window.gsap.set);
+    }
+
+    dropdowns.forEach(initializeDropdown);
+
+    // Click outside
+    document.addEventListener("click", (event) => {
+      document.querySelectorAll(".nav_dropdown_wrap.active").forEach((dd) => {
+        if (dd.contains(event.target)) return;
+        // Desktop: animated close. Mobile: instant close.
+        closeDropdown(dd, { returnFocus: false, mode: isDesktop() ? "animated" : "instant" });
+      });
+    });
+
+    // Escape
+    document.addEventListener("keydown", (event) => {
+      if (event.key !== "Escape") return;
+      document.querySelectorAll(".nav_dropdown_wrap.active").forEach((dd) => {
+        closeDropdown(dd, { returnFocus: true, mode: isDesktop() ? "animated" : "instant" });
+      });
+    });
+
+    // Breakpoint flip: close instantly
+    window.addEventListener("resize", function () {
+      const isNowMobileOrTablet = window.innerWidth <= TABLET_BREAKPOINT;
+      if (wasMobileOrTablet !== isNowMobileOrTablet) {
+        document.querySelectorAll(".nav_dropdown_wrap.active").forEach((dd) => closeDropdownImmediately(dd));
+        activeDesktopDropdown = null;
+        desktopSwitching = false;
+        wasMobileOrTablet = isNowMobileOrTablet;
+      }
+    });
+
+    function initializeDropdown(dropdown) {
+      const toggle = dropdown.querySelector(".nav_dropdown_toggle_wrap");
+      const content = dropdown.querySelector(".nav_dropdown_content");
+      const fill = dropdown.querySelector(".nav_dropdown_fill");
+      const contentInner = dropdown.querySelector(".nav_dropdown_contain");
+      const backButton = dropdown.querySelector(".nav_dropdown_back_wrap");
+
+      if (!toggle || !content) return;
+
+      toggle.setAttribute("aria-expanded", "false");
+      content.style.display = "none";
+      if (contentInner) contentInner.style.opacity = "0";
+
+      if (safeHasGSAP() && fill) {
+        gsap.set(fill, { clipPath: "polygon(0% 0%, 100% 0%, 100% 0%, 0% 0%)" });
+      }
+
+      // OPEN animated (original)
+      const openAnimated = () => {
+        if (dropdown._tl && dropdown._tl.kill) dropdown._tl.kill();
+        dropdown._tl = null;
+
+        if (!safeHasGSAP() || !fill || !contentInner) {
+          content.style.display = "block";
+          if (contentInner) contentInner.style.opacity = "1";
+          return null;
+        }
+
+        gsap.set(content, { display: "block" });
+
+        const tl = gsap.timeline();
+        tl.fromTo(
+          fill,
+          { clipPath: "polygon(0% 0%, 100% 0%, 100% 0%, 0% 0%)" },
+          {
+            clipPath: "polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)",
+            duration: OPEN_FILL_DUR,
+            ease: "power2.inOut",
+          }
+        ).fromTo(
+          contentInner,
+          { opacity: 0 },
+          { opacity: 1, duration: OPEN_CONTENT_DUR, ease: "power2.out" },
+          OPEN_CONTENT_DELAY
+        );
+
+        dropdown._tl = tl;
+        return tl;
+      };
+
+      // OPEN instant (no flash, no gap)
+      const openInstant = () => {
+        if (dropdown._tl && dropdown._tl.kill) dropdown._tl.kill();
+        dropdown._tl = null;
+
+        // Make everything "open" in the same tick
+        content.style.display = "block";
+
+        if (safeHasGSAP() && fill) {
+          gsap.set(fill, {
+            clipPath: "polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)",
+            overwrite: true,
+          });
+        }
+        if (safeHasGSAP() && contentInner) {
+          gsap.set(contentInner, { opacity: 1, overwrite: true });
+        } else if (contentInner) {
+          contentInner.style.opacity = "1";
+        }
+      };
+
+      // CLOSE instant
+      const closeInstant = () => {
+        if (dropdown._tl && dropdown._tl.kill) dropdown._tl.kill();
+        dropdown._tl = null;
+
+        if (safeHasGSAP() && contentInner) {
+          gsap.set(contentInner, { opacity: 0, overwrite: true });
+        } else if (contentInner) {
+          contentInner.style.opacity = "0";
+        }
+
+        content.style.display = "none";
+
+        if (safeHasGSAP() && fill) {
+          gsap.set(fill, {
+            clipPath: "polygon(0% 0%, 100% 0%, 100% 0%, 0% 0%)",
+            overwrite: true,
+          });
+        }
+      };
+
+      // CLOSE animated (desktop only, when user closes without switching)
+      const closeAnimated = () => {
+        if (dropdown._tl && dropdown._tl.kill) dropdown._tl.kill();
+        dropdown._tl = null;
+
+        if (!safeHasGSAP() || !fill || !contentInner) {
+          if (contentInner) contentInner.style.opacity = "0";
+          content.style.display = "none";
+          return null;
+        }
+
+        const tl = gsap.timeline({
+          onComplete: () => {
+            content.style.display = "none";
+          },
+        });
+
+        tl.to(
+          contentInner,
+          { opacity: 0, duration: OPEN_CONTENT_DUR * CLOSE_SPEED_MULT, ease: "power2.in" },
+          0
+        ).to(
+          fill,
+          {
+            clipPath: "polygon(0% 0%, 100% 0%, 100% 0%, 0% 0%)",
+            duration: OPEN_FILL_DUR * CLOSE_SPEED_MULT,
+            ease: "power2.inOut",
+          },
+          0
+        );
+
+        dropdown._tl = tl;
+        return tl;
+      };
+
+      // Switch helper (desktop): do NOT touch navigationState counters to avoid nav "open" flicker
+      const switchDesktop = (prevDropdown, nextDropdown) => {
+        if (!prevDropdown || prevDropdown === nextDropdown) return;
+
+        desktopSwitching = true;
+
+        // Close previous visually only (no state update)
+        closeDropdown(prevDropdown, {
+          mode: "instant",
+          returnFocus: false,
+          suppressState: true,
+          skipDesktopPointerClear: true,
+        });
+
+        // Open next visually only (no state update)
+        openDropdown(nextDropdown, {
+          mode: "instant",
+          suppressState: true,
+        });
+
+        activeDesktopDropdown = nextDropdown;
+        desktopSwitching = false;
+      };
+
+      toggle.addEventListener("click", (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+
+        if (desktopSwitching) return;
+
+        const isActive = dropdown.classList.contains("active");
+
+        // Closing itself
+        if (isActive) {
+          closeDropdown(dropdown, { returnFocus: true, mode: isDesktop() ? "animated" : "instant" });
+          if (isDesktop()) activeDesktopDropdown = null;
+          return;
+        }
+
+        // Opening
+        if (isDesktop()) {
+          if (activeDesktopDropdown && activeDesktopDropdown !== dropdown) {
+            // Switch: close instant + open instant, no gap, no nav state flicker
+            switchDesktop(activeDesktopDropdown, dropdown);
+            return;
+          }
+
+          // Nothing open -> open animated
+          openDropdown(dropdown, { mode: "animated" });
+          activeDesktopDropdown = dropdown;
+          return;
+        }
+
+        // Mobile/Tablet:
+        // If any dropdown already open -> open instant, else open animated
+        const anyOpen = window.navigationState.openDropdowns > 0;
+        openDropdown(dropdown, { mode: anyOpen ? "instant" : "animated" });
+      });
+
+      if (backButton) {
+        backButton.addEventListener("click", (event) => {
+          event.preventDefault();
+          event.stopPropagation();
+
+          closeDropdown(dropdown, { returnFocus: true, mode: isDesktop() ? "animated" : "instant" });
+
+          if (isDesktop() && activeDesktopDropdown === dropdown) activeDesktopDropdown = null;
+        });
+      }
+
+      dropdown.openAnimated = openAnimated;
+      dropdown.openInstant = openInstant;
+      dropdown.closeInstant = closeInstant;
+      dropdown.closeAnimated = closeAnimated;
+    }
+
+    function openDropdown(dropdown, opts) {
+      const options = opts || {};
+      const toggle = dropdown.querySelector(".nav_dropdown_toggle_wrap");
+      if (!toggle) return;
+
+      const mode = options.mode === "instant" ? "instant" : "animated";
+      const suppressState = !!options.suppressState;
+
+      toggle.setAttribute("aria-expanded", "true");
+
+      dropdown.classList.add("active");
+      toggle.classList.add("is-open");
+
+      if (!suppressState) {
+        window.navigationState.openDropdowns++;
+        window.navigationState.updateState();
+      }
+
+      if (mode === "instant") {
+        if (typeof dropdown.openInstant === "function") dropdown.openInstant();
+      } else {
+        if (typeof dropdown.openAnimated === "function") dropdown.openAnimated();
+      }
+
+      // Focus first item (optional)
+      const firstMenuItem = dropdown.querySelector('[role="menuitem"]');
+      if (firstMenuItem) {
+        setTimeout(() => {
+          try {
+            firstMenuItem.focus();
+          } catch (e) {}
+        }, 100);
+      }
+    }
+
+    function closeDropdown(dropdown, options) {
+      const opts = options || {};
+      const toggle = dropdown.querySelector(".nav_dropdown_toggle_wrap");
+      if (!toggle) return null;
+
+      const suppressState = !!opts.suppressState;
+      const mode =
+        opts.mode === "instant"
+          ? "instant"
+          : opts.mode === "animated"
+          ? "animated"
+          : isDesktop()
+          ? "animated"
+          : "instant";
+
+      toggle.setAttribute("aria-expanded", "false");
+
+      dropdown.classList.remove("active");
+      toggle.classList.remove("is-open");
+
+      if (!suppressState) {
+        window.navigationState.openDropdowns = Math.max(0, window.navigationState.openDropdowns - 1);
+        window.navigationState.updateState();
+      }
+
+      if (mode === "animated" && isDesktop()) {
+        if (typeof dropdown.closeAnimated === "function") dropdown.closeAnimated();
+        else {
+          const content = dropdown.querySelector(".nav_dropdown_content");
+          if (content) content.style.display = "none";
+        }
+      } else {
+        if (typeof dropdown.closeInstant === "function") dropdown.closeInstant();
+        else {
+          const content = dropdown.querySelector(".nav_dropdown_content");
+          if (content) content.style.display = "none";
+        }
+      }
+
+      if (isDesktop() && !opts.skipDesktopPointerClear) {
+        if (activeDesktopDropdown === dropdown) activeDesktopDropdown = null;
+      }
+
+      if (opts.returnFocus) {
+        try {
+          toggle.focus();
+        } catch (e) {}
+      }
+
+      return null;
+    }
+
+    function closeDropdownImmediately(dropdown) {
+      const toggle = dropdown.querySelector(".nav_dropdown_toggle_wrap");
+      const content = dropdown.querySelector(".nav_dropdown_content");
+      const fill = dropdown.querySelector(".nav_dropdown_fill");
+      const contentInner = dropdown.querySelector(".nav_dropdown_contain");
+
+      if (dropdown._tl && dropdown._tl.kill) dropdown._tl.kill();
+      dropdown._tl = null;
+
+      if (toggle) toggle.setAttribute("aria-expanded", "false");
+
+      dropdown.classList.remove("active");
+      if (toggle) toggle.classList.remove("is-open");
+
+      window.navigationState.openDropdowns = Math.max(0, window.navigationState.openDropdowns - 1);
+      window.navigationState.updateState();
+
+      if (safeHasGSAP() && contentInner) gsap.set(contentInner, { opacity: 0, overwrite: true });
+      else if (contentInner) contentInner.style.opacity = "0";
+
+      if (content) content.style.display = "none";
+
+      if (safeHasGSAP() && fill) {
+        gsap.set(fill, {
+          clipPath: "polygon(0% 0%, 100% 0%, 100% 0%, 0% 0%)",
+          overwrite: true,
+        });
+      }
+    }
+  });
+
+  pageFunctions.addFunction("navMenu", function () {
+    const navToggle = document.querySelector(".nav_btn_toggle_wrap");
+    const navComponent = document.querySelector(".nav_component");
+    if (!navToggle || !navComponent) return;
+
+    const menuWrap = navComponent.querySelector(".nav_menu_wrap");
+    const menuMask = navComponent.querySelector(".nav_menu_mask");
+    const TABLET_BREAKPOINT = 991;
+
+    function isMobileOrTablet() {
+      return window.innerWidth <= TABLET_BREAKPOINT;
+    }
+
+    function initializeMenu() {
+      if (isMobileOrTablet()) {
+        if (!navComponent.classList.contains("open")) menuWrap.style.display = "none";
+      } else {
+        menuWrap.style.display = "";
+        menuWrap.style.clipPath = "";
+        menuMask.style.opacity = "";
+      }
+    }
+
+    initializeMenu();
+
+    const openAnimation = () => {
+      if (!isMobileOrTablet()) return;
+
+      gsap.set(menuWrap, { display: "block" });
+
+      const tl = gsap.timeline();
+      tl.fromTo(
+        menuWrap,
+        { clipPath: "polygon(0% 0%, 100% 0%, 100% 0%, 0% 0%)" },
+        {
+          clipPath: "polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)",
+          duration: 0.4,
+          ease: "power2.inOut",
+          delay: 0.15,
+        }
+      ).fromTo(menuMask, { opacity: 0 }, { opacity: 1, duration: 0.3, ease: "power2.out" }, 0.35);
+
+      return tl;
+    };
+
+    const closeAnimation = () => {
+      if (!isMobileOrTablet()) return;
+
+      const tl = gsap.timeline({
+        onComplete: () => {
+          menuWrap.style.display = "none";
+        },
+      });
+
+      tl.to(menuMask, { opacity: 0, duration: 0.2, ease: "power2.in" }).to(
+        menuWrap,
+        {
+          clipPath: "polygon(0% 0%, 100% 0%, 100% 0%, 0% 0%)",
+          duration: 0.3,
+          ease: "power2.inOut",
+        },
+        0
+      );
+
+      return tl;
+    };
+
+    function toggleMenu() {
+      if (!isMobileOrTablet()) return;
+
+      const isExpanded = navToggle.getAttribute("aria-expanded") === "true";
+      navToggle.setAttribute("aria-expanded", String(!isExpanded));
+
+      if (isExpanded) {
+        closeAnimation();
+        window.navigationState.navMenuOpen = false;
+        window.navigationState.updateState();
+      } else {
+        openAnimation();
+        window.navigationState.navMenuOpen = true;
+        window.navigationState.updateState();
+      }
+    }
+
+    navToggle.addEventListener("click", function (event) {
+      event.preventDefault();
+      if (isMobileOrTablet()) toggleMenu();
+    });
+
+    document.addEventListener("keydown", function (event) {
+      if (isMobileOrTablet() && event.key === "Escape" && navComponent.classList.contains("open")) {
+        toggleMenu();
+      }
+    });
+
+    document.addEventListener("click", function (event) {
+      if (
+        isMobileOrTablet() &&
+        navComponent.classList.contains("open") &&
+        !navComponent.contains(event.target) &&
+        event.target !== navToggle &&
+        !navToggle.contains(event.target)
+      ) {
+        toggleMenu();
+      }
+    });
+
+    window.addEventListener("resize", function () {
+      window.navigationState.scrollbarWidth = getScrollbarWidth();
+      initializeMenu();
+
+      if (!isMobileOrTablet()) {
+        if (window.navigationState.navMenuOpen) {
+          window.navigationState.navMenuOpen = false;
+          window.navigationState.updateState();
+          navToggle.setAttribute("aria-expanded", "false");
+        }
+      }
+    });
+  });
+
+</script></div></div>
 
 <!-- Hero Section -->
 <div class="commonboard-hero">
   <div class="commonboard-content">
-    <div class="commonboard-badge"><span aria-hidden="true">🛰️</span> Space4Climate Community</div>
-    <h1 class="commonboard-title"><span>CommonBoard</span></h1>
-    <p class="commonboard-subtitle">Book community sessions, mark your availability, and discover when your team is free — all on one shared timeline.</p>
+    <div class="cb-hero-text">
+      <div class="commonboard-badge"><span aria-hidden="true">🛰️</span> Space4Climate Community</div>
+      <h1 class="commonboard-title"><span>CommonBoard</span></h1>
+      <p class="commonboard-subtitle">Book community sessions, mark your availability, and discover when your team is free — all on one shared timeline.</p>
 
-    <div class="commonboard-stats">
-      <div class="stat-item">
-        <span class="stat-number" id="stat-total">0</span>
-        <span class="stat-label">Total Bookings</span>
+      <div class="commonboard-stats">
+        <div class="stat-item">
+          <span class="stat-number" id="stat-total">0</span>
+          <span class="stat-label">Total Bookings</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-number" id="stat-week">0</span>
+          <span class="stat-label">This Week</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-number" id="stat-available">0</span>
+          <span class="stat-label">Slots Available</span>
+        </div>
       </div>
-      <div class="stat-item">
-        <span class="stat-number" id="stat-week">0</span>
-        <span class="stat-label">This Week</span>
-      </div>
-      <div class="stat-item">
-        <span class="stat-number" id="stat-available">0</span>
-        <span class="stat-label">Slots Available</span>
-      </div>
+    </div>
+    <!-- Orbital visual -->
+    <div class="cb-orbital-wrap" aria-hidden="true">
+      <div class="cb-orbit-ring cb-orbit-ring-1"></div>
+      <div class="cb-orbit-ring cb-orbit-ring-2"></div>
+      <div class="cb-orbit-ring cb-orbit-ring-3"></div>
+      <div class="cb-orbit-dot cb-orbit-dot-1"></div>
+      <div class="cb-orbit-dot cb-orbit-dot-2"></div>
+      <div class="cb-orbit-dot cb-orbit-dot-3"></div>
+      <div class="cb-orbital-center">🛰️</div>
+    </div>
+  </div>
+</div>
+
+<!-- Features strip -->
+<div class="cb-features-section">
+  <div class="cb-features-inner">
+    <div class="cb-feature-card">
+      <div class="cb-feature-icon">📅</div>
+      <h3 class="cb-feature-title">Book Sessions</h3>
+      <p class="cb-feature-desc">Click any open slot on the calendar to reserve it. Fill in your name, contact, and session topic — done in seconds.</p>
+    </div>
+    <div class="cb-feature-card">
+      <div class="cb-feature-icon">✅</div>
+      <h3 class="cb-feature-title">Share Availability</h3>
+      <p class="cb-feature-desc">Mark when you're free across the week. Export a code and share it with teammates so they can see your schedule.</p>
+    </div>
+    <div class="cb-feature-card">
+      <div class="cb-feature-icon">👥</div>
+      <h3 class="cb-feature-title">Team Coordination</h3>
+      <p class="cb-feature-desc">Switch to Team View to overlay everyone's availability. Find the perfect meeting time at a glance.</p>
     </div>
   </div>
 </div>
@@ -2812,6 +3592,11 @@ body {
 
 <script src="https://d3e54v103j8qbb.cloudfront.net/js/jquery-3.5.1.min.dc5e7f18c8.js?site=65b810933000b6b25fd78458" type="text/javascript" integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0=" crossorigin="anonymous"></script>
 <script src="https://cdn.prod.website-files.com/65b810933000b6b25fd78458/js/m%69ssion-zero-staging-1.schunk.36b8fb49256177c8.js" type="text/javascript" integrity="sha384-4abIlA5/v7XaW1HMXKBgnUuhnjBYJ/Z9C1OSg4OhmVw9O3QeHJ/qJqFBERCDPv7G" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script>
+// Execute pageFunctions after all scripts (including GSAP) have loaded
+pageFunctions.executeFunctions();
+</script>
 
 <!-- Google Tag Manager (noscript) -->
 <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-T3Z693L3"
