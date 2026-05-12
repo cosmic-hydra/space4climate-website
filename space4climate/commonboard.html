@@ -1726,7 +1726,10 @@ body {
             // applies to the Firestore document itself (via saveMyAvailability),
             // not to this in-memory aggregation of all remote documents.
             if (remoteAvailabilities[data.name]) {
-              Object.assign(remoteAvailabilities[data.name], data.availability);
+              // Create a new merged object to avoid mutating any existing reference.
+              remoteAvailabilities[data.name] = Object.assign(
+                {}, remoteAvailabilities[data.name], data.availability
+              );
             } else {
               remoteAvailabilities[data.name] = Object.assign({}, data.availability);
             }
@@ -1873,16 +1876,17 @@ body {
 
   /* ---- Per-person availability storage key ---- */
   function availKeyForName(name) {
-    // Encode the name faithfully so 'John-Doe' and 'John_Doe' get distinct keys.
-    // encodeURIComponent is used instead of character-class replacement to avoid
-    // collisions between names that differ only in punctuation.
+    // Encode the name faithfully so names that differ only in characters that
+    // a plain replace would flatten — e.g. 'Jane Doe' (space) vs 'Jane/Doe'
+    // (slash) — get distinct storage keys.
     var safe = encodeURIComponent((name || '').trim()) || 'noname';
     return AVAIL_KEY_PREFIX + safe;
   }
 
   // Produce a Firestore-safe document ID from a person's display name.
-  // Firestore only disallows forward slashes; encodeURIComponent handles that and
-  // any other characters that might cause problems without losing information.
+  // encodeURIComponent ensures that all characters (including '/', which is
+  // explicitly disallowed in Firestore document IDs) are safely encoded while
+  // preserving uniqueness across different names.
   function availDocId(name) {
     return encodeURIComponent((name || '').trim()) || 'noname';
   }
