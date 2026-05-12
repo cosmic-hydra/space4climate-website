@@ -857,7 +857,7 @@ body {
 
 /* ===== CALENDAR SCROLL CONTAINER ===== */
 .calendar-scroll {
-  overflow-x: auto;
+  overflow-x: scroll;      /* always show scrollbar so the calendar's scrollability is obvious */
   overflow-y: visible;
   -webkit-overflow-scrolling: touch;
   border-radius: 0.75rem;
@@ -867,17 +867,17 @@ body {
 }
 
 .calendar-scroll::-webkit-scrollbar {
-  height: 6px;
+  height: 8px;
 }
 
 .calendar-scroll::-webkit-scrollbar-track {
   background: #f0f4ff;
-  border-radius: 3px;
+  border-radius: 4px;
 }
 
 .calendar-scroll::-webkit-scrollbar-thumb {
   background: #3e8cff;
-  border-radius: 3px;
+  border-radius: 4px;
 }
 
 .calendar-wrap {
@@ -898,14 +898,14 @@ body {
   background: #f8faff;
   border-right: 1px solid #e2e8f0;
   border-bottom: 2px solid #e2e8f0;
-  padding: 0.85rem 0.5rem;
+  padding: 0.6rem 0.5rem;
 }
 
 .cal-day-header {
   background: #f8faff;
   border-right: 1px solid #e2e8f0;
   border-bottom: 2px solid #e2e8f0;
-  padding: 0.85rem 0.5rem;
+  padding: 0.6rem 0.5rem;
   text-align: center;
   font-size: 0.82rem;
   font-weight: 700;
@@ -927,7 +927,7 @@ body {
   background: #f8faff;
   border-right: 1px solid #e2e8f0;
   border-bottom: 1px solid #f0f4fa;
-  padding: 0.65rem 0.6rem;
+  padding: 0.4rem 0.6rem;
   font-size: 0.72rem;
   font-weight: 700;
   color: #94a3b8;
@@ -939,9 +939,9 @@ body {
 .cal-slot {
   border-right: 1px solid #e8eef8;
   border-bottom: 1px solid #e8eef8;
-  padding: 0.35rem 0.4rem;
+  padding: 0.25rem 0.4rem;
   font-size: 0.75rem;
-  min-height: 3rem;
+  min-height: 2.4rem;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1644,7 +1644,8 @@ body {
 
   /* ---- Constants ---- */
   var LS_BOOKINGS_KEY  = 'cb_bookings_v1';      // localStorage fallback key
-  var AVAIL_KEY        = 'cb_availability_v1';
+  var AVAIL_KEY_LEGACY = 'cb_availability_v1';  // kept only for one-time migration
+  var AVAIL_KEY_PREFIX = 'cb_avail_v2_';        // per-person namespaced keys
   var IMPORTED_KEY     = 'cb_imported_availabilities_v1';
   var AVAIL_NAME_KEY   = 'cb_avail_name_v1';
   var DEVICE_ID_KEY    = 'cb_device_id';
@@ -1714,7 +1715,16 @@ body {
         snapshot.forEach(function (doc) {
           var data = doc.data();
           if (data && typeof data.name === 'string' && data.availability) {
-            remoteAvailabilities[data.name] = data.availability;
+            // Union-merge entries that share the same name.  This handles both
+            // legacy documents keyed by deviceId and any case where a person
+            // uses multiple devices simultaneously: their available slots from
+            // all devices are combined (union) rather than the last document
+            // processed silently overwriting the others.
+            if (remoteAvailabilities[data.name]) {
+              Object.assign(remoteAvailabilities[data.name], data.availability);
+            } else {
+              remoteAvailabilities[data.name] = Object.assign({}, data.availability);
+            }
           }
         });
         renderParticipantsList();
@@ -1795,20 +1805,43 @@ body {
 
   /* ---- Storage helpers: availability ---- */
   function loadMyAvailability() {
-    try { return JSON.parse(localStorage.getItem(AVAIL_KEY) || '{}'); }
-    catch (e) { return {}; }
+    // Availability is namespaced by the person's name so that two people using
+    // the same device keep completely separate data and changing one's name does
+    // not carry the other person's marked slots over.
+    var name = loadAvailName();
+    var key  = availKeyForName(name);
+    try {
+      var stored = localStorage.getItem(key);
+      if (stored === null && name) {
+        // One-time migration: move data from the old single-key storage to this
+        // person's namespaced key so existing marks are not lost on first load.
+        var legacy = localStorage.getItem(AVAIL_KEY_LEGACY);
+        if (legacy) {
+          localStorage.setItem(key, legacy);
+          localStorage.removeItem(AVAIL_KEY_LEGACY);
+          return JSON.parse(legacy);
+        }
+      }
+      return JSON.parse(stored || '{}');
+    } catch (e) { return {}; }
   }
   function saveMyAvailability(data) {
-    try { localStorage.setItem(AVAIL_KEY, JSON.stringify(data)); }
+    // Save to the name-specific localStorage key.
+    var name = loadAvailName();
+    try { localStorage.setItem(availKeyForName(name), JSON.stringify(data)); }
     catch (e) {}
-    // Sync to Firestore availability collection for real-time team view
-    var name = loadAvailName().trim();
-    if (db && name) {
-      var deviceId = getDeviceId();
-      db.collection('availability').doc(deviceId).set({
-        name:       name,
+    // Sync to Firestore using the person's trimmed name as the document key.
+    // Using the name (rather than a device-specific ID) means every device for
+    // the same named person writes to the same document, avoiding the situation
+    // where two devices' entries silently overwrite each other in the view.
+    var trimmedName = name.trim();
+    if (db && trimmedName) {
+      // '/' is the only character explicitly forbidden in Firestore document IDs.
+      var docId = trimmedName.replace(/\//g, '_');
+      db.collection('availability').doc(docId).set({
+        name:         trimmedName,
         availability: data,
-        updatedAt:  new Date().toISOString()
+        updatedAt:    new Date().toISOString()
       }).catch(function (err) {
         console.error('[CommonBoard] Availability Firestore save failed:', err);
       });
@@ -1829,6 +1862,14 @@ body {
   function saveAvailName(name) {
     try { localStorage.setItem(AVAIL_NAME_KEY, name); }
     catch (e) {}
+  }
+
+  /* ---- Per-person availability storage key ---- */
+  function availKeyForName(name) {
+    // Produce a safe localStorage key from the person's name.
+    var safe = (name || '').trim().toLowerCase()
+      .replace(/[^a-z0-9]/g, '_').replace(/_+/g, '_').replace(/^_|_$/g, '') || 'noname';
+    return AVAIL_KEY_PREFIX + safe;
   }
 
   /* ---- Date helpers ---- */
