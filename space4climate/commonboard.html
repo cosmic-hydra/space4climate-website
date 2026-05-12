@@ -768,7 +768,7 @@ body {
   <div class="modal-box">
     <button class="modal-close" id="export-modal-close" aria-label="Close">&times;</button>
     <h3 class="modal-title" id="export-modal-title">Share My Availability</h3>
-    <p style="color:#5a5a6e;font-size:0.95rem;margin-bottom:1rem;">Copy this code and share it with your team. They can paste it into <strong>Import Team Member</strong> on their device to see your availability in the Team View.</p>
+    <p style="color:#5a5a6e;font-size:0.95rem;margin-bottom:1rem;">Copy this code and share it with your team. They can paste it into <strong>Add Team Member</strong> on their device to see your availability in the Team View.</p>
     <div class="form-group">
       <label for="export-code-field">Your Availability Code</label>
       <textarea id="export-code-field" rows="6" readonly style="font-family:monospace;font-size:0.78rem;word-break:break-all;background:#f8f9fa;"></textarea>
@@ -784,7 +784,7 @@ body {
 <div id="import-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="import-modal-title" hidden>
   <div class="modal-box">
     <button class="modal-close" id="import-modal-close" aria-label="Close">&times;</button>
-    <h3 class="modal-title" id="import-modal-title">Import Team Member Availability</h3>
+    <h3 class="modal-title" id="import-modal-title">Add Team Member</h3>
     <p style="color:#5a5a6e;font-size:0.95rem;margin-bottom:1rem;">Paste the availability code shared by a team member to add their schedule to your Team View.</p>
     <div class="form-group">
       <label for="import-code-field">Availability Code</label>
@@ -2014,7 +2014,7 @@ body {
       });
     }
     Object.keys(imported).forEach(function (personName) {
-      if (personName === myName) return; // already counted via myAvail
+      if (personName === myName) return; // skip if it's the current user (already added from my own data above)
       var avail = imported[personName];
       Object.keys(avail).forEach(function (k) {
         if (avail[k]) { combined[k] = combined[k] || []; combined[k].push(personName); }
@@ -2081,6 +2081,7 @@ body {
               slotCell.setAttribute('title', 'Click or drag to mark yourself as available');
             }
             (function (k, cell) {
+              cell.dataset.slotKey = k; // used by touchmove drag
               cell.addEventListener('mousedown', function (e) {
                 e.preventDefault();
                 isDragging      = true;
@@ -2178,7 +2179,7 @@ body {
     var imported = loadImported();
     var names    = Object.keys(imported);
     if (names.length === 0) {
-      wrap.innerHTML = '<p style="font-size:.9rem;color:#8a9ab0;margin-bottom:1rem;">No team members imported yet. Use <strong>📥 Import Team Member</strong> to add someone\'s availability.</p>';
+      wrap.innerHTML = '<p style="font-size:.9rem;color:#8a9ab0;margin-bottom:1rem;">No team members imported yet. Use <strong>📥 Add Team Member</strong> to add someone\'s availability.</p>';
       return;
     }
     var html = '<div class="imported-members"><span style="font-size:.9rem;font-weight:600;color:#1a1a2e;">Team members: </span>';
@@ -2246,6 +2247,22 @@ body {
     dragValue = null;
   });
 
+  // Touch drag: follow finger across cells using elementFromPoint
+  document.addEventListener('touchmove', function (e) {
+    if (!isDragging || dragValue === null) return;
+    e.preventDefault();
+    var touch = e.touches[0];
+    var el = document.elementFromPoint(touch.clientX, touch.clientY);
+    if (!el) return;
+    var target = el.classList.contains('cal-slot') ? el : el.closest && el.closest('.cal-slot');
+    if (!target) return;
+    var k = target.dataset.slotKey;
+    if (!k || !(target.classList.contains('slot-avail-toggle') || target.classList.contains('slot-avail-mine'))) return;
+    if (pendingDragKeys[k] === dragValue) return; // already applied
+    pendingDragKeys[k] = dragValue;
+    applyDragStyle(target, dragValue);
+  }, { passive: false });
+
   /* ---- Participants list ---- */
   function renderParticipantsList() {
     var wrap = document.getElementById('participants-list-wrap');
@@ -2264,8 +2281,14 @@ body {
       if (!names[n]) names[n] = { avail: imported[n], isMe: false };
     });
     Object.keys(remoteAvailabilities).forEach(function (n) {
-      if (!names[n]) names[n] = { avail: remoteAvailabilities[n], isMe: (n === myName) };
-      else if (n === myName) names[n].isMe = true;
+      if (names[n]) {
+        // Entry already exists (either my own or imported local copy); don't overwrite availability
+        // but ensure isMe flag is set if it matches my name
+        if (n === myName) names[n].isMe = true;
+      } else {
+        // New participant from Firestore
+        names[n] = { avail: remoteAvailabilities[n], isMe: false };
+      }
     });
 
     var nameList = Object.keys(names);
@@ -2487,7 +2510,7 @@ body {
   // Update hint text if name is already saved
   if (storedName) {
     var hintEl = document.getElementById('name-entry-hint');
-    if (hintEl) hintEl.textContent = 'Logged in as ' + storedName + '. Change below to switch.';
+    if (hintEl) hintEl.textContent = 'Saved as ' + storedName + '. Update below to change.';
   }
 
   // Initial render of participants and drag hint
@@ -2503,7 +2526,7 @@ body {
     renderCalendarForMode();
     renderParticipantsList();
     var hintEl = document.getElementById('name-entry-hint');
-    if (hintEl) hintEl.textContent = n ? 'Logged in as ' + n + '. Change below to switch.' : 'Enter your name to mark your availability on the grid below.';
+    if (hintEl) hintEl.textContent = n ? 'Saved as ' + n + '. Update below to change.' : 'Enter your name to mark your availability on the grid below.';
     if (n) showToast('✅ Name saved: ' + n);
   });
   document.getElementById('avail-name').addEventListener('keydown', function (e) {
@@ -2515,7 +2538,7 @@ body {
       renderCalendarForMode();
       renderParticipantsList();
       var hintEl = document.getElementById('name-entry-hint');
-      if (hintEl) hintEl.textContent = n ? 'Logged in as ' + n + '. Change below to switch.' : 'Enter your name to mark your availability on the grid below.';
+      if (hintEl) hintEl.textContent = n ? 'Saved as ' + n + '. Update below to change.' : 'Enter your name to mark your availability on the grid below.';
       if (n) showToast('✅ Name saved: ' + n);
     }
   });
