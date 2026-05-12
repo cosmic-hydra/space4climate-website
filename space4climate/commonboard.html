@@ -1670,6 +1670,12 @@ body {
   var dragTouchStartY   = 0;         // touch start Y for direction detection
   var dragDirectionSet  = false;     // whether drag vs scroll direction has been decided
   var touchScrolling    = false;     // true once we've decided the gesture is a page-scroll
+  // Time window (ms) after a touch sequence in which synthetic mouse events are ignored.
+  var SYNTHETIC_MOUSE_EVENT_THRESHOLD = 600;
+  // Minimum finger movement (px) before gesture direction is determined.
+  var MIN_GESTURE_THRESHOLD = 5;
+  // Ratio of vertical-to-horizontal movement above which a gesture is treated as a scroll.
+  var VERTICAL_SCROLL_RATIO = 1.5;
 
   /* ---- Device ID (for ownership verification) ---- */
   function getDeviceId() {
@@ -2149,7 +2155,7 @@ body {
               cell.dataset.slotKey = k; // used by touchmove drag
               cell.addEventListener('mousedown', function (e) {
                 // Ignore the synthetic mousedown that browsers fire after a touch sequence.
-                if (Date.now() - lastTouchTime < 600) return;
+                if (Date.now() - lastTouchTime < SYNTHETIC_MOUSE_EVENT_THRESHOLD) return;
                 e.preventDefault();
                 isDragging      = true;
                 pendingDragKeys = {};
@@ -2352,8 +2358,8 @@ body {
     if (!dragDirectionSet) {
       var dx = Math.abs(touch.clientX - dragTouchStartX);
       var dy = Math.abs(touch.clientY - dragTouchStartY);
-      if (dx < 5 && dy < 5) return; // not moved enough yet
-      if (dy > dx * 1.5) {
+      if (dx < MIN_GESTURE_THRESHOLD && dy < MIN_GESTURE_THRESHOLD) return; // not moved enough yet
+      if (dy > dx * VERTICAL_SCROLL_RATIO) {
         // Primarily vertical — treat as a page-scroll gesture.
         // Do NOT call e.preventDefault() so the browser can scroll the page.
         touchScrolling = true;
