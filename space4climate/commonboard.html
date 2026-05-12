@@ -45,28 +45,6 @@ body.u-overflow-hidden {
   overflow-y: auto !important;
 }
 
-/* Additional fix: Override any Webflow inline styles */
-html[style*="overflow"],
-html[style*="height"] {
-  overflow-y: auto !important;
-  overflow-x: hidden !important;
-  height: auto !important;
-}
-
-body[style*="overflow"],
-body[style*="height"] {
-  overflow-y: auto !important;
-  overflow-x: hidden !important;
-  height: auto !important;
-}
-
-/* Force all wrapper elements to allow scrolling */
-.page_code_wrap[style*="overflow"],
-.w-embed[style*="overflow"],
-div[style*="overflow: hidden"] {
-  overflow: visible !important;
-}
-
 /* Prevent Webflow scroll-reveal animations from hiding custom sections */
 .commonboard-hero,
 .board-section,
@@ -2509,7 +2487,7 @@ div[style*="overflow: hidden"] {
         });
         firestoreReady = true;
         hideFsLoading();
-        renderCalendarForMode();
+        renderCalendarImmediate(); // Initial Firestore data load
         updateStats();
       }, function (err) {
         console.error('[CommonBoard] Firestore error:', err);
@@ -2518,7 +2496,7 @@ div[style*="overflow: hidden"] {
           bookingsCache = loadBookingsLS();
           firestoreReady = true;
           hideFsLoading();
-          renderCalendarForMode();
+          renderCalendarImmediate(); // Initial fallback load
           updateStats();
         }
       });
@@ -2560,14 +2538,24 @@ div[style*="overflow: hidden"] {
       console.warn('[CommonBoard] Firebase init failed, using localStorage:', initErr);
       db = null;
       bookingsCache = loadBookingsLS();
-      renderCalendarForMode();
+      renderCalendarImmediate(); // Initial load without Firebase
       updateStats();
     }
   } else {
     // No config – use localStorage
     bookingsCache = loadBookingsLS();
-    renderCalendarForMode();
+    renderCalendarImmediate(); // Initial load without Firebase
     updateStats();
+
+    // Show a subtle notice about Firebase not being configured
+    var noticeEl = document.createElement('div');
+    noticeEl.id = 'firebase-notice';
+    noticeEl.style.cssText = 'background:#fff3cd;border:1px solid #ffc107;border-radius:0.5rem;padding:0.75rem 1rem;margin:1rem auto;max-width:900px;color:#856404;font-size:0.875rem;text-align:center;';
+    noticeEl.innerHTML = '<strong>ℹ️ Local Mode:</strong> Firebase is not configured. Bookings are stored locally in your browser and won\'t sync across devices. See <code>firebase-config.js</code> for setup instructions.';
+    var heroSection = document.querySelector('.commonboard-hero');
+    if (heroSection && heroSection.nextSibling) {
+      heroSection.parentNode.insertBefore(noticeEl, heroSection.nextSibling);
+    }
   }
 
   /* ---- Loading indicator ---- */
@@ -2603,7 +2591,7 @@ div[style*="overflow: hidden"] {
     } else {
       bookingsCache[key] = data;
       saveBookingsLS(bookingsCache);
-      renderCalendarForMode();
+      renderCalendarImmediate(); // User booking action
       updateStats();
       return Promise.resolve();
     }
@@ -2619,7 +2607,7 @@ div[style*="overflow: hidden"] {
     } else {
       delete bookingsCache[key];
       saveBookingsLS(bookingsCache);
-      renderCalendarForMode();
+      renderCalendarImmediate(); // User delete action
       updateStats();
       return Promise.resolve();
     }
@@ -3029,7 +3017,22 @@ div[style*="overflow: hidden"] {
   }
 
   /* ---- Mode switching ---- */
+  var renderCalendarDebounceTimer = null;
   function renderCalendarForMode() {
+    // Debounce rapid re-renders to prevent excessive DOM updates
+    clearTimeout(renderCalendarDebounceTimer);
+    renderCalendarDebounceTimer = setTimeout(function() {
+      if (currentMode === 'booking') {
+        renderCalendar();
+      } else {
+        renderAvailabilityCalendar(currentMode);
+      }
+    }, 16); // ~60fps frame time
+  }
+
+  // Immediate render without debounce (for initial load and user actions)
+  function renderCalendarImmediate() {
+    clearTimeout(renderCalendarDebounceTimer);
     if (currentMode === 'booking') {
       renderCalendar();
     } else {
@@ -3053,7 +3056,7 @@ div[style*="overflow: hidden"] {
     if (legend) legend.style.display = (mode === 'team') ? 'flex' : 'none';
     var dragHint = document.getElementById('drag-hint');
     if (dragHint) dragHint.style.display = (mode === 'availability') ? 'block' : 'none';
-    renderCalendarForMode();
+    renderCalendarImmediate(); // User action - render immediately
   }
 
   /* ---- Imported members list ---- */
@@ -3081,7 +3084,7 @@ div[style*="overflow: hidden"] {
         delete imp[n];
         saveImported(imp);
         renderImportedMembersList();
-        renderCalendarForMode();
+        renderCalendarImmediate(); // User remove team member action
       });
     });
   }
@@ -3109,7 +3112,7 @@ div[style*="overflow: hidden"] {
         if (pendingDragKeys[k]) { avail[k] = true; } else { delete avail[k]; }
       });
       saveMyAvailability(avail);
-      renderCalendarForMode();
+      renderCalendarImmediate(); // User drag release action
       renderParticipantsList();
     }
     pendingDragKeys = {};
@@ -3125,7 +3128,7 @@ div[style*="overflow: hidden"] {
       // changes that were applied in the touchstart handler.
       if (Object.keys(pendingDragKeys).length > 0) {
         pendingDragKeys = {};
-        renderCalendarForMode();
+        renderCalendarImmediate(); // User touch drag cancelled
       }
       isDragging = false;
       dragValue  = null;
@@ -3140,7 +3143,7 @@ div[style*="overflow: hidden"] {
         if (pendingDragKeys[k]) { avail[k] = true; } else { delete avail[k]; }
       });
       saveMyAvailability(avail);
-      renderCalendarForMode();
+      renderCalendarImmediate(); // User drag release action
       renderParticipantsList();
     }
     pendingDragKeys = {};
@@ -3327,7 +3330,7 @@ div[style*="overflow: hidden"] {
       errEl.textContent = 'This slot was just booked by someone else. Please choose another.';
       errEl.hidden = false;
       closeBookingModal();
-      renderCalendarForMode();
+      renderCalendarImmediate(); // Booking conflict detected
       return;
     }
 
@@ -3414,11 +3417,11 @@ div[style*="overflow: hidden"] {
   /* ---- Week navigation ---- */
   document.getElementById('prev-week').addEventListener('click', function () {
     currentWeekMonday = addDays(currentWeekMonday, -7);
-    renderCalendarForMode();
+    renderCalendarImmediate(); // User action - render immediately
   });
   document.getElementById('next-week').addEventListener('click', function () {
     currentWeekMonday = addDays(currentWeekMonday, 7);
-    renderCalendarForMode();
+    renderCalendarImmediate(); // User action - render immediately
   });
 
   /* ---- Mode toggle ---- */
@@ -3445,7 +3448,7 @@ div[style*="overflow: hidden"] {
     saveAvailName(n);
     // Push existing availability to Firestore under new name
     if (n) saveMyAvailability(loadMyAvailability());
-    renderCalendarForMode();
+    renderCalendarImmediate(); // Name saved action
     renderParticipantsList();
     var hintEl = document.getElementById('name-entry-hint');
     if (hintEl) hintEl.textContent = n ? 'Saved as ' + n + '. Update below to change.' : 'Enter your name to mark your availability on the grid below.';
@@ -3457,7 +3460,7 @@ div[style*="overflow: hidden"] {
       var n = this.value.trim();
       saveAvailName(n);
       if (n) saveMyAvailability(loadMyAvailability());
-      renderCalendarForMode();
+      renderCalendarImmediate(); // Name change action
       renderParticipantsList();
       var hintEl = document.getElementById('name-entry-hint');
       if (hintEl) hintEl.textContent = n ? 'Saved as ' + n + '. Update below to change.' : 'Enter your name to mark your availability on the grid below.';
@@ -3519,7 +3522,7 @@ div[style*="overflow: hidden"] {
     if (!result.success) { errEl.textContent = result.error; errEl.hidden = false; return; }
     document.getElementById('import-modal').hidden = true;
     renderImportedMembersList();
-    renderCalendarForMode();
+    renderCalendarImmediate(); // Team member import action
     renderParticipantsList();
     showToast('✅ Added ' + result.name + '\'s availability to the Team View.');
   });
@@ -3623,26 +3626,14 @@ pageFunctions.executeFunctions();
 // Force scroll to work by removing any inline overflow styles added by Webflow
 (function ensureScroll() {
   function forceScrollEnabled() {
-    // Target html and body elements
-    const elementsToFix = [
-      document.documentElement,
-      document.body,
-      document.querySelector('.page_code_wrap'),
-      document.querySelector('.w-embed')
-    ];
-
-    elementsToFix.forEach(function(el) {
+    // Remove problematic inline styles from key elements
+    [document.documentElement, document.body].forEach(function(el) {
       if (!el) return;
-
-      // Remove problematic inline styles
-      if (el.style.overflow) el.style.overflow = '';
-      if (el.style.overflowY) el.style.overflowY = '';
-      if (el.style.overflowX) el.style.overflowX = '';
+      el.style.overflow = '';
+      el.style.overflowY = '';
+      el.style.overflowX = '';
       if (el.style.height === '100vh' || el.style.height === '100%') {
         el.style.height = '';
-      }
-      if (el.style.maxHeight === '100vh' || el.style.maxHeight === '100%') {
-        el.style.maxHeight = '';
       }
     });
 
@@ -3662,40 +3653,14 @@ pageFunctions.executeFunctions();
   // Run after Webflow initializes
   setTimeout(forceScrollEnabled, 100);
   setTimeout(forceScrollEnabled, 500);
-  setTimeout(forceScrollEnabled, 1000);
-  setTimeout(forceScrollEnabled, 2000);
 
   // Run on window load
   window.addEventListener('load', forceScrollEnabled);
 
-  // Run on resize (in case mobile orientation changes)
-  window.addEventListener('resize', forceScrollEnabled);
-
-  // Monitor for changes using MutationObserver
-  const observer = new MutationObserver(function(mutations) {
-    mutations.forEach(function(mutation) {
-      if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
-        forceScrollEnabled();
-      }
-    });
-  });
-
-  // Observe both html and body for style changes
+  // Monitor for style changes using MutationObserver (more efficient than polling)
+  var observer = new MutationObserver(forceScrollEnabled);
   observer.observe(document.documentElement, { attributes: true, attributeFilter: ['style'] });
   observer.observe(document.body, { attributes: true, attributeFilter: ['style'] });
-
-  // Also observe wrapper elements
-  const pageCodeWrap = document.querySelector('.page_code_wrap');
-  const wEmbed = document.querySelector('.w-embed');
-  if (pageCodeWrap) {
-    observer.observe(pageCodeWrap, { attributes: true, attributeFilter: ['style'] });
-  }
-  if (wEmbed) {
-    observer.observe(wEmbed, { attributes: true, attributeFilter: ['style'] });
-  }
-
-  // Use setInterval as a fallback to continuously enforce scroll
-  setInterval(forceScrollEnabled, 3000);
 })();
 </script>
 
