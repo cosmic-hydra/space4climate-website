@@ -2413,6 +2413,12 @@ body.u-overflow-hidden {
 }
 </style>
 
+<!-- Firebase SDK (compat v10) – loaded before the board script so firebase.* is available -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<!-- Firebase project config (placeholders are safe – board falls back to localStorage) -->
+<script src="firebase-config.js"></script>
+
 <script>
 (function () {
   'use strict';
@@ -2432,6 +2438,8 @@ body.u-overflow-hidden {
   var activeSlotKey     = null;
   var currentMode       = 'availability'; // 'booking' | 'availability' | 'team'
   var bookingsCache     = {};        // always the source of truth for rendering
+  var remoteAvailabilities = {};     // populated from Firestore when configured; {} otherwise
+  var db               = null;       // Firestore instance (null when Firebase not configured)
 
   /* ---- Drag-to-select state ---- */
   var isDragging        = false;
@@ -2466,6 +2474,58 @@ body.u-overflow-hidden {
   renderCalendarImmediate();
   updateStats();
 
+  /* ---- Firebase Firestore integration (graceful – falls back to localStorage) ---- */
+  (function initFirestore() {
+    var IS_PLACEHOLDER = !window.S4C_FIREBASE_CONFIG ||
+        (window.S4C_FIREBASE_CONFIG.apiKey || '').startsWith('REPLACE_');
+    if (IS_PLACEHOLDER) return; // localStorage-only mode
+
+    try {
+      // Reuse an existing Firebase app instance if one was already created
+      var app;
+      try { app = firebase.app('cb-app'); }
+      catch (e) { app = firebase.initializeApp(window.S4C_FIREBASE_CONFIG, 'cb-app'); }
+
+      db = firebase.firestore(app);
+
+      // Real-time bookings listener: keep bookingsCache in sync with Firestore
+      db.collection('bookings').onSnapshot(function (snapshot) {
+        snapshot.docChanges().forEach(function (change) {
+          if (change.type === 'added' || change.type === 'modified') {
+            bookingsCache[change.doc.id] = change.doc.data();
+          } else if (change.type === 'removed') {
+            delete bookingsCache[change.doc.id];
+          }
+        });
+        saveBookingsLS(bookingsCache);
+        renderCalendarForMode();
+        updateStats();
+      }, function (err) {
+        console.warn('CommonBoard: Firestore bookings listener error:', err);
+      });
+
+      // Real-time availability listener: populate remoteAvailabilities
+      db.collection('availability').onSnapshot(function (snapshot) {
+        snapshot.docChanges().forEach(function (change) {
+          var personName = decodeURIComponent(change.doc.id);
+          if (change.type === 'added' || change.type === 'modified') {
+            remoteAvailabilities[personName] = change.doc.data().slots || {};
+          } else if (change.type === 'removed') {
+            delete remoteAvailabilities[personName];
+          }
+        });
+        renderCalendarForMode();
+        renderParticipantsList();
+      }, function (err) {
+        console.warn('CommonBoard: Firestore availability listener error:', err);
+      });
+
+    } catch (e) {
+      console.warn('CommonBoard: Firebase init failed, using localStorage only:', e);
+      db = null;
+    }
+  })();
+
   /* ---- localStorage fallback helpers ---- */
   function loadBookingsLS() {
     try { return JSON.parse(localStorage.getItem(LS_BOOKINGS_KEY) || '{}'); }
@@ -2476,21 +2536,39 @@ body.u-overflow-hidden {
     catch (e) {}
   }
 
-  /* ---- Booking CRUD (localStorage) ---- */
+  /* ---- Booking CRUD (Firestore with localStorage fallback) ---- */
   function saveBooking(key, data) {
     bookingsCache[key] = data;
     saveBookingsLS(bookingsCache);
-    renderCalendarImmediate();
-    updateStats();
-    return Promise.resolve();
+    if (!db) {
+      renderCalendarImmediate();
+      updateStats();
+      return Promise.resolve();
+    }
+    return db.collection('bookings').doc(key).set(data).then(function () {
+      // onSnapshot handles re-render
+    }).catch(function (e) {
+      console.warn('Firestore saveBooking failed, local save retained:', e);
+      renderCalendarImmediate();
+      updateStats();
+    });
   }
 
   function deleteBooking(key) {
     delete bookingsCache[key];
     saveBookingsLS(bookingsCache);
-    renderCalendarImmediate();
-    updateStats();
-    return Promise.resolve();
+    if (!db) {
+      renderCalendarImmediate();
+      updateStats();
+      return Promise.resolve();
+    }
+    return db.collection('bookings').doc(key).delete().then(function () {
+      // onSnapshot handles re-render
+    }).catch(function (e) {
+      console.warn('Firestore deleteBooking failed, local delete retained:', e);
+      renderCalendarImmediate();
+      updateStats();
+    });
   }
 
   /* ---- Storage helpers: availability ---- */
@@ -2523,6 +2601,16 @@ body.u-overflow-hidden {
     var name = loadAvailName();
     try { localStorage.setItem(availKeyForName(name), JSON.stringify(data)); }
     catch (e) {}
+    // Sync to Firestore when configured so team members see updates in real time
+    if (db && name) {
+      db.collection('availability').doc(availDocId(name)).set({
+        slots: data,
+        name:  name,
+        updatedAt: new Date().toISOString()
+      }).catch(function (e) {
+        console.warn('Firestore availability sync failed:', e);
+      });
+    }
   }
   function loadImported() {
     try { return JSON.parse(localStorage.getItem(IMPORTED_KEY) || '{}'); }
@@ -3490,7 +3578,12 @@ pageFunctions.executeFunctions();
 
 // Force scroll to work by removing any inline overflow styles added by Webflow
 (function ensureScroll() {
+  var _scrollFixing = false; // re-entrancy guard
+
   function forceScrollEnabled() {
+    if (_scrollFixing) return;
+    _scrollFixing = true;
+
     // Remove problematic inline styles from key elements
     [document.documentElement, document.body].forEach(function(el) {
       if (!el) return;
@@ -3510,6 +3603,8 @@ pageFunctions.executeFunctions();
     // Force scroll bar visibility
     document.documentElement.style.overflowY = 'auto';
     document.body.style.overflowY = 'auto';
+
+    _scrollFixing = false;
   }
 
   // Run immediately
