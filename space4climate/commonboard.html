@@ -1720,6 +1720,11 @@ body {
             // uses multiple devices simultaneously: their available slots from
             // all devices are combined (union) rather than the last document
             // processed silently overwriting the others.
+            // Union semantics: a slot remains "available" if any device for this
+            // person marked it.  Explicit unmarks on one device will not remove
+            // a slot that was marked on another device — last-write-wins only
+            // applies to the Firestore document itself (via saveMyAvailability),
+            // not to this in-memory aggregation of all remote documents.
             if (remoteAvailabilities[data.name]) {
               Object.assign(remoteAvailabilities[data.name], data.availability);
             } else {
@@ -1813,12 +1818,16 @@ body {
     try {
       var stored = localStorage.getItem(key);
       if (stored === null && name) {
-        // One-time migration: move data from the old single-key storage to this
-        // person's namespaced key so existing marks are not lost on first load.
+        // One-time migration: copy data from the old shared key to this person's
+        // namespaced key so existing marks are not lost on first load.
+        // NOTE: the legacy key is intentionally kept so that if a second person
+        // with a different name loads the same browser later, they don't end up
+        // with this person's data migrated into their own key.
+        // localStorage operations are synchronous; there is no concurrent-access
+        // risk even when multiple tabs are open simultaneously.
         var legacy = localStorage.getItem(AVAIL_KEY_LEGACY);
         if (legacy) {
           localStorage.setItem(key, legacy);
-          localStorage.removeItem(AVAIL_KEY_LEGACY);
           return JSON.parse(legacy);
         }
       }
@@ -1836,9 +1845,7 @@ body {
     // where two devices' entries silently overwrite each other in the view.
     var trimmedName = name.trim();
     if (db && trimmedName) {
-      // '/' is the only character explicitly forbidden in Firestore document IDs.
-      var docId = trimmedName.replace(/\//g, '_');
-      db.collection('availability').doc(docId).set({
+      db.collection('availability').doc(availDocId(trimmedName)).set({
         name:         trimmedName,
         availability: data,
         updatedAt:    new Date().toISOString()
@@ -1866,10 +1873,18 @@ body {
 
   /* ---- Per-person availability storage key ---- */
   function availKeyForName(name) {
-    // Produce a safe localStorage key from the person's name.
-    var safe = (name || '').trim().toLowerCase()
-      .replace(/[^a-z0-9]/g, '_').replace(/_+/g, '_').replace(/^_|_$/g, '') || 'noname';
+    // Encode the name faithfully so 'John-Doe' and 'John_Doe' get distinct keys.
+    // encodeURIComponent is used instead of character-class replacement to avoid
+    // collisions between names that differ only in punctuation.
+    var safe = encodeURIComponent((name || '').trim()) || 'noname';
     return AVAIL_KEY_PREFIX + safe;
+  }
+
+  // Produce a Firestore-safe document ID from a person's display name.
+  // Firestore only disallows forward slashes; encodeURIComponent handles that and
+  // any other characters that might cause problems without losing information.
+  function availDocId(name) {
+    return encodeURIComponent((name || '').trim()) || 'noname';
   }
 
   /* ---- Date helpers ---- */
