@@ -1,0 +1,13 @@
+{
+  "name": "opencode-proxy",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Local proxy that forwards OpenAI-style requests to an opencode-compatible upstream",
+  "type": "module",
+  "scripts": {
+    "start": "node server.mjs"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

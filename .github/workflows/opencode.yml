@@ -1,16 +1,16 @@
-name: OpenCode
+name: opencode
 
 on:
   workflow_dispatch:
     inputs:
       prompt:
-        description: Prompt for Copilot to execute
+        description: Prompt for opencode to execute
         required: true
         type: string
       model:
-        description: Model to use
+        description: opencode model to use (overridden by repository variable OPENCODE_MODEL if set)
         required: false
-        default: github-copilot/claude-3.5-sonnet
+        default: opencode-default-model
         type: string
 
 jobs:
@@ -23,14 +23,27 @@ jobs:
       models: read
 
     steps:
-      - name: Run OpenCode via GitHub Models
+      - name: Run opencode via opencode API
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          MODEL: ${{ inputs.model }}
+          OPENCODE_API_KEY: ${{ secrets.OPENCODE_API_KEY }}
+          OPENCODE_BASE_URL: ${{ vars.OPENCODE_BASE_URL }}
+          MODEL: ${{ vars.OPENCODE_MODEL || inputs.model }}
           PROMPT: ${{ inputs.prompt }}
         run: |
           set -euo pipefail
-          curl -sS "https://models.github.ai/inference/chat/completions" \
+          if [[ -z "${OPENCODE_BASE_URL:-}" ]]; then
+            echo "OPENCODE_BASE_URL is not set (configure repository variable OPENCODE_BASE_URL)." >&2
+            exit 1
+          fi
+
+          if [[ -z "${OPENCODE_API_KEY:-}" ]]; then
+            echo "OPENCODE_API_KEY is not set (configure repository secret OPENCODE_API_KEY)." >&2
+            exit 1
+          fi
+
+          base_url="${OPENCODE_BASE_URL%/}"
+
+          curl -sS "${base_url}/v1/chat/completions" \
             -H "Content-Type: application/json" \
-            -H "Authorization: Bearer ${GITHUB_TOKEN}" \
+            -H "Authorization: Bearer ${OPENCODE_API_KEY}" \
             -d "{\"model\":\"${MODEL}\",\"messages\":[{\"role\":\"user\",\"content\":\"${PROMPT//\"/\\\"}\"}]}"
