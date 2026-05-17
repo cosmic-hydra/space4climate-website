@@ -1,0 +1,26 @@
+name: OpenCode
+
+on:
+  workflow_dispatch:
+    inputs:
+      prompt:
+        description: Prompt for Copilot to execute
+        required: true
+        type: string
+
+jobs:
+  opencode:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+
+    steps:
+      - name: Run OpenCode via GitHub Copilot
+        uses: github/copilot-coding-agent@v1
+        env:
+          GITHUB_TOKEN: sk-LDDtRVyWmTaMBxMm7T03nAdrjt5qmlLmvq6UX0mgNW0oxCfz7zAOE6ILegfu2MUI
+        with:
+          model: github-copilot/claude-3.5-sonnet
+          task: ${{ github.event.inputs.prompt }}
