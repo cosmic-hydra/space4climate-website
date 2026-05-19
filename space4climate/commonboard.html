@@ -161,6 +161,7 @@
       const firebaseConfig = () => {
         const cfg = window.S4C_FIREBASE_CONFIG; if(!cfg) return null;
         const keys = ["apiKey","authDomain","projectId","storageBucket","messagingSenderId","appId"];
+        // Placeholder values in firebase-config.js are prefixed with REPLACE_WITH_.
         return keys.some((k)=>typeof cfg[k]!=="string"||!cfg[k]||cfg[k].startsWith("REPLACE_WITH_")) ? null : cfg;
       };
       const initStore = () => {
@@ -200,7 +201,7 @@
       async function createBoard(){
         const title=(els.boardName.value||"").trim()||"Space4Climate Session", startDate=els.startDate.value, endDate=els.endDate.value, startHour=Number(els.startHour.value), endHour=Number(els.endHour.value);
         if(!startDate||!endDate) return alert("Please set both dates.");
-        if(startDate>endDate) return alert("Start date must be before end date.");
+        if(startDate>endDate) return alert("Start date must be on or before end date.");
         if(daterange(startDate,endDate).length>MAX_DAYS) return alert("Keep the date range to 14 days or less.");
         if(startHour>=endHour) return alert("End hour must be after start hour.");
         let id=uid(), board={title,startDate,endDate,startHour,endHour,timezone:tz(),updatedAt:Date.now()};
@@ -214,7 +215,7 @@
         state.boardId=id; updateUrl(id);
         if(state.mode==="firestore"){
           const ref=state.firestore.collection("commonboardBoards").doc(id);
-          state.unBoard = ref.onSnapshot((snap)=>{ if(!snap.exists){state.board=null;state.participants={};setNotice("Board not found. Create a new one.");render();return;} state.board=snap.data(); render(); });
+          state.unBoard = ref.onSnapshot((snap)=>{ if(!snap.exists){state.board=null;state.participants={};setNotice("Board not found. Create a new one.");render();return;} state.board=snap.data(); render(); },()=>setNotice("Live sync issue detected. Check your connection or Firestore permissions."));
           state.unParticipants = ref.collection("participants").onSnapshot((snap)=>{ const p={}; snap.forEach((d)=>p[d.id]=d.data()); state.participants=p; render(); });
           return;
         }
