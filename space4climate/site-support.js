@@ -1,4 +1,11 @@
 (function () {
+  var h = window.location.hostname.toLowerCase();
+  var isLocal = window.location.protocol === 'file:' || h === 'localhost' || h === '127.0.0.1' || h === '0.0.0.0' || h === '[::1]';
+  if (!isLocal && (h === 'space4climate.org' || h === 'www.space4climate.org')) {
+    window.location.replace('https://space4climate.info' + window.location.pathname + window.location.search + window.location.hash);
+    return;
+  }
+
   var doc = document.documentElement;
   if (doc) {
     doc.classList.add('s4c-js');
