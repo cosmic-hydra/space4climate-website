@@ -1,6 +1,3 @@
 # Local environment files
 .env
 .env.*
-
-# opencode proxy local secrets
-opencode-proxy/.env
