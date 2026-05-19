@@ -108,12 +108,15 @@
       const tz = () => Intl.DateTimeFormat().resolvedOptions().timeZone;
       const boardIdFromUrl = () => new URLSearchParams(window.location.search).get("board");
       const localKey = (id) => "s4c-commonboard-"+id;
-      const slugName = (v) => (v.trim().toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/(^-|-$)/g,"").slice(0,36)||"participant");
+      const participantKey = (id) => "s4c-commonboard-participant-"+id;
       const hr = (n) => String(n).padStart(2,"0")+":00";
       const setNotice = (m) => { els.backendNotice.hidden=!m; els.backendNotice.textContent=m||""; };
       const today = () => { const d=new Date(); d.setMinutes(d.getMinutes()-d.getTimezoneOffset()); return d.toISOString().slice(0,10); };
       const addDays = (s,n) => { const d=new Date(s+"T00:00:00"); d.setDate(d.getDate()+n); return d.toISOString().slice(0,10); };
-      const uid = () => "cb-"+Math.random().toString(36).slice(2,10);
+      const uid = () => {
+        if (window.crypto && typeof crypto.randomUUID === "function") return "cb-"+crypto.randomUUID().slice(0,12);
+        return "cb-"+Date.now().toString(36)+Math.random().toString(36).slice(2,8);
+      };
       const loadLocal = (id) => { try{return JSON.parse(localStorage.getItem(localKey(id))||"null");}catch{return null;} };
       const saveLocal = (id,data) => localStorage.setItem(localKey(id), JSON.stringify(data));
       const updateUrl = (id) => { const u=new URL(window.location.href); u.searchParams.set("board",id); history.replaceState({}, "", u.toString()); };
@@ -121,7 +124,11 @@
       const slots = (board) => { const days=daterange(board.startDate,board.endDate), out=[]; for(let h=board.startHour;h<board.endHour;h++) for(const d of days) out.push(d+"T"+String(h).padStart(2,"0")); return out; };
       const slotText = (slot) => { const [d,h]=slot.split("T"); return fmtDate(d)+" "+h+":00"; };
       const counts = () => { const c={}; Object.values(state.participants).forEach(p => (p.slots||[]).forEach(s => c[s]=(c[s]||0)+1)); return c; };
-      const myP = () => state.myName ? (state.participants[slugName(state.myName)] || {name:state.myName,slots:[]}) : null;
+      const myP = () => {
+        if(!state.myName) return null;
+        const pid = state.boardId ? localStorage.getItem(participantKey(state.boardId)) : null;
+        return pid ? (state.participants[pid] || {name:state.myName,slots:[]}) : {name:state.myName,slots:[]};
+      };
       const color = (count,max) => !count ? "rgba(34,61,96,.22)" : (count/max>=.8 ? "rgba(61,220,151,.58)" : (count/max>=.45 ? "rgba(79,169,255,.55)" : "rgba(55,116,185,.45)"));
       const renderMeta = () => { els.boardMeta.innerHTML = !state.board ? "<span>No board loaded.</span>" : `<span><strong>Board ID:</strong> ${state.boardId}</span><span><strong>Date range:</strong> ${state.board.startDate} → ${state.board.endDate}</span><span><strong>Hours:</strong> ${hr(state.board.startHour)}–${hr(state.board.endHour)}</span><span><strong>Your timezone:</strong> ${tz()}</span>`; };
       const renderHeader = () => {
@@ -153,18 +160,30 @@
       const render = () => { renderMeta(); renderHeader(); renderPeople(); renderBest(); renderTable(); };
       const firebaseConfig = () => {
         const cfg = window.S4C_FIREBASE_CONFIG; if(!cfg) return null;
-        return Object.values(cfg).some(v => typeof v!=="string" || v.includes("REPLACE_WITH_")) ? null : cfg;
+        const keys = ["apiKey","authDomain","projectId","storageBucket","messagingSenderId","appId"];
+        return keys.some((k)=>typeof cfg[k]!=="string"||!cfg[k]||cfg[k].startsWith("REPLACE_WITH_")) ? null : cfg;
       };
       const initStore = () => {
-        const cfg=firebaseConfig(); if(!cfg){state.mode="local"; setNotice("Firebase config is not set, so this board uses local browser storage only (not shared across devices)."); return;}
+        const cfg=firebaseConfig(); if(!cfg){state.mode="local"; setNotice("Firebase is not configured: boards are stored locally in your browser only and cannot be shared with others."); return;}
         try{ const app=firebase.apps.length?firebase.app():firebase.initializeApp(cfg); state.firestore=app.firestore(); state.mode="firestore"; setNotice("Live sync enabled with Firebase Firestore."); }
         catch{ state.mode="local"; setNotice("Firebase initialization failed; using local browser storage."); }
       };
       const persistLocal = () => { if(state.mode==="local"&&state.boardId&&state.board) saveLocal(state.boardId,{board:state.board,participants:state.participants}); };
+      const ensureMyParticipantId = () => {
+        if(!state.boardId) return null;
+        const key = participantKey(state.boardId);
+        let pid = localStorage.getItem(key);
+        if(!pid){
+          pid = (window.crypto && typeof crypto.randomUUID === "function") ? crypto.randomUUID() : ("p-"+Date.now().toString(36)+Math.random().toString(36).slice(2,8));
+          localStorage.setItem(key, pid);
+        }
+        return pid;
+      };
       async function upsertMe(mutator){
         if(!state.board) return alert("Load a board first.");
         const name=(els.participantName.value||"").trim(); if(!name) return alert("Enter your name first.");
-        const pid=slugName(name), cur=state.participants[pid]||{name,slots:[]}, next=mutator({...cur,name});
+        const pid=ensureMyParticipantId(); if(!pid) return;
+        const cur=state.participants[pid]||{name,slots:[]}, next=mutator({...cur,name});
         if(state.mode==="firestore"){ await state.firestore.collection("commonboardBoards").doc(state.boardId).collection("participants").doc(pid).set({...next,name,updatedAt:Date.now()},{merge:true}); }
         else { state.participants[pid]={...next,name,updatedAt:Date.now()}; persistLocal(); render(); }
       }
@@ -184,8 +203,9 @@
         if(startDate>endDate) return alert("Start date must be before end date.");
         if(daterange(startDate,endDate).length>MAX_DAYS) return alert("Keep the date range to 14 days or less.");
         if(startHour>=endHour) return alert("End hour must be after start hour.");
-        const id=uid(), board={title,startDate,endDate,startHour,endHour,timezone:tz(),updatedAt:Date.now()};
-        if(state.mode==="firestore") await state.firestore.collection("commonboardBoards").doc(id).set(board); else saveLocal(id,{board,participants:{}});
+        let id=uid(), board={title,startDate,endDate,startHour,endHour,timezone:tz(),updatedAt:Date.now()};
+        if(state.mode==="firestore"){ const ref=state.firestore.collection("commonboardBoards").doc(); id=ref.id; await ref.set(board); }
+        else saveLocal(id,{board,participants:{}});
         await loadBoard(id);
       }
       async function loadBoard(id){
