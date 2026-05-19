@@ -22,7 +22,7 @@
  *
  * 9. (Optional) Add your domain to "Authorized domains" under
  *    Authentication → Settings → Authorized domains.
- *    Your public site domain (e.g. www.space4climate.org) is
+ *    Your public site domain (e.g. space4climate.org) is
  *    needed for the password-reset email links to work.
  * ============================================================
  */
