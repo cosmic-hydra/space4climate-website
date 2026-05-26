@@ -3,239 +3,1204 @@
 <head>
   <script>(function(){var h=window.location.hostname.toLowerCase();var isLocal=window.location.protocol==="file:"||h==="localhost"||h==="127.0.0.1"||h==="0.0.0.0"||h==="[::1]";if(isLocal)return;var targetHost="space4climate.info";if(window.location.protocol!=="https:"||h!==targetHost){window.location.replace("https://"+targetHost+window.location.pathname+window.location.search+window.location.hash);}}());</script>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>CommonBoard | Space4Climate Availability Planner</title>
-  <meta name="description" content="A When2Meet-style availability planner for Space4Climate workshops and meetings.">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Orbit Scheduler | Space4Climate</title>
+  <meta name="description" content="A beautiful, space-themed group scheduling tool for Space4Climate workshops and missions. Create boards, mark availability, find the best meeting time.">
   <link rel="canonical" href="https://www.space4climate.org/commonboard.html">
+  <link href="https://fonts.googleapis.com" rel="preconnect">
+  <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
-    :root{--bg:#070b15;--panel:#0f1f36;--line:#2e4f79;--text:#e9f4ff;--muted:#9db4d4;--accent:#57a9ff;--ok:#3ddc97}
-    *{box-sizing:border-box}html,body{margin:0;min-height:100%;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:var(--text);background:radial-gradient(circle at 10% 0%,#18315b 0%,var(--bg) 45%)}
-    a{color:var(--accent)}main{max-width:1160px;margin:0 auto;padding:1rem}
-    .topbar,.card,.hero{border:1px solid var(--line);background:rgba(10,18,33,.92);border-radius:14px}
-    .topbar{display:flex;justify-content:space-between;align-items:center;gap:.75rem;padding:.65rem .8rem;position:sticky;top:.5rem;z-index:30}
-    .brand{font-weight:700;color:var(--text);text-decoration:none}.brand span{color:#89f0c0}
-    .hero{margin-top:1rem;padding:1.1rem;background:linear-gradient(140deg,rgba(27,53,90,.95),rgba(10,18,33,.95))}
-    .hero h1{margin:0 0 .4rem;font-size:clamp(1.5rem,3vw,2.4rem)}.hero p{margin:0;color:var(--muted)}
-    .layout{display:grid;grid-template-columns:320px minmax(0,1fr);gap:1rem;margin-top:1rem}
-    .card{padding:1rem}.stack{display:grid;gap:.65rem}label{display:grid;gap:.3rem;font-size:.84rem;color:var(--muted)}
-    input,select{width:100%;border:1px solid #3d6393;border-radius:8px;background:#0a1527;color:var(--text);padding:.5rem .6rem;font:inherit}
-    .row{display:grid;grid-template-columns:1fr 1fr;gap:.5rem}.actions{display:flex;gap:.5rem;flex-wrap:wrap}
-    .btn{border:1px solid var(--line);border-radius:9px;background:#132744;color:var(--text);padding:.5rem .75rem;font-weight:600;cursor:pointer;text-decoration:none}
-    .btn-primary{background:linear-gradient(135deg,#2e8fff,#28b4ff);border-color:#4ca4ff;color:#041327}
-    .meta{border-top:1px solid rgba(87,169,255,.25);padding-top:.55rem;color:var(--muted);font-size:.84rem;display:grid;gap:.28rem}
-    .notice{border:1px solid rgba(255,209,102,.45);background:rgba(255,209,102,.08);color:#ffe6a7;border-radius:10px;padding:.55rem .65rem;font-size:.84rem}
-    .head{display:flex;justify-content:space-between;align-items:center;gap:.55rem;flex-wrap:wrap;border:1px solid var(--line);border-radius:10px;padding:.55rem .65rem;background:rgba(18,38,66,.72)}
-    .board-title{font-weight:700}.board-link{font-size:.82rem;color:var(--muted);word-break:break-all}
-    .legend{display:flex;gap:.5rem;flex-wrap:wrap;font-size:.78rem;color:var(--muted)}.dot{display:inline-block;width:.8rem;height:.8rem;border-radius:99px;margin-right:.3rem;vertical-align:middle}
-    .best{border:1px solid rgba(61,220,151,.35);background:rgba(61,220,151,.1);color:#c8ffe6;border-radius:10px;padding:.5rem .65rem;font-size:.84rem}
-    .table-wrap{border:1px solid var(--line);border-radius:10px;overflow:auto;max-height:68vh;background:rgba(8,15,27,.95)}
-    table{width:100%;min-width:760px;border-collapse:collapse}th,td{border:1px solid rgba(61,99,147,.75);padding:.32rem;text-align:center;font-size:.78rem}
-    th{position:sticky;top:0;background:#123050;z-index:2}th.time,td.time{position:sticky;left:0}th.time{z-index:3}td.time{background:#0d213c;color:#c6daf7;font-weight:600}
-    .slot{height:34px;min-width:82px;border:1px solid rgba(98,136,180,.6);border-radius:8px;background:rgba(34,61,96,.22);color:#d6e8ff;font-weight:600;cursor:pointer}
-    .slot.mine{outline:2px solid #9ef3c6;outline-offset:-2px}.people,.small{color:var(--muted)}.people{font-size:.82rem}.small{font-size:.76rem}
-    @media (max-width:980px){.layout{grid-template-columns:1fr}.topbar{position:static}}
+    /* ── Design Tokens ──────────────────────────────── */
+    :root {
+      --bg:        #05091a;
+      --bg2:       #080e22;
+      --surface:   rgba(13,20,45,0.85);
+      --surface2:  rgba(18,28,58,0.72);
+      --border:    rgba(80,130,230,0.18);
+      --border2:   rgba(80,130,230,0.32);
+      --text:      #e8f0ff;
+      --text2:     #8fa8d8;
+      --text3:     #5577aa;
+      --accent:    #4da3ff;
+      --accent2:   #22d3a8;
+      --gold:      #ffc94d;
+      --danger:    #ff6b6b;
+      --r:         14px;
+      --r2:        10px;
+      --shadow:    0 8px 32px rgba(0,0,40,0.6);
+      --glow:      0 0 20px rgba(77,163,255,0.25);
+      --font-head: 'Space Grotesk', system-ui, sans-serif;
+      --font-body: 'Inter', system-ui, sans-serif;
+      /* grid cell colors: 0→few→some→many→all */
+      --c0:  #09102a;
+      --c1:  #0d2460;
+      --c2:  #0a4a8c;
+      --c3:  #0e7abf;
+      --c4:  #14a98a;
+      --c5:  #22e09a;
+      --mine-ring: #ffffff;
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    html,body{min-height:100%;background:var(--bg);color:var(--text);font-family:var(--font-body);font-size:15px;line-height:1.55;overflow-x:hidden}
+    ::selection{background:rgba(77,163,255,0.35);color:var(--text)}
+    ::-webkit-scrollbar{width:6px;height:6px}
+    ::-webkit-scrollbar-track{background:transparent}
+    ::-webkit-scrollbar-thumb{background:rgba(77,163,255,0.25);border-radius:99px}
+    ::-webkit-scrollbar-thumb:hover{background:rgba(77,163,255,0.4)}
+
+    /* ── Star canvas ────────────────────────────────── */
+    #star-canvas{position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.7}
+
+    /* ── Layout ─────────────────────────────────────── */
+    #app{position:relative;z-index:1;min-height:100vh;display:flex;flex-direction:column}
+
+    /* ── Nav ─────────────────────────────────────────── */
+    nav{display:flex;align-items:center;justify-content:space-between;padding:.75rem 1.5rem;position:sticky;top:0;z-index:50;background:rgba(5,9,26,0.82);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-bottom:1px solid var(--border)}
+    .nav-brand{font-family:var(--font-head);font-weight:700;font-size:1.1rem;color:var(--text);text-decoration:none;display:flex;align-items:center;gap:.5rem}
+    .nav-brand .dot{width:8px;height:8px;border-radius:99px;background:var(--accent2);box-shadow:0 0 8px var(--accent2);flex-shrink:0}
+    .nav-brand span{color:var(--accent2)}
+    .nav-crumb{display:flex;align-items:center;gap:.4rem;font-size:.8rem;color:var(--text3)}
+    .nav-crumb a{color:var(--text3);text-decoration:none;transition:color .2s}.nav-crumb a:hover{color:var(--accent)}
+    .nav-crumb .sep{color:var(--text3);opacity:.4}
+    .nav-actions{display:flex;gap:.5rem}
+    .nav-btn{font-family:var(--font-body);font-size:.8rem;font-weight:500;padding:.38rem .75rem;border-radius:8px;border:1px solid var(--border2);background:transparent;color:var(--text2);cursor:pointer;text-decoration:none;transition:all .2s}
+    .nav-btn:hover{background:var(--surface);color:var(--text);border-color:var(--accent)}
+
+    /* ── Views ───────────────────────────────────────── */
+    .view{display:none;flex:1;padding:1.5rem}
+    .view.active{display:flex;flex-direction:column}
+
+    /* ── Landing View ────────────────────────────────── */
+    .landing-wrap{max-width:980px;margin:0 auto;width:100%}
+    .landing-hero{text-align:center;padding:3rem 1rem 2.5rem;position:relative}
+    .orbit-icon{display:inline-flex;position:relative;margin-bottom:1.5rem}
+    .orbit-icon .planet{width:52px;height:52px;border-radius:50%;background:radial-gradient(135deg,#1e4fd9,#0a2580);box-shadow:0 0 24px rgba(77,163,255,0.5),0 0 60px rgba(34,211,168,0.15);position:relative;z-index:2}
+    .orbit-icon .ring{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotateX(68deg);width:80px;height:80px;border-radius:50%;border:2px solid rgba(77,163,255,0.45);animation:ring-spin 4s linear infinite}
+    .orbit-icon .ring::after{content:'';position:absolute;width:8px;height:8px;background:var(--accent2);border-radius:50%;box-shadow:0 0 8px var(--accent2);top:-4px;left:50%;transform:translateX(-50%)}
+    @keyframes ring-spin{to{transform:translate(-50%,-50%) rotateX(68deg) rotate(360deg)}}
+    .landing-hero h1{font-family:var(--font-head);font-size:clamp(2rem,5vw,3.2rem);font-weight:700;line-height:1.15;letter-spacing:-.02em;margin-bottom:.75rem;background:linear-gradient(135deg,#e8f0ff 0%,#4da3ff 50%,#22d3a8 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+    .landing-hero .sub{font-size:1.05rem;color:var(--text2);max-width:560px;margin:0 auto 2rem}
+    .badges{display:flex;justify-content:center;gap:.5rem;flex-wrap:wrap;margin-bottom:2.5rem}
+    .badge{padding:.25rem .65rem;border-radius:99px;font-size:.75rem;font-weight:600;letter-spacing:.02em}
+    .badge-space{background:rgba(77,163,255,.15);border:1px solid rgba(77,163,255,.3);color:#7dc2ff}
+    .badge-climate{background:rgba(34,211,168,.12);border:1px solid rgba(34,211,168,.28);color:#5de8c8}
+    .badge-local{background:rgba(255,201,77,.1);border:1px solid rgba(255,201,77,.25);color:#ffd97a}
+
+    .cards-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;margin-bottom:2rem}
+    @media(max-width:680px){.cards-grid{grid-template-columns:1fr}}
+    .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:1.5rem;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);transition:border-color .2s,box-shadow .2s;position:relative;overflow:hidden}
+    .card::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(77,163,255,.04) 0%,transparent 60%);pointer-events:none}
+    .card:hover{border-color:var(--border2);box-shadow:var(--glow)}
+    .card-head{display:flex;align-items:center;gap:.6rem;margin-bottom:1rem}
+    .card-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0}
+    .card-icon.blue{background:rgba(77,163,255,.15);border:1px solid rgba(77,163,255,.2)}
+    .card-icon.green{background:rgba(34,211,168,.12);border:1px solid rgba(34,211,168,.2)}
+    .card h3{font-family:var(--font-head);font-size:1.05rem;font-weight:600;color:var(--text)}
+    .card p{font-size:.85rem;color:var(--text2);margin-bottom:1rem;line-height:1.5}
+
+    /* ── Form controls ───────────────────────────────── */
+    .field{display:flex;flex-direction:column;gap:.35rem;margin-bottom:.8rem}
+    .field label{font-size:.8rem;font-weight:500;color:var(--text2);letter-spacing:.01em}
+    .field input,.field select{width:100%;padding:.55rem .75rem;background:rgba(8,14,34,0.85);border:1px solid rgba(80,130,230,0.25);border-radius:8px;color:var(--text);font-family:var(--font-body);font-size:.9rem;transition:border-color .2s,box-shadow .2s;outline:none;-webkit-appearance:none}
+    .field input:focus,.field select:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(77,163,255,.12)}
+    .field input::placeholder{color:var(--text3)}
+    .field-row{display:grid;grid-template-columns:1fr 1fr;gap:.6rem}
+    .field select{cursor:pointer}
+    .field select option{background:#0b1432}
+
+    /* ── Buttons ─────────────────────────────────────── */
+    .btn{display:inline-flex;align-items:center;justify-content:center;gap:.4rem;padding:.55rem 1.1rem;border-radius:9px;font-family:var(--font-body);font-size:.875rem;font-weight:600;cursor:pointer;text-decoration:none;border:1px solid transparent;transition:all .2s;outline:none;white-space:nowrap}
+    .btn:disabled{opacity:.45;pointer-events:none}
+    .btn-primary{background:linear-gradient(135deg,#2a7fff,#1ab8e0);border-color:#3a8fef;color:#fff;box-shadow:0 4px 15px rgba(42,127,255,.3)}
+    .btn-primary:hover{box-shadow:0 6px 22px rgba(42,127,255,.45);transform:translateY(-1px)}
+    .btn-primary:active{transform:translateY(0)}
+    .btn-outline{background:transparent;border-color:var(--border2);color:var(--text2)}
+    .btn-outline:hover{background:var(--surface);color:var(--text);border-color:var(--accent)}
+    .btn-ghost{background:transparent;border-color:transparent;color:var(--text2)}
+    .btn-ghost:hover{background:var(--surface2);color:var(--text)}
+    .btn-success{background:linear-gradient(135deg,#0fa870,#11c994);border-color:#12d99a;color:#fff;box-shadow:0 4px 15px rgba(15,168,112,.3)}
+    .btn-success:hover{box-shadow:0 6px 22px rgba(15,168,112,.45);transform:translateY(-1px)}
+    .btn-danger{background:transparent;border-color:rgba(255,107,107,.3);color:var(--danger)}
+    .btn-danger:hover{background:rgba(255,107,107,.1)}
+    .btn-sm{padding:.35rem .7rem;font-size:.8rem;border-radius:7px}
+    .btn-xs{padding:.25rem .55rem;font-size:.75rem;border-radius:6px}
+    .btn-full{width:100%}
+    .btn-icon{width:34px;height:34px;padding:0;border-radius:8px;border:1px solid var(--border)}
+    .btn svg{flex-shrink:0}
+
+    /* ── Board view ──────────────────────────────────── */
+    .board-wrap{max-width:1380px;margin:0 auto;width:100%;display:flex;flex-direction:column;gap:1rem}
+    .board-top{display:flex;align-items:flex-start;gap:.75rem;flex-wrap:wrap}
+    .board-info{flex:1;min-width:0}
+    .board-title-row{display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;margin-bottom:.25rem}
+    .board-title{font-family:var(--font-head);font-size:1.35rem;font-weight:700;color:var(--text)}
+    .board-status{display:inline-flex;align-items:center;gap:.3rem;padding:.2rem .55rem;border-radius:99px;font-size:.72rem;font-weight:600;background:rgba(34,211,168,.12);border:1px solid rgba(34,211,168,.2);color:var(--accent2)}
+    .board-status::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--accent2);animation:pulse 2s ease-in-out infinite}
+    @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+    .board-meta{font-size:.8rem;color:var(--text3);display:flex;gap:1rem;flex-wrap:wrap}
+    .board-meta span{display:flex;align-items:center;gap:.3rem}
+    .board-actions{display:flex;gap:.5rem;flex-wrap:wrap;align-items:flex-start}
+
+    .name-row{background:var(--surface);border:1px solid var(--border);border-radius:var(--r2);padding:.75rem 1rem;display:flex;align-items:center;gap:.75rem;flex-wrap:wrap}
+    .name-row .label{font-size:.8rem;font-weight:500;color:var(--text2);white-space:nowrap}
+    .name-row input{flex:1;min-width:150px;padding:.42rem .7rem;background:rgba(8,14,34,.85);border:1px solid var(--border2);border-radius:7px;color:var(--text);font-family:var(--font-body);font-size:.875rem;outline:none;transition:border-color .2s}
+    .name-row input:focus{border-color:var(--accent)}
+    .name-row input::placeholder{color:var(--text3)}
+
+    /* ── Main board layout ───────────────────────────── */
+    .board-main{display:grid;grid-template-columns:minmax(0,1fr) 260px;gap:1rem;align-items:start}
+    @media(max-width:960px){.board-main{grid-template-columns:1fr}}
+
+    /* ── Grid ────────────────────────────────────────── */
+    .grid-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden}
+    .grid-card-head{padding:.75rem 1rem;display:flex;align-items:center;justify-content:space-between;gap:.5rem;border-bottom:1px solid var(--border);background:rgba(8,14,34,.5)}
+    .grid-card-head h3{font-family:var(--font-head);font-size:.9rem;font-weight:600;color:var(--text2)}
+    .grid-mode{display:flex;background:rgba(5,9,26,.5);border:1px solid var(--border);border-radius:8px;padding:3px;gap:3px}
+    .grid-mode-btn{padding:.28rem .6rem;border-radius:6px;border:none;background:transparent;color:var(--text3);font-size:.75rem;font-weight:500;cursor:pointer;transition:all .2s;font-family:var(--font-body)}
+    .grid-mode-btn.active{background:rgba(77,163,255,.2);color:var(--accent);border:1px solid rgba(77,163,255,.3)}
+
+    .grid-outer{overflow:auto;max-height:72vh;cursor:crosshair;user-select:none;-webkit-user-select:none;-moz-user-select:none}
+    .grid-table{border-collapse:separate;border-spacing:2px;min-width:500px}
+    .grid-table th{position:sticky;top:0;background:#06102a;z-index:10;padding:.4rem .3rem;font-size:.72rem;font-weight:600;color:var(--text2);text-align:center;white-space:nowrap;border-bottom:1px solid var(--border)}
+    .grid-table th.time-head{position:sticky;left:0;top:0;z-index:20;background:#06102a;padding:.4rem .6rem}
+    .grid-table td.time-cell{position:sticky;left:0;background:#06102a;z-index:5;padding:.25rem .6rem .25rem .5rem;font-size:.72rem;font-weight:600;color:var(--text3);white-space:nowrap;border-right:1px solid var(--border)}
+    .slot-cell{cursor:crosshair;border-radius:5px;transition:filter .1s,transform .05s}
+    .slot-cell:hover{filter:brightness(1.35);z-index:2;position:relative}
+    .slot-cell.mine{outline:2px solid rgba(255,255,255,.85);outline-offset:-2px;position:relative;z-index:3}
+    .slot-cell.dragging{filter:brightness(1.5)}
+
+    /* heatmap colors applied by JS */
+    .heat-0{background:var(--c0)}
+    .heat-1{background:var(--c1)}
+    .heat-2{background:var(--c2)}
+    .heat-3{background:var(--c3)}
+    .heat-4{background:var(--c4)}
+    .heat-5{background:var(--c5)}
+
+    /* ── Legend ──────────────────────────────────────── */
+    .legend{display:flex;align-items:center;gap:.4rem;font-size:.72rem;color:var(--text3);padding:.5rem 1rem;border-top:1px solid var(--border);flex-wrap:wrap}
+    .legend-swatch{width:12px;height:12px;border-radius:3px;flex-shrink:0}
+    .legend-sep{width:1px;height:12px;background:var(--border);margin:0 .2rem}
+    .legend-mine{width:12px;height:12px;border-radius:3px;background:var(--c3);outline:2px solid rgba(255,255,255,.85);outline-offset:-1px}
+
+    /* ── Sidebar ─────────────────────────────────────── */
+    .sidebar{display:flex;flex-direction:column;gap:.75rem}
+    .side-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden}
+    .side-head{padding:.65rem .85rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:.4rem;background:rgba(8,14,34,.4)}
+    .side-head h4{font-family:var(--font-head);font-size:.82rem;font-weight:600;color:var(--text2);letter-spacing:.01em}
+    .side-body{padding:.75rem .85rem;display:flex;flex-direction:column;gap:.45rem}
+
+    /* Best times */
+    .best-slot{display:flex;align-items:center;gap:.6rem;padding:.45rem .55rem;border-radius:8px;background:rgba(8,14,34,.4);border:1px solid var(--border);transition:border-color .2s}
+    .best-slot:hover{border-color:var(--accent2);cursor:default}
+    .best-slot .rank{font-size:.7rem;font-weight:700;color:var(--text3);width:16px;text-align:center;flex-shrink:0}
+    .best-slot .info{flex:1;min-width:0}
+    .best-slot .date{font-size:.75rem;font-weight:600;color:var(--text)}
+    .best-slot .time{font-size:.7rem;color:var(--text3)}
+    .best-slot .bar-wrap{width:44px;flex-shrink:0}
+    .best-slot .bar{height:4px;border-radius:99px;background:linear-gradient(90deg,var(--accent),var(--accent2));margin-bottom:2px}
+    .best-slot .pct{font-size:.68rem;color:var(--accent2);text-align:right}
+
+    /* Participants */
+    .participant-item{display:flex;align-items:center;gap:.55rem;padding:.38rem .45rem;border-radius:7px;transition:background .15s}
+    .participant-item:hover{background:rgba(77,163,255,.06)}
+    .participant-avatar{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:700;flex-shrink:0;border:1.5px solid rgba(255,255,255,.1)}
+    .participant-name{flex:1;font-size:.8rem;font-weight:500;color:var(--text);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .participant-name.you{color:var(--accent)}
+    .participant-slots{font-size:.7rem;color:var(--text3)}
+    .participant-del{opacity:0;transition:opacity .15s;background:none;border:none;color:var(--danger);cursor:pointer;padding:.15rem .3rem;border-radius:4px;font-size:.7rem}
+    .participant-item:hover .participant-del{opacity:1}
+
+    /* ── Tooltip ─────────────────────────────────────── */
+    #tooltip{position:fixed;z-index:100;pointer-events:none;background:rgba(6,12,30,.96);border:1px solid var(--border2);border-radius:9px;padding:.55rem .75rem;font-size:.78rem;max-width:200px;box-shadow:var(--shadow);display:none}
+    #tooltip .tt-time{font-weight:700;color:var(--text);margin-bottom:.3rem}
+    #tooltip .tt-count{color:var(--accent2);font-weight:600;font-size:.75rem;margin-bottom:.25rem}
+    #tooltip .tt-names{color:var(--text2);line-height:1.4}
+
+    /* ── Modal ───────────────────────────────────────── */
+    .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:80;display:none;align-items:center;justify-content:center;padding:1rem;backdrop-filter:blur(4px)}
+    .modal-overlay.open{display:flex}
+    .modal-box{background:#0c1730;border:1px solid var(--border2);border-radius:var(--r);padding:1.5rem;max-width:440px;width:100%;position:relative;box-shadow:var(--shadow);max-height:90vh;overflow-y:auto}
+    .modal-head{display:flex;align-items:center;justify-content:space-between;gap:.5rem;margin-bottom:1.25rem}
+    .modal-head h3{font-family:var(--font-head);font-size:1.05rem;font-weight:700;color:var(--text)}
+    .modal-close{background:transparent;border:1px solid var(--border);color:var(--text2);width:28px;height:28px;border-radius:6px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.9rem;transition:all .2s}
+    .modal-close:hover{background:var(--surface);color:var(--text)}
+
+    /* ── Toast ───────────────────────────────────────── */
+    #toast{position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%) translateY(8px);z-index:200;background:#0e1e42;border:1px solid var(--border2);border-radius:99px;padding:.5rem 1.1rem;font-size:.82rem;color:var(--text);box-shadow:var(--shadow);pointer-events:none;opacity:0;transition:opacity .25s,transform .25s}
+    #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+    #toast.toast-ok{border-color:rgba(34,211,168,.4);color:var(--accent2)}
+    #toast.toast-err{border-color:rgba(255,107,107,.4);color:var(--danger)}
+
+    /* ── Share link box ──────────────────────────────── */
+    .link-box{display:flex;gap:.4rem;margin-bottom:.75rem}
+    .link-box input{flex:1;padding:.5rem .65rem;background:rgba(8,14,34,.85);border:1px solid var(--border);border-radius:8px;color:var(--text2);font-size:.78rem;outline:none;font-family:monospace;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+    /* ── Merge textarea ──────────────────────────────── */
+    textarea{width:100%;padding:.55rem .75rem;background:rgba(8,14,34,.85);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-family:monospace;font-size:.78rem;resize:vertical;outline:none;transition:border-color .2s;min-height:90px}
+    textarea:focus{border-color:var(--accent)}
+    textarea::placeholder{color:var(--text3)}
+
+    /* ── Help note ───────────────────────────────────── */
+    .help-note{background:rgba(77,163,255,.06);border:1px solid rgba(77,163,255,.15);border-radius:8px;padding:.55rem .75rem;font-size:.78rem;color:var(--text2);line-height:1.5}
+    .help-note strong{color:var(--accent)}
+
+    /* ── Empty state ─────────────────────────────────── */
+    .empty{text-align:center;padding:2rem 1rem;color:var(--text3);font-size:.85rem}
+    .empty .empty-icon{font-size:2rem;margin-bottom:.6rem;opacity:.4}
+
+    /* ── Misc ────────────────────────────────────────── */
+    .sep-line{height:1px;background:var(--border);margin:.5rem 0}
+    .text-sm{font-size:.82rem;color:var(--text2)}
+    .text-xs{font-size:.75rem;color:var(--text3)}
+    .mt-05{margin-top:.5rem}
+    .mt-1{margin-top:1rem}
+    .flex{display:flex}.gap-5{gap:.5rem}.aic{align-items:center}.jcsb{justify-content:space-between}
+
+    /* ── Animations ──────────────────────────────────── */
+    @keyframes fadein{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+    .fadein{animation:fadein .35s ease both}
+    @keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
+    .loading-shimmer{background:linear-gradient(90deg,var(--c0) 25%,var(--c1) 50%,var(--c0) 75%);background-size:200% 100%;animation:shimmer 1.5s infinite}
+
+    /* ── Responsive ──────────────────────────────────── */
+    @media(max-width:680px){
+      nav{padding:.6rem 1rem}
+      .view{padding:1rem .75rem}
+      .board-top{flex-direction:column}
+      .board-actions{width:100%}
+      .name-row{gap:.5rem}
+    }
   </style>
 </head>
 <body>
-  <main>
-    <div class="topbar">
-      <a class="brand" href="/index.html">Space<span>4Climate</span></a>
-      <div class="actions"><a class="btn" href="/commonboard-instructions.html">Instructions</a><a class="btn" href="/index.html">Back to Home</a></div>
+  <canvas id="star-canvas"></canvas>
+
+  <div id="app">
+    <!-- ── Nav ── -->
+    <nav>
+      <a class="nav-brand" href="/index.html">
+        <div class="dot"></div>
+        Space<span>4Climate</span>
+      </a>
+      <div class="nav-crumb">
+        <a href="/index.html">Home</a>
+        <span class="sep">/</span>
+        <span>Orbit Scheduler</span>
+      </div>
+      <div class="nav-actions">
+        <button class="nav-btn" id="nav-new-btn" style="display:none" onclick="App.showLanding()">New board</button>
+        <a class="nav-btn" href="/index.html">Back to site</a>
+      </div>
+    </nav>
+
+    <!-- ── Landing View ── -->
+    <div id="view-landing" class="view active fadein">
+      <div class="landing-wrap">
+        <div class="landing-hero">
+          <div class="orbit-icon">
+            <div class="ring"></div>
+            <div class="planet"></div>
+          </div>
+          <h1>Orbit Scheduler</h1>
+          <p class="sub">A space-mission-grade group scheduling tool. Create a board, share the link, let your team mark when they're available, and discover the best orbit for your meeting.</p>
+          <div class="badges">
+            <span class="badge badge-space">🛰 Satellite-inspired</span>
+            <span class="badge badge-climate">🌍 Climate-focused</span>
+            <span class="badge badge-local">🔒 Fully local</span>
+          </div>
+        </div>
+
+        <div class="cards-grid">
+          <!-- Create card -->
+          <div class="card fadein" style="animation-delay:.05s">
+            <div class="card-head">
+              <div class="card-icon blue">🚀</div>
+              <h3>Launch new board</h3>
+            </div>
+            <p>Create a scheduling board for your team. Set the date range and time window, then share the unique link.</p>
+            <div class="field">
+              <label>Board name</label>
+              <input id="create-name" maxlength="80" placeholder="e.g. Climate Mission Kickoff">
+            </div>
+            <div class="field-row">
+              <div class="field">
+                <label>Start date</label>
+                <input id="create-start" type="date">
+              </div>
+              <div class="field">
+                <label>End date</label>
+                <input id="create-end" type="date">
+              </div>
+            </div>
+            <div class="field-row">
+              <div class="field">
+                <label>Start time</label>
+                <select id="create-sh"></select>
+              </div>
+              <div class="field">
+                <label>End time</label>
+                <select id="create-eh"></select>
+              </div>
+            </div>
+            <div class="mt-05">
+              <button class="btn btn-primary btn-full" id="create-btn">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+                Launch board
+              </button>
+            </div>
+          </div>
+
+          <!-- Join card -->
+          <div class="card fadein" style="animation-delay:.1s">
+            <div class="card-icon green" style="margin-bottom:.75rem;width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.1rem">🌐</div>
+            <h3 style="margin-bottom:.5rem">Join existing board</h3>
+            <p>Have a board link or ID? Enter it below to load the schedule and add your availability.</p>
+            <div class="field">
+              <label>Board link or ID</label>
+              <input id="join-input" placeholder="Paste link or board ID…">
+            </div>
+            <button class="btn btn-outline btn-full mt-05" id="join-btn">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3"/></svg>
+              Open board
+            </button>
+
+            <div class="sep-line" style="margin:1.25rem 0"></div>
+            <h3 style="margin-bottom:.5rem">Merge a response</h3>
+            <p>If a teammate shared their availability code, paste it here to combine it with the board.</p>
+            <div class="field">
+              <label>Response code</label>
+              <input id="merge-quick-input" placeholder="Paste response code…">
+            </div>
+            <button class="btn btn-outline btn-full mt-05" id="merge-quick-btn">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
+              Import response
+            </button>
+          </div>
+        </div>
+
+        <!-- How it works -->
+        <div class="card fadein" style="animation-delay:.15s;grid-column:1/-1">
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1.25rem">
+            <div>
+              <div style="font-size:1.5rem;margin-bottom:.4rem">🚀</div>
+              <div style="font-family:var(--font-head);font-weight:600;font-size:.9rem;color:var(--text);margin-bottom:.3rem">1. Launch</div>
+              <div style="font-size:.8rem;color:var(--text2)">Create a board with your date range and time window.</div>
+            </div>
+            <div>
+              <div style="font-size:1.5rem;margin-bottom:.4rem">📡</div>
+              <div style="font-family:var(--font-head);font-weight:600;font-size:.9rem;color:var(--text);margin-bottom:.3rem">2. Transmit</div>
+              <div style="font-size:.8rem;color:var(--text2)">Share the board link with your team. On same device, multiple people can mark availability directly.</div>
+            </div>
+            <div>
+              <div style="font-size:1.5rem;margin-bottom:.4rem">🗓</div>
+              <div style="font-family:var(--font-head);font-weight:600;font-size:.9rem;color:var(--text);margin-bottom:.3rem">3. Mark</div>
+              <div style="font-size:.8rem;color:var(--text2)">Click or drag across slots to mark when you're free. Your selections glow instantly.</div>
+            </div>
+            <div>
+              <div style="font-size:1.5rem;margin-bottom:.4rem">🌍</div>
+              <div style="font-family:var(--font-head);font-weight:600;font-size:.9rem;color:var(--text);margin-bottom:.3rem">4. Orbit found</div>
+              <div style="font-size:.8rem;color:var(--text2)">The heat map highlights when the most people are free. Best times are ranked automatically.</div>
+            </div>
+            <div>
+              <div style="font-size:1.5rem;margin-bottom:.4rem">📤</div>
+              <div style="font-family:var(--font-head);font-weight:600;font-size:.9rem;color:var(--text);margin-bottom:.3rem">5. Cross-device</div>
+              <div style="font-size:.8rem;color:var(--text2)">Export your availability code and send it to the organiser to merge everyone's data.</div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
-    <section class="hero">
-      <h1>CommonBoard Availability Planner</h1>
-      <p>A shared scheduling board inspired by When2Meet: create a board, share the link, and let participants click the hours they can attend.</p>
-    </section>
-    <section class="layout" aria-label="CommonBoard planner">
-      <aside class="card stack">
-        <h2 style="margin:0 0 .5rem;">Board setup</h2>
-        <label>Board name<input id="boardName" maxlength="80" placeholder="e.g. Climate Storytelling Meeting"></label>
-        <div class="row">
-          <label>Start date<input id="startDate" type="date"></label>
-          <label>End date<input id="endDate" type="date"></label>
-        </div>
-        <div class="row">
-          <label>Start hour<select id="startHour"></select></label>
-          <label>End hour<select id="endHour"></select></label>
-        </div>
-        <div class="actions">
-          <button id="createBoardBtn" class="btn btn-primary" type="button">Create board</button>
-          <button id="loadBoardBtn" class="btn" type="button">Load from URL</button>
-        </div>
-        <div id="boardMeta" class="meta"></div>
-      </aside>
-      <section class="card stack">
-        <div id="backendNotice" class="notice" hidden></div>
-        <div class="head">
-          <div>
-            <div id="activeBoardTitle" class="board-title">No board loaded</div>
-            <div id="shareLink" class="board-link">Create or load a board to generate a share URL.</div>
+
+    <!-- ── Board View ── -->
+    <div id="view-board" class="view fadein">
+      <div class="board-wrap">
+        <!-- Board header -->
+        <div class="board-top">
+          <div class="board-info">
+            <div class="board-title-row">
+              <div class="board-title" id="bv-title">—</div>
+              <div class="board-status" id="bv-status">Live</div>
+            </div>
+            <div class="board-meta" id="bv-meta"></div>
           </div>
-          <div class="actions">
-            <label style="min-width:180px">Your name<input id="participantName" maxlength="40" placeholder="Your name"></label>
-            <button id="saveNameBtn" class="btn" type="button">Save name</button>
-            <button id="copyLinkBtn" class="btn" type="button">Copy link</button>
+          <div class="board-actions">
+            <button class="btn btn-outline btn-sm" id="bv-share-btn">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8M16 6l-4-4-4 4M12 2v13"/></svg>
+              Share board
+            </button>
+            <button class="btn btn-outline btn-sm" id="bv-export-btn">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+              Export my response
+            </button>
+            <button class="btn btn-outline btn-sm" id="bv-merge-btn">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
+              Merge response
+            </button>
           </div>
         </div>
-        <div class="legend">
-          <span><span class="dot" style="background:#223f65"></span>0 available</span>
-          <span><span class="dot" style="background:#2f78bc"></span>some available</span>
-          <span><span class="dot" style="background:#3ddc97"></span>most available</span>
-          <span><span class="dot" style="background:#9ef3c6;border:1px solid #c9ffe6"></span>your selection</span>
+
+        <!-- Name bar -->
+        <div class="name-row">
+          <span class="label">Your name:</span>
+          <input id="bv-name" maxlength="40" placeholder="Enter your name to mark availability…">
+          <button class="btn btn-success btn-sm" id="bv-name-save">Save</button>
+          <span class="text-xs" id="bv-name-hint" style="margin-left:.25rem"></span>
         </div>
-        <div id="bestSlots" class="best">Best time suggestions will appear here.</div>
-        <div class="table-wrap"><table id="availabilityTable" aria-live="polite"></table></div>
-        <div id="participantsSummary" class="people">No participants yet.</div>
-        <div class="small">Tip: click any slot to toggle your availability.</div>
-      </section>
-    </section>
-  </main>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-  <script src="/firebase-config.js"></script>
+
+        <!-- Main layout -->
+        <div class="board-main">
+          <!-- Grid -->
+          <div class="grid-card">
+            <div class="grid-card-head">
+              <h3 id="bv-grid-label">Availability Grid</h3>
+              <div style="display:flex;align-items:center;gap:.5rem">
+                <span class="text-xs" id="bv-grid-hint">Click or drag to mark your availability</span>
+                <div class="grid-mode">
+                  <button class="grid-mode-btn active" id="mode-mark" onclick="App.setGridMode('mark')">Mark</button>
+                  <button class="grid-mode-btn" id="mode-view" onclick="App.setGridMode('view')">Overview</button>
+                </div>
+              </div>
+            </div>
+            <div class="grid-outer" id="grid-outer">
+              <table class="grid-table" id="grid-table"></table>
+            </div>
+            <div class="legend" id="grid-legend">
+              <span class="legend-swatch" style="background:var(--c0)"></span><span>0 available</span>
+              <span class="legend-sep"></span>
+              <span class="legend-swatch" style="background:var(--c2)"></span><span>some</span>
+              <span class="legend-swatch" style="background:var(--c4)"></span><span>most</span>
+              <span class="legend-swatch" style="background:var(--c5)"></span><span>all</span>
+              <span class="legend-sep"></span>
+              <span class="legend-mine"></span><span>your selection</span>
+            </div>
+          </div>
+
+          <!-- Sidebar -->
+          <div class="sidebar">
+            <!-- Best times -->
+            <div class="side-card">
+              <div class="side-head">
+                <h4>Best times</h4>
+                <span class="text-xs" id="best-count">—</span>
+              </div>
+              <div class="side-body" id="best-list">
+                <div class="empty"><div class="empty-icon">🌑</div>No data yet — mark availability to see best times.</div>
+              </div>
+            </div>
+
+            <!-- Participants -->
+            <div class="side-card">
+              <div class="side-head">
+                <h4>Participants</h4>
+                <span class="text-xs" id="parts-count">0 people</span>
+              </div>
+              <div class="side-body" id="parts-list">
+                <div class="empty"><div class="empty-icon">👥</div>No participants yet.</div>
+              </div>
+            </div>
+
+            <!-- Board info -->
+            <div class="side-card">
+              <div class="side-head"><h4>Board info</h4></div>
+              <div class="side-body">
+                <div class="text-xs" id="board-id-display" style="font-family:monospace;word-break:break-all;color:var(--text3)"></div>
+                <div class="help-note mt-05">
+                  <strong>Local storage only.</strong> All data is saved in this browser. Use <em>Export my response</em> to share your availability across devices, or <em>Merge response</em> to import a teammate's data.
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div><!-- #app -->
+
+  <!-- ── Tooltip ── -->
+  <div id="tooltip">
+    <div class="tt-time" id="tt-time"></div>
+    <div class="tt-count" id="tt-count"></div>
+    <div class="tt-names" id="tt-names"></div>
+  </div>
+
+  <!-- ── Share Modal ── -->
+  <div class="modal-overlay" id="modal-share">
+    <div class="modal-box fadein">
+      <div class="modal-head">
+        <h3>Share board link</h3>
+        <button class="modal-close" onclick="App.closeModal('modal-share')">✕</button>
+      </div>
+      <p class="text-sm" style="margin-bottom:.85rem;color:var(--text2)">Send this link to your team. Anyone who opens it on this device will see the board and can mark their availability.</p>
+      <div class="link-box">
+        <input id="share-link-input" readonly>
+        <button class="btn btn-primary btn-sm" id="share-copy-btn" onclick="App.copyShareLink()">Copy</button>
+      </div>
+      <div class="help-note">
+        <strong>Cross-device tip:</strong> Since this is a local-only tool, others on different devices won't automatically see each other. Have each person use <em>Export my response</em> and send the code to the organiser to merge.
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Export Modal ── -->
+  <div class="modal-overlay" id="modal-export">
+    <div class="modal-box fadein">
+      <div class="modal-head">
+        <h3>Export your response</h3>
+        <button class="modal-close" onclick="App.closeModal('modal-export')">✕</button>
+      </div>
+      <p class="text-sm" style="margin-bottom:.85rem;color:var(--text2)">Copy this code and send it to your team organiser. They can import it using "Merge response" to see your availability on their device.</p>
+      <textarea id="export-code" readonly style="height:100px"></textarea>
+      <div style="display:flex;gap:.5rem;margin-top:.75rem">
+        <button class="btn btn-primary btn-sm" onclick="App.copyExportCode()">Copy code</button>
+        <button class="btn btn-outline btn-sm" onclick="App.closeModal('modal-export')">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Merge Modal ── -->
+  <div class="modal-overlay" id="modal-merge">
+    <div class="modal-box fadein">
+      <div class="modal-head">
+        <h3>Merge a teammate's response</h3>
+        <button class="modal-close" onclick="App.closeModal('modal-merge')">✕</button>
+      </div>
+      <p class="text-sm" style="margin-bottom:.85rem;color:var(--text2)">Paste the response code your teammate exported. Their availability will be added to this board.</p>
+      <div class="field">
+        <label>Response code</label>
+        <textarea id="merge-code-input" placeholder="Paste code here…"></textarea>
+      </div>
+      <div style="display:flex;gap:.5rem;margin-top:.25rem">
+        <button class="btn btn-success btn-sm" id="merge-confirm-btn" onclick="App.mergeCode()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>
+          Merge
+        </button>
+        <button class="btn btn-outline btn-sm" onclick="App.closeModal('modal-merge')">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Toast ── -->
+  <div id="toast"></div>
+
   <script>
+  (() => {
+    /* ── Star field ─────────────────────────────────── */
+    const canvas = document.getElementById('star-canvas');
+    const ctx = canvas.getContext('2d');
+    let stars = [];
+    function initStars() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      stars = Array.from({length: 140}, () => ({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        r: Math.random() * 1.2 + 0.2,
+        a: Math.random(),
+        speed: Math.random() * 0.004 + 0.001,
+        phase: Math.random() * Math.PI * 2
+      }));
+    }
+    let animId;
+    function drawStars() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const t = Date.now() / 1000;
+      stars.forEach(s => {
+        const alpha = 0.3 + 0.5 * (0.5 + 0.5 * Math.sin(t * s.speed * 20 + s.phase));
+        ctx.beginPath();
+        ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(180,210,255,${alpha})`;
+        ctx.fill();
+      });
+      animId = requestAnimationFrame(drawStars);
+    }
+    window.addEventListener('resize', initStars);
+    initStars(); drawStars();
+
+    /* ── Utilities ──────────────────────────────────── */
+    const $ = id => document.getElementById(id);
+    const toast = (msg, type='ok') => {
+      const el = $('toast');
+      el.textContent = msg;
+      el.className = `show toast-${type}`;
+      clearTimeout(toast._t);
+      toast._t = setTimeout(() => el.className = '', 2800);
+    };
+    const uid = () => 'ob-' + (crypto.randomUUID ? crypto.randomUUID().slice(0,12) : Date.now().toString(36) + Math.random().toString(36).slice(2,7));
+    const today = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; };
+    const addDays = (iso, n) => { const d = new Date(iso + 'T00:00:00'); d.setDate(d.getDate() + n); return d.toISOString().slice(0,10); };
+    const fmtDate = iso => new Date(iso + 'T00:00:00').toLocaleDateString(undefined, {weekday:'short', month:'short', day:'numeric'});
+    const fmtDateShort = iso => new Date(iso + 'T00:00:00').toLocaleDateString(undefined, {month:'short', day:'numeric'});
+    const fmtHour = h => `${String(h).padStart(2,'0')}:00`;
+    const dateRange = (start, end, max=21) => {
+      const out = [], a = new Date(start + 'T00:00:00'), b = new Date(end + 'T00:00:00');
+      while (a <= b && out.length < max) { out.push(a.toISOString().slice(0,10)); a.setDate(a.getDate()+1); }
+      return out;
+    };
+    const encode = obj => { try { return btoa(unescape(encodeURIComponent(JSON.stringify(obj)))); } catch { return ''; } };
+    const decode = str => { try { return JSON.parse(decodeURIComponent(escape(atob(str)))); } catch { return null; } };
+    const AVATAR_COLORS = ['#1a6bde','#0f9d7a','#8b3fa8','#c05020','#1a8fa0','#a04060','#4a8f1a','#6040b0'];
+    const avatarColor = name => AVATAR_COLORS[(name.charCodeAt(0) || 0) % AVATAR_COLORS.length];
+    const initials = name => name.trim().split(/\s+/).slice(0,2).map(w => w[0]).join('').toUpperCase() || '?';
+
+    /* ── Storage ────────────────────────────────────── */
+    const LS = {
+      get: k => { try { return JSON.parse(localStorage.getItem(k)); } catch { return null; } },
+      set: (k, v) => localStorage.setItem(k, JSON.stringify(v)),
+      del: k => localStorage.removeItem(k)
+    };
+    const BOARD_KEY = id => `orbit_board_${id}`;
+    const PARTS_KEY = id => `orbit_parts_${id}`;
+    const MY_ID_KEY = id => `orbit_myid_${id}`;
+    const MY_NAME_KEY = 'orbit_myname';
+
+    /* ── App state ──────────────────────────────────── */
+    const state = {
+      boardId: null,
+      board: null,
+      participants: {},
+      myId: null,
+      mode: 'mark',
+      dragging: false,
+      dragAdding: null,
+      touched: new Set()
+    };
+
+    /* ── Board CRUD ─────────────────────────────────── */
+    function saveBoard() {
+      if (!state.boardId || !state.board) return;
+      LS.set(BOARD_KEY(state.boardId), state.board);
+    }
+    function saveParts() {
+      if (!state.boardId) return;
+      LS.set(PARTS_KEY(state.boardId), state.participants);
+    }
+    function loadBoardData(id) {
+      state.board = LS.get(BOARD_KEY(id));
+      state.participants = LS.get(PARTS_KEY(id)) || {};
+      state.myId = LS.get(MY_ID_KEY(id));
+      return !!state.board;
+    }
+    function ensureMyId() {
+      if (state.myId) return state.myId;
+      const pid = uid();
+      state.myId = pid;
+      LS.set(MY_ID_KEY(state.boardId), pid);
+      return pid;
+    }
+
+    /* ── Computed helpers ───────────────────────────── */
+    function allSlotKeys(board) {
+      const days = dateRange(board.startDate, board.endDate);
+      const keys = [];
+      for (let h = board.startHour; h < board.endHour; h++)
+        for (const d of days) keys.push(`${d}T${String(h).padStart(2,'0')}`);
+      return keys;
+    }
+    function countMap() {
+      const c = {};
+      Object.values(state.participants).forEach(p => (p.slots || []).forEach(s => c[s] = (c[s] || 0) + 1));
+      return c;
+    }
+    function whoAtSlot(slot) {
+      return Object.values(state.participants).filter(p => (p.slots || []).includes(slot)).map(p => p.name);
+    }
+    function mySlots() {
+      const me = state.participants[state.myId];
+      return me ? new Set(me.slots || []) : new Set();
+    }
+    function participantCount() {
+      return Object.keys(state.participants).length;
+    }
+    function heatLevel(count, max) {
+      if (!count) return 0;
+      if (max <= 1) return 5;
+      const r = count / max;
+      if (r >= 0.95) return 5;
+      if (r >= 0.7) return 4;
+      if (r >= 0.45) return 3;
+      if (r >= 0.2) return 2;
+      return 1;
+    }
+
+    /* ── Grid rendering ─────────────────────────────── */
+    let gridDays = [], gridStartH = 0, gridEndH = 0;
+
+    function buildGrid() {
+      if (!state.board) return;
+      const { startDate, endDate, startHour, endHour } = state.board;
+      gridDays = dateRange(startDate, endDate);
+      gridStartH = startHour; gridEndH = endHour;
+      const table = $('grid-table');
+      table.innerHTML = '';
+      const c = countMap(), mine = mySlots();
+      const max = Math.max(0, ...Object.values(c));
+
+      // Header
+      const thead = document.createElement('thead');
+      const headRow = document.createElement('tr');
+      const thTime = document.createElement('th');
+      thTime.className = 'time-head';
+      thTime.textContent = '';
+      headRow.appendChild(thTime);
+      gridDays.forEach(d => {
+        const th = document.createElement('th');
+        th.innerHTML = `<div style="font-size:.68rem;font-weight:400;color:var(--text3)">${new Date(d+'T00:00:00').toLocaleDateString(undefined,{weekday:'short'})}</div><div>${fmtDateShort(d)}</div>`;
+        headRow.appendChild(th);
+      });
+      thead.appendChild(headRow);
+      table.appendChild(thead);
+
+      // Body
+      const tbody = document.createElement('tbody');
+      for (let h = gridStartH; h < gridEndH; h++) {
+        const tr = document.createElement('tr');
+        const tdTime = document.createElement('td');
+        tdTime.className = 'time-cell';
+        tdTime.textContent = fmtHour(h);
+        tr.appendChild(tdTime);
+        gridDays.forEach(d => {
+          const slot = `${d}T${String(h).padStart(2,'0')}`;
+          const n = c[slot] || 0;
+          const isMine = mine.has(slot);
+          const td = document.createElement('td');
+          td.className = `slot-cell heat-${heatLevel(n, max)}${isMine ? ' mine' : ''}`;
+          td.dataset.slot = slot;
+          td.style.width = `${Math.max(52, Math.floor(520 / gridDays.length))}px`;
+          td.style.height = '34px';
+          if (state.mode === 'view' && n > 0) {
+            td.style.fontSize = '.7rem';
+            td.style.fontWeight = '700';
+            td.style.color = n >= max * 0.8 ? '#032010' : 'rgba(230,240,255,.65)';
+            td.textContent = n;
+          }
+          td.addEventListener('mouseenter', ev => {
+            const c2 = countMap(), mine2 = mySlots();
+            showTooltip(ev, slot, c2[slot] || 0, mine2.has(slot));
+          });
+          td.addEventListener('mouseleave', hideTooltip);
+          tr.appendChild(td);
+        });
+        tbody.appendChild(tr);
+      }
+      table.appendChild(tbody);
+    }
+
+    function patchGrid() {
+      if (!state.board) return;
+      const c = countMap(), mine = mySlots();
+      const max = Math.max(0, ...Object.values(c));
+      document.querySelectorAll('.slot-cell').forEach(td => {
+        const slot = td.dataset.slot;
+        if (!slot) return;
+        const n = c[slot] || 0, isMine = mine.has(slot);
+        td.className = `slot-cell heat-${heatLevel(n, max)}${isMine ? ' mine' : ''}`;
+        if (state.mode === 'view' && n > 0) {
+          td.style.fontSize = '.7rem';
+          td.style.fontWeight = '700';
+          td.style.color = n >= max * 0.8 ? '#032010' : 'rgba(230,240,255,.65)';
+          td.textContent = n;
+        } else {
+          td.style.fontSize = '';
+          td.style.fontWeight = '';
+          td.style.color = '';
+          td.textContent = '';
+        }
+      });
+    }
+
+    /* ── Tooltip ────────────────────────────────────── */
+    const tt = $('tooltip');
+    function showTooltip(ev, slot, count, isMine) {
+      const [date, hour] = slot.split('T');
+      const who = whoAtSlot(slot);
+      $('tt-time').textContent = `${fmtDate(date)} ${fmtHour(parseInt(hour, 10))}–${fmtHour(parseInt(hour, 10)+1)}`;
+      $('tt-count').textContent = count ? `${count} available` : 'Nobody yet';
+      $('tt-names').textContent = who.length ? who.join(', ') : '';
+      tt.style.display = 'block';
+      posTooltip(ev);
+    }
+    function posTooltip(ev) {
+      const pad = 12;
+      let x = ev.clientX + pad, y = ev.clientY + pad;
+      if (x + 200 > window.innerWidth) x = ev.clientX - 200 - pad;
+      if (y + 100 > window.innerHeight) y = ev.clientY - 100 - pad;
+      tt.style.left = x + 'px';
+      tt.style.top = y + 'px';
+    }
+    function hideTooltip() { tt.style.display = 'none'; }
+    document.addEventListener('mousemove', ev => { if (tt.style.display !== 'none') posTooltip(ev); });
+
+    /* ── Drag / click interaction ───────────────────── */
+    const gridOuter = $('grid-outer');
+    gridOuter.addEventListener('mousedown', ev => {
+      const td = ev.target.closest('.slot-cell');
+      if (!td || state.mode !== 'mark') return;
+      if (!checkName()) return;
+      ev.preventDefault();
+      state.dragging = true;
+      state.touched.clear();
+      const slot = td.dataset.slot;
+      const isMine = mySlots().has(slot);
+      state.dragAdding = !isMine;
+      toggleSlot(slot);
+      state.touched.add(slot);
+    });
+    document.addEventListener('mouseup', () => { state.dragging = false; state.dragAdding = null; state.touched.clear(); });
+    gridOuter.addEventListener('mouseover', ev => {
+      if (!state.dragging) return;
+      const td = ev.target.closest('.slot-cell');
+      if (!td) return;
+      const slot = td.dataset.slot;
+      if (state.touched.has(slot)) return;
+      state.touched.add(slot);
+      const isMine = mySlots().has(slot);
+      if (state.dragAdding !== isMine) toggleSlot(slot);
+    });
+    // Touch support
+    gridOuter.addEventListener('touchstart', ev => {
+      const td = ev.target.closest('.slot-cell');
+      if (!td || state.mode !== 'mark') return;
+      if (!checkName()) return;
+      state.dragging = true;
+      state.touched.clear();
+      const slot = td.dataset.slot;
+      state.dragAdding = !mySlots().has(slot);
+      toggleSlot(slot);
+      state.touched.add(slot);
+    }, {passive:true});
+    gridOuter.addEventListener('touchmove', ev => {
+      if (!state.dragging) return;
+      const touch = ev.touches[0];
+      const el = document.elementFromPoint(touch.clientX, touch.clientY);
+      const td = el && el.closest('.slot-cell');
+      if (!td) return;
+      const slot = td.dataset.slot;
+      if (state.touched.has(slot)) return;
+      state.touched.add(slot);
+      const isMine = mySlots().has(slot);
+      if (state.dragAdding !== isMine) toggleSlot(slot);
+    }, {passive:true});
+    gridOuter.addEventListener('touchend', () => { state.dragging = false; });
+
+    function checkName() {
+      const nameInput = $('bv-name');
+      const name = nameInput.value.trim();
+      if (!name) {
+        nameInput.focus();
+        nameInput.style.borderColor = 'var(--danger)';
+        setTimeout(() => nameInput.style.borderColor = '', 1500);
+        toast('Enter your name first!', 'err');
+        return false;
+      }
+      return true;
+    }
+
+    function toggleSlot(slot) {
+      const pid = ensureMyId();
+      const name = $('bv-name').value.trim();
+      if (!name) return;
+      let p = state.participants[pid] || { id: pid, name, slots: [] };
+      p.name = name;
+      const set = new Set(p.slots || []);
+      if (state.dragAdding !== null) {
+        state.dragAdding ? set.add(slot) : set.delete(slot);
+      } else {
+        set.has(slot) ? set.delete(slot) : set.add(slot);
+      }
+      p.slots = Array.from(set).sort();
+      state.participants[pid] = p;
+      saveParts();
+      patchGrid();
+      renderBest();
+      renderParticipants();
+    }
+
+    /* ── Sidebar renders ────────────────────────────── */
+    function renderBest() {
+      if (!state.board) return;
+      const c = countMap();
+      const total = participantCount();
+      const entries = Object.entries(c).sort((a, b) => b[1] - a[1]).slice(0, 8);
+      const list = $('best-list');
+      if (!entries.length) {
+        list.innerHTML = '<div class="empty"><div class="empty-icon">🌑</div>Mark availability to see best times.</div>';
+        $('best-count').textContent = '—';
+        return;
+      }
+      const max = entries[0][1];
+      $('best-count').textContent = `${max} of ${total || 1} available`;
+      list.innerHTML = entries.map(([slot, n], i) => {
+        const [date, hour] = slot.split('T');
+        const h = parseInt(hour, 10);
+        const pct = total ? Math.round(n / total * 100) : 100;
+        const barW = Math.round(n / max * 100);
+        return `<div class="best-slot">
+          <div class="rank">#${i+1}</div>
+          <div class="info">
+            <div class="date">${fmtDate(date)}</div>
+            <div class="time">${fmtHour(h)} – ${fmtHour(h+1)}</div>
+          </div>
+          <div class="bar-wrap">
+            <div class="bar" style="width:${barW}%"></div>
+            <div class="pct">${pct}%</div>
+          </div>
+        </div>`;
+      }).join('');
+    }
+
+    function renderParticipants() {
+      const list = $('parts-list');
+      const parts = Object.values(state.participants);
+      $('parts-count').textContent = `${parts.length} ${parts.length === 1 ? 'person' : 'people'}`;
+      if (!parts.length) {
+        list.innerHTML = '<div class="empty"><div class="empty-icon">👥</div>No participants yet.</div>';
+        return;
+      }
+      list.innerHTML = parts.map(p => {
+        const isMe = p.id === state.myId;
+        const col = avatarColor(p.name);
+        return `<div class="participant-item">
+          <div class="participant-avatar" style="background:${col}20;border-color:${col}60;color:${col}">${initials(p.name)}</div>
+          <div class="participant-name${isMe ? ' you' : ''}">${p.name}${isMe ? ' (you)' : ''}</div>
+          <div class="participant-slots">${(p.slots || []).length} slots</div>
+          ${isMe ? `<button class="participant-del btn-xs" onclick="App.clearMySlots()" title="Clear my availability">✕ Clear</button>` : ''}
+        </div>`;
+      }).join('');
+    }
+
+    function renderBoardHeader() {
+      if (!state.board) return;
+      const { title, startDate, endDate, startHour, endHour } = state.board;
+      $('bv-title').textContent = title;
+      const days = dateRange(startDate, endDate);
+      $('bv-meta').innerHTML = `
+        <span>📅 ${fmtDate(startDate)}${days.length > 1 ? ` → ${fmtDate(endDate)}` : ''}</span>
+        <span>🕐 ${fmtHour(startHour)} – ${fmtHour(endHour)}</span>
+        <span>📍 ${Intl.DateTimeFormat().resolvedOptions().timeZone}</span>
+      `;
+      $('board-id-display').textContent = `Board ID: ${state.boardId}`;
+    }
+
+    function renderAll() {
+      renderBoardHeader();
+      buildGrid();
+      renderBest();
+      renderParticipants();
+    }
+
+    /* ── View switching ─────────────────────────────── */
+    function showView(id) {
+      document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+      $(id).classList.add('active');
+      $('nav-new-btn').style.display = id === 'view-board' ? '' : 'none';
+    }
+
+    /* ── Boot board ─────────────────────────────────── */
+    function openBoard(id) {
+      if (!loadBoardData(id)) return false;
+      state.boardId = id;
+      // restore name
+      const savedName = LS.get(MY_NAME_KEY) || '';
+      $('bv-name').value = savedName;
+      if (savedName && state.myId && state.participants[state.myId]) {
+        $('bv-name-hint').textContent = `Welcome back, ${savedName}`;
+      }
+      // update URL
+      const u = new URL(window.location.href);
+      u.searchParams.set('b', id);
+      history.replaceState({}, '', u.toString());
+      showView('view-board');
+      renderAll();
+      return true;
+    }
+
+    /* ── Grid mode ──────────────────────────────────── */
+    function setGridMode(mode) {
+      state.mode = mode;
+      $('mode-mark').classList.toggle('active', mode === 'mark');
+      $('mode-view').classList.toggle('active', mode === 'view');
+      $('bv-grid-hint').textContent = mode === 'mark' ? 'Click or drag to mark your availability' : 'Showing group availability heatmap';
+      $('grid-outer').style.cursor = mode === 'mark' ? 'crosshair' : 'default';
+      patchGrid();
+    }
+
+    /* ── App public API ─────────────────────────────── */
+    window.App = {
+      setGridMode,
+      showLanding() { showView('view-landing'); },
+      clearMySlots() {
+        if (!state.myId || !state.participants[state.myId]) return;
+        if (!confirm('Clear all your availability slots?')) return;
+        state.participants[state.myId].slots = [];
+        saveParts();
+        patchGrid(); renderBest(); renderParticipants();
+        toast('Your slots cleared.');
+      },
+      openModal(id) { $(id).classList.add('open'); },
+      closeModal(id) { $(id).classList.remove('open'); },
+      copyShareLink() {
+        const val = $('share-link-input').value;
+        navigator.clipboard.writeText(val).then(() => { toast('Link copied!'); $('share-copy-btn').textContent = 'Copied!'; setTimeout(() => $('share-copy-btn').textContent = 'Copy', 1800); }).catch(() => toast('Copy failed — select the link manually.', 'err'));
+      },
+      copyExportCode() {
+        const val = $('export-code').value;
+        navigator.clipboard.writeText(val).then(() => toast('Code copied!')).catch(() => toast('Copy failed.', 'err'));
+      },
+      mergeCode() {
+        const raw = $('merge-code-input').value.trim();
+        if (!raw) return toast('Paste a code first.', 'err');
+        doMerge(raw, () => { App.closeModal('modal-merge'); $('merge-code-input').value = ''; });
+      }
+    };
+
+    function doMerge(raw, onSuccess) {
+      const data = decode(raw);
+      if (!data || !data.id || !data.name || !Array.isArray(data.slots)) {
+        toast('Invalid response code.', 'err'); return;
+      }
+      if (data.boardId && data.boardId !== state.boardId) {
+        toast('This code is for a different board.', 'err'); return;
+      }
+      // If no board loaded, try to load or error
+      if (!state.board) { toast('Load a board first.', 'err'); return; }
+      state.participants[data.id] = { id: data.id, name: data.name, slots: data.slots, mergedAt: Date.now() };
+      saveParts();
+      patchGrid(); renderBest(); renderParticipants();
+      toast(`Merged ${data.name}'s availability (${data.slots.length} slots).`);
+      if (onSuccess) onSuccess();
+    }
+
+    /* ── UI bindings ────────────────────────────────── */
+    // Create board
     (() => {
-      const MAX_DAYS = 14;
-      const state = { boardId:null, board:null, participants:{}, myName:localStorage.getItem("s4c-commonboard-name")||"", mode:"local", firestore:null, unBoard:null, unParticipants:null };
-      const e = (id) => document.getElementById(id);
-      const els = {
-        boardName:e("boardName"), startDate:e("startDate"), endDate:e("endDate"), startHour:e("startHour"), endHour:e("endHour"),
-        createBoardBtn:e("createBoardBtn"), loadBoardBtn:e("loadBoardBtn"), boardMeta:e("boardMeta"), backendNotice:e("backendNotice"),
-        activeBoardTitle:e("activeBoardTitle"), shareLink:e("shareLink"), participantName:e("participantName"), saveNameBtn:e("saveNameBtn"),
-        copyLinkBtn:e("copyLinkBtn"), bestSlots:e("bestSlots"), availabilityTable:e("availabilityTable"), participantsSummary:e("participantsSummary")
-      };
-      const fmtDate = (iso) => new Date(iso+"T00:00:00").toLocaleDateString(undefined,{weekday:"short",month:"short",day:"numeric"});
-      const tz = () => Intl.DateTimeFormat().resolvedOptions().timeZone;
-      const boardIdFromUrl = () => new URLSearchParams(window.location.search).get("board");
-      const localKey = (id) => "s4c-commonboard-"+id;
-      const participantKey = (id) => "s4c-commonboard-participant-"+id;
-      const hr = (n) => String(n).padStart(2,"0")+":00";
-      const setNotice = (m) => { els.backendNotice.hidden=!m; els.backendNotice.textContent=m||""; };
-      const today = () => { const d=new Date(); d.setMinutes(d.getMinutes()-d.getTimezoneOffset()); return d.toISOString().slice(0,10); };
-      const addDays = (s,n) => { const d=new Date(s+"T00:00:00"); d.setDate(d.getDate()+n); return d.toISOString().slice(0,10); };
-      const uid = () => {
-        if (window.crypto && typeof crypto.randomUUID === "function") return "cb-"+crypto.randomUUID().slice(0,12);
-        return "cb-"+Date.now().toString(36)+Math.random().toString(36).slice(2,8);
-      };
-      const loadLocal = (id) => { try{return JSON.parse(localStorage.getItem(localKey(id))||"null");}catch{return null;} };
-      const saveLocal = (id,data) => localStorage.setItem(localKey(id), JSON.stringify(data));
-      const updateUrl = (id) => { const u=new URL(window.location.href); u.searchParams.set("board",id); history.replaceState({}, "", u.toString()); };
-      const daterange = (start,end) => { const out=[]; const a=new Date(start+"T00:00:00"); const b=new Date(end+"T00:00:00"); while(a<=b&&out.length<=MAX_DAYS){out.push(a.toISOString().slice(0,10)); a.setDate(a.getDate()+1);} return out; };
-      const slots = (board) => { const days=daterange(board.startDate,board.endDate), out=[]; for(let h=board.startHour;h<board.endHour;h++) for(const d of days) out.push(d+"T"+String(h).padStart(2,"0")); return out; };
-      const slotText = (slot) => { const [d,h]=slot.split("T"); return fmtDate(d)+" "+h+":00"; };
-      const counts = () => { const c={}; Object.values(state.participants).forEach(p => (p.slots||[]).forEach(s => c[s]=(c[s]||0)+1)); return c; };
-      const myP = () => {
-        if(!state.myName) return null;
-        const pid = state.boardId ? localStorage.getItem(participantKey(state.boardId)) : null;
-        return pid ? (state.participants[pid] || {name:state.myName,slots:[]}) : {name:state.myName,slots:[]};
-      };
-      const color = (count,max) => !count ? "rgba(34,61,96,.22)" : (count/max>=.8 ? "rgba(61,220,151,.58)" : (count/max>=.45 ? "rgba(79,169,255,.55)" : "rgba(55,116,185,.45)"));
-      const renderMeta = () => { els.boardMeta.innerHTML = !state.board ? "<span>No board loaded.</span>" : `<span><strong>Board ID:</strong> ${state.boardId}</span><span><strong>Date range:</strong> ${state.board.startDate} → ${state.board.endDate}</span><span><strong>Hours:</strong> ${hr(state.board.startHour)}–${hr(state.board.endHour)}</span><span><strong>Your timezone:</strong> ${tz()}</span>`; };
-      const renderHeader = () => {
-        if(!state.board){ els.activeBoardTitle.textContent="No board loaded"; els.shareLink.textContent="Create or load a board to generate a share URL."; return; }
-        const link=new URL(window.location.href); link.searchParams.set("board",state.boardId); els.activeBoardTitle.textContent=state.board.title; els.shareLink.textContent=link.toString();
-      };
-      const renderPeople = () => { const names=Object.values(state.participants).map(p=>p.name).filter(Boolean); els.participantsSummary.textContent = names.length ? `Participants (${names.length}): ${names.join(", ")}` : "No participants yet."; };
-      const renderBest = () => {
-        if(!state.board){ els.bestSlots.textContent="Best time suggestions will appear here."; return; }
-        const c=counts(), all=slots(state.board); let best=[], max=0; all.forEach(s=>{ const n=c[s]||0; if(n>max){max=n;best=[s];} else if(n===max&&n>0){best.push(s);} });
-        if(!max){ els.bestSlots.textContent="No overlap yet. Ask participants to mark availability."; return; }
-        const top=best.slice(0,4).map(slotText).join(" • "); const extra=best.length>4 ? ` +${best.length-4} more` : "";
-        els.bestSlots.textContent=`Top overlap: ${max} participant${max===1?"":"s"} available at ${top}${extra}.`;
-      };
-      const renderTable = () => {
-        if(!state.board){ els.availabilityTable.innerHTML='<tr><td style="padding:1rem;color:#9db4d4">Create or load a board first.</td></tr>'; return; }
-        const days=daterange(state.board.startDate,state.board.endDate), c=counts(), mine=new Set((myP()||{}).slots||[]), max=Math.max(0,...Object.values(c));
-        const thead=document.createElement("thead"), hrw=document.createElement("tr"), th=document.createElement("th"); th.className="time"; th.textContent="Time"; hrw.appendChild(th);
-        days.forEach(d=>{ const cell=document.createElement("th"); cell.textContent=fmtDate(d); hrw.appendChild(cell); }); thead.appendChild(hrw);
-        const tbody=document.createElement("tbody");
-        for(let h=state.board.startHour;h<state.board.endHour;h++){ const tr=document.createElement("tr"), t=document.createElement("td"); t.className="time"; t.textContent=hr(h); tr.appendChild(t);
-          days.forEach(d=>{ const slot=d+"T"+String(h).padStart(2,"0"), td=document.createElement("td"), b=document.createElement("button"), n=c[slot]||0;
-            b.className="slot"+(mine.has(slot)?" mine":""); b.style.background=color(n,max||1); b.textContent=n?String(n):""; b.title=`${slotText(slot)} — ${n} available`;
-            b.setAttribute("aria-label","Toggle availability for "+slotText(slot)); b.addEventListener("click",()=>toggleSlot(slot)); td.appendChild(b); tr.appendChild(td); });
-          tbody.appendChild(tr);
-        }
-        els.availabilityTable.innerHTML=""; els.availabilityTable.appendChild(thead); els.availabilityTable.appendChild(tbody);
-      };
-      const render = () => { renderMeta(); renderHeader(); renderPeople(); renderBest(); renderTable(); };
-      const firebaseConfig = () => {
-        const cfg = window.S4C_FIREBASE_CONFIG; if(!cfg) return null;
-        const keys = ["apiKey","authDomain","projectId","storageBucket","messagingSenderId","appId"];
-        // Placeholder values in firebase-config.js are prefixed with REPLACE_WITH_.
-        return keys.some((k)=>typeof cfg[k]!=="string"||!cfg[k]||cfg[k].startsWith("REPLACE_WITH_")) ? null : cfg;
-      };
-      const initStore = () => {
-        const cfg=firebaseConfig(); if(!cfg){state.mode="local"; setNotice("Firebase is not configured: boards are stored locally in your browser only and cannot be shared with others."); return;}
-        try{ const app=firebase.apps.length?firebase.app():firebase.initializeApp(cfg); state.firestore=app.firestore(); state.mode="firestore"; setNotice("Live sync enabled with Firebase Firestore."); }
-        catch{ state.mode="local"; setNotice("Firebase initialization failed; using local browser storage."); }
-      };
-      const persistLocal = () => { if(state.mode==="local"&&state.boardId&&state.board) saveLocal(state.boardId,{board:state.board,participants:state.participants}); };
-      const ensureMyParticipantId = () => {
-        if(!state.boardId) return null;
-        const key = participantKey(state.boardId);
-        let pid = localStorage.getItem(key);
-        if(!pid){
-          pid = (window.crypto && typeof crypto.randomUUID === "function") ? crypto.randomUUID() : ("p-"+Date.now().toString(36)+Math.random().toString(36).slice(2,8));
-          localStorage.setItem(key, pid);
-        }
-        return pid;
-      };
-      async function upsertMe(mutator){
-        if(!state.board) return alert("Load a board first.");
-        const name=(els.participantName.value||"").trim(); if(!name) return alert("Enter your name first.");
-        const pid=ensureMyParticipantId(); if(!pid) return;
-        const cur=state.participants[pid]||{name,slots:[]}, next=mutator({...cur,name});
-        if(state.mode==="firestore"){ await state.firestore.collection("commonboardBoards").doc(state.boardId).collection("participants").doc(pid).set({...next,name,updatedAt:Date.now()},{merge:true}); }
-        else { state.participants[pid]={...next,name,updatedAt:Date.now()}; persistLocal(); render(); }
+      const t = today();
+      $('create-start').value = t;
+      $('create-end').value = addDays(t, 4);
+      for (let h = 0; h < 24; h++) {
+        const a = document.createElement('option');
+        a.value = h; a.textContent = fmtHour(h);
+        $('create-sh').appendChild(a);
       }
-      async function toggleSlot(slot){ try{ await upsertMe(p=>{ const s=new Set(p.slots||[]); s.has(slot)?s.delete(slot):s.add(slot); p.slots=Array.from(s).sort(); return p; }); }catch{ alert("Could not update this slot right now."); } }
-      async function saveName(){
-        const name=(els.participantName.value||"").trim(); if(!name) return alert("Please enter your name.");
-        state.myName=name; localStorage.setItem("s4c-commonboard-name",name); try{ await upsertMe(p=>p); }catch{ alert("Name saved locally, but sync failed."); }
+      for (let h = 1; h <= 24; h++) {
+        const a = document.createElement('option');
+        a.value = h; a.textContent = fmtHour(h % 24 || 24);
+        $('create-eh').appendChild(a);
       }
-      async function copyLink(){
-        if(!state.boardId) return alert("Load or create a board first.");
-        const link=new URL(window.location.href); link.searchParams.set("board",state.boardId);
-        try{ await navigator.clipboard.writeText(link.toString()); els.copyLinkBtn.textContent="Copied!"; setTimeout(()=>els.copyLinkBtn.textContent="Copy link",1200);}catch{ alert(link.toString()); }
-      }
-      async function createBoard(){
-        const title=(els.boardName.value||"").trim()||"Space4Climate Session", startDate=els.startDate.value, endDate=els.endDate.value, startHour=Number(els.startHour.value), endHour=Number(els.endHour.value);
-        if(!startDate||!endDate) return alert("Please set both dates.");
-        if(startDate>endDate) return alert("Start date must be on or before end date.");
-        if(daterange(startDate,endDate).length>MAX_DAYS) return alert("Keep the date range to 14 days or less.");
-        if(startHour>=endHour) return alert("End hour must be after start hour.");
-        let id=uid(), board={title,startDate,endDate,startHour,endHour,timezone:tz(),updatedAt:Date.now()};
-        if(state.mode==="firestore"){ const ref=state.firestore.collection("commonboardBoards").doc(); id=ref.id; await ref.set(board); }
-        else saveLocal(id,{board,participants:{}});
-        await loadBoard(id);
-      }
-      async function loadBoard(id){
-        if(!id) return alert("No board ID found in URL.");
-        if(state.unBoard) state.unBoard(); if(state.unParticipants) state.unParticipants();
-        state.boardId=id; updateUrl(id);
-        if(state.mode==="firestore"){
-          const ref=state.firestore.collection("commonboardBoards").doc(id);
-          state.unBoard = ref.onSnapshot((snap)=>{ if(!snap.exists){state.board=null;state.participants={};setNotice("Board not found. Create a new one.");render();return;} state.board=snap.data(); render(); },()=>setNotice("Live sync issue detected. Check your connection or Firestore permissions."));
-          state.unParticipants = ref.collection("participants").onSnapshot((snap)=>{ const p={}; snap.forEach((d)=>p[d.id]=d.data()); state.participants=p; render(); });
-          return;
-        }
-        const local=loadLocal(id);
-        if(!local||!local.board){ state.board=null; state.participants={}; setNotice("Board not found in this browser for local mode. Create a new one."); render(); return; }
-        state.board=local.board; state.participants=local.participants||{}; render();
-      }
-      function boot(){
-        for(let h=0;h<24;h++){ const a=document.createElement("option"), b=document.createElement("option"); a.value=String(h); a.textContent=hr(h); els.startHour.appendChild(a); if(h<23){ b.value=String(h+1); b.textContent=hr(h+1); els.endHour.appendChild(b); } }
-        const t=today(); els.startDate.value=t; els.endDate.value=addDays(t,2); els.startHour.value="9"; els.endHour.value="17"; if(state.myName) els.participantName.value=state.myName;
-        initStore();
-        els.createBoardBtn.addEventListener("click",()=>createBoard().catch(()=>alert("Unable to create board.")));
-        els.loadBoardBtn.addEventListener("click",()=>loadBoard(boardIdFromUrl()).catch(()=>alert("Unable to load board.")));
-        els.saveNameBtn.addEventListener("click",()=>saveName().catch(()=>alert("Unable to save name.")));
-        els.copyLinkBtn.addEventListener("click",copyLink);
-        window.addEventListener("storage",(ev)=>{ if(state.mode!=="local"||!state.boardId||ev.key!==localKey(state.boardId)) return; const local=loadLocal(state.boardId); if(local&&local.board){state.board=local.board; state.participants=local.participants||{}; render();} });
-        const id=boardIdFromUrl(); if(id) loadBoard(id).catch(()=>{setNotice("Could not load board from URL."); render();}); else render();
-      }
-      boot();
+      $('create-sh').value = '9';
+      $('create-eh').value = '17';
     })();
+
+    $('create-btn').addEventListener('click', () => {
+      const title = ($('create-name').value.trim()) || 'Space4Climate Session';
+      const startDate = $('create-start').value;
+      const endDate = $('create-end').value;
+      const startHour = parseInt($('create-sh').value, 10);
+      const endHour = parseInt($('create-eh').value, 10);
+      if (!startDate || !endDate) return toast('Set both dates.', 'err');
+      if (startDate > endDate) return toast('Start date must be before end date.', 'err');
+      if (dateRange(startDate, endDate).length > 21) return toast('Keep range to 21 days or fewer.', 'err');
+      if (startHour >= endHour) return toast('End time must be after start time.', 'err');
+      const id = uid();
+      const board = { id, title, startDate, endDate, startHour, endHour, timezone: Intl.DateTimeFormat().resolvedOptions().timeZone, createdAt: Date.now() };
+      LS.set(BOARD_KEY(id), board);
+      LS.set(PARTS_KEY(id), {});
+      openBoard(id);
+      toast('Board launched!');
+    });
+
+    // Join board
+    $('join-btn').addEventListener('click', () => {
+      const raw = $('join-input').value.trim();
+      if (!raw) return toast('Paste a link or ID.', 'err');
+      let id = raw;
+      try {
+        const u = new URL(raw);
+        id = u.searchParams.get('b') || raw;
+      } catch {}
+      if (!openBoard(id)) toast('Board not found in this browser. Create a new one.', 'err');
+    });
+
+    // Quick merge on landing
+    $('merge-quick-btn').addEventListener('click', () => {
+      const raw = $('merge-quick-input').value.trim();
+      if (!raw) return toast('Paste a response code.', 'err');
+      const data = decode(raw);
+      if (!data || !data.boardId) return toast('Invalid code or missing board ID.', 'err');
+      if (!openBoard(data.boardId)) {
+        // Board not here yet — create a stub if encoded in code
+        if (data.board) {
+          LS.set(BOARD_KEY(data.boardId), data.board);
+          LS.set(PARTS_KEY(data.boardId), {});
+          openBoard(data.boardId);
+        } else {
+          return toast('Board not found. Load the board first, then merge.', 'err');
+        }
+      }
+      doMerge(raw, () => { $('merge-quick-input').value = ''; });
+    });
+
+    // Name save
+    $('bv-name-save').addEventListener('click', () => {
+      const name = $('bv-name').value.trim();
+      if (!name) return toast('Enter your name.', 'err');
+      LS.set(MY_NAME_KEY, name);
+      const pid = ensureMyId();
+      if (!state.participants[pid]) {
+        state.participants[pid] = { id: pid, name, slots: [] };
+      } else {
+        state.participants[pid].name = name;
+      }
+      saveParts();
+      renderParticipants();
+      $('bv-name-hint').textContent = `Saved as ${name}`;
+      toast(`Name saved: ${name}`);
+    });
+    $('bv-name').addEventListener('keydown', ev => {
+      if (ev.key === 'Enter') $('bv-name-save').click();
+    });
+
+    // Share
+    $('bv-share-btn').addEventListener('click', () => {
+      const u = new URL(window.location.href);
+      u.searchParams.set('b', state.boardId);
+      $('share-link-input').value = u.toString();
+      App.openModal('modal-share');
+    });
+
+    // Export
+    $('bv-export-btn').addEventListener('click', () => {
+      if (!state.myId || !state.participants[state.myId]) {
+        return toast('Add your name and mark availability first.', 'err');
+      }
+      const me = state.participants[state.myId];
+      const payload = { id: me.id, name: me.name, slots: me.slots, boardId: state.boardId, board: state.board };
+      $('export-code').value = encode(payload);
+      App.openModal('modal-export');
+    });
+
+    // Merge
+    $('bv-merge-btn').addEventListener('click', () => App.openModal('modal-merge'));
+
+    // Close modals on overlay click
+    document.querySelectorAll('.modal-overlay').forEach(el => {
+      el.addEventListener('click', ev => { if (ev.target === el) el.classList.remove('open'); });
+    });
+    // ESC closes modals
+    document.addEventListener('keydown', ev => {
+      if (ev.key === 'Escape') document.querySelectorAll('.modal-overlay.open').forEach(el => el.classList.remove('open'));
+    });
+
+    /* ── Init from URL ──────────────────────────────── */
+    (() => {
+      const params = new URLSearchParams(window.location.search);
+      const id = params.get('b');
+      if (id) {
+        if (!openBoard(id)) toast('Board not found in this browser — create a new one.', 'err');
+      }
+    })();
+
+  })();
   </script>
   <script src="/site-support.js"></script>
 </body>
