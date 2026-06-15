@@ -7,6 +7,4 @@ Allow: /
 User-agent: AhrefsSiteAudit
 Allow: /
 
-Sitemap: https://www.space4climate.tech/sitemap.xml
-
-Sitemap: https://www.space4climate.tech/sitemap.xml
+Sitemap: https://www.space4climate.org/sitemap.xml

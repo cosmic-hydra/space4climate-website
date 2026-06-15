@@ -44,6 +44,31 @@ window.S4C_FIREBASE_CONFIG = {
  * service cloud.firestore {
  *   match /databases/{database}/documents {
  *
+ *     // ── Orbit Scheduler (commonboard.html) ──────────────────────
+ *     // Public group-scheduling boards (When2meet-style). Anyone with
+ *     // the link can read the board and add their own availability.
+ *     // Boards are immutable once created; participants are open but
+ *     // size/shape-validated to limit abuse.
+ *     match /boards/{boardId} {
+ *       allow read: if true;
+ *       allow create: if request.resource.data.keys().hasOnly(
+ *               ['id','title','startDate','endDate','startHour','endHour','slotMinutes','timezone','createdAt'])
+ *             && request.resource.data.title is string
+ *             && request.resource.data.title.size() <= 120
+ *             && request.resource.data.startHour is number
+ *             && request.resource.data.endHour is number;
+ *       allow update, delete: if false;
+ *
+ *       match /participants/{participantId} {
+ *         allow read: if true;
+ *         allow create, update: if request.resource.data.name is string
+ *               && request.resource.data.name.size() <= 60
+ *               && request.resource.data.slots is list
+ *               && request.resource.data.slots.size() <= 2000;
+ *         allow delete: if true;
+ *       }
+ *     }
+ *
  *     // CommonBoard bookings – public read; anyone can create/delete
  *     // Tighten later if needed (e.g. require auth for delete).
  *     match /bookings/{slotId} {
