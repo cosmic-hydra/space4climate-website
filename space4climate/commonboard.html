@@ -643,6 +643,7 @@
     const avatarColor = name => AVATAR_COLORS[(name.charCodeAt(0) || 0) % AVATAR_COLORS.length];
     const initials = name => name.trim().split(/\s+/).slice(0,2).map(w => w[0]).join('').toUpperCase() || '?';
     const clone = obj => JSON.parse(JSON.stringify(obj));
+    const formatError = err => err && err.message ? err.message : 'unknown error';
 
     /* ── Storage ────────────────────────────────────── */
     const LS = {
@@ -654,9 +655,10 @@
     const PARTS_KEY = id => `orbit_parts_${id}`;
     const MY_ID_KEY = id => `orbit_myid_${id}`;
     const MY_NAME_KEY = 'orbit_myname';
-    const CLOUD_BASE = 'https://jsonblob.com/api/jsonBlob';
+    const CLOUD_BASE = window.S4C_ORBIT_CLOUD_BASE || 'https://jsonblob.com/api/jsonBlob';
     const CLOUD_SYNC_DEBOUNCE = 700;
     const CLOUD_POLL_MS = 5000;
+    const CLOUD_SYNC_RETRY_MS = 1200;
     const VISIBILITY_REFRESH_MS = 1500;
 
     const Cloud = {
@@ -680,7 +682,11 @@
         });
         if (res.status === 404) return null;
         if (!res.ok) throw new Error(`read failed (${res.status})`);
-        return normaliseDocument(await res.json(), id);
+        try {
+          return normaliseDocument(await res.json(), id);
+        } catch {
+          throw new Error('cloud data is malformed');
+        }
       },
       async write(id, doc) {
         const res = await fetch(this.url(id), {
@@ -763,7 +769,8 @@
       syncInFlight: false,
       syncQueued: false,
       pollTimer: null,
-      lastCloudRefresh: 0
+      lastCloudRefresh: 0,
+      lastRemoteError: null
     };
 
     /* ── Board CRUD ─────────────────────────────────── */
@@ -828,6 +835,7 @@
       if (!state.boardId) return false;
       try {
         const doc = await Cloud.read(state.boardId);
+        state.lastRemoteError = null;
         if (!doc) return false;
         state.lastCloudRefresh = Date.now();
         if (!state.board || state.board.id !== doc.board.id) {
@@ -850,6 +858,7 @@
         if (!silent) setBoardStatus(Object.keys(state.dirtyParticipants).length ? 'Saving…' : 'Cloud synced');
         return true;
       } catch (err) {
+        state.lastRemoteError = err;
         if (!silent) setBoardStatus('Cloud paused');
         return false;
       }
@@ -858,7 +867,7 @@
     function scheduleCloudSync(delay=CLOUD_SYNC_DEBOUNCE) {
       if (!state.boardId || !state.board) return;
       clearTimeout(state.syncTimer);
-      state.syncTimer = setTimeout(() => { syncToCloud(); }, delay);
+      state.syncTimer = setTimeout(syncToCloud, delay);
       setBoardStatus('Saving…');
     }
 
@@ -874,6 +883,7 @@
       setBoardStatus('Saving…');
       try {
         const remoteDoc = await Cloud.read(state.boardId);
+        if (remoteDoc === null) throw new Error('board missing in cloud');
         const mergedParticipants = normaliseParticipants(remoteDoc && remoteDoc.participants);
         Object.keys(dirtySnapshot).forEach(id => {
           const participant = normaliseParticipant(state.participants[id], id);
@@ -899,7 +909,7 @@
         state.syncInFlight = false;
         if (state.syncQueued || Object.keys(state.dirtyParticipants).length) {
           state.syncQueued = false;
-          scheduleCloudSync(1200);
+          scheduleCloudSync(CLOUD_SYNC_RETRY_MS);
         }
       }
     }
@@ -1222,6 +1232,7 @@
       state.boardId = id;
       state.dirtyParticipants = {};
       state.syncQueued = false;
+      state.lastRemoteError = null;
       setBoardStatus('Connecting…');
       const remoteLoaded = await refreshFromCloud(true);
       if (!remoteLoaded && !loadBoardData(id)) {
@@ -1345,7 +1356,7 @@
         await openBoard(id);
         toast('Board launched to the shared cloud!');
       } catch (err) {
-        toast(`Could not create the cloud board: ${err && err.message ? err.message : 'unknown error'}.`, 'err');
+        toast(`Could not create the cloud board: ${formatError(err)}.`, 'err');
       } finally {
         btn.disabled = false;
       }
@@ -1360,7 +1371,7 @@
         const u = new URL(raw);
         id = u.searchParams.get('b') || raw;
       } catch {}
-      if (!await openBoard(id)) toast('Board not found. Check the link or create a new cloud board.', 'err');
+      if (!await openBoard(id)) toast(state.lastRemoteError ? `Could not reach the cloud board: ${formatError(state.lastRemoteError)}.` : 'Board not found. Check the link or create a new cloud board.', 'err');
     });
 
     // Quick merge on landing
@@ -1436,7 +1447,7 @@
 
     /* ── Init from URL ──────────────────────────────── */
     document.addEventListener('visibilitychange', () => {
-      if (!document.hidden && state.boardId && Date.now() - state.lastCloudRefresh > VISIBILITY_REFRESH_MS) refreshFromCloud(true);
+      if (!document.hidden && state.boardId && Date.now() - state.lastCloudRefresh > VISIBILITY_REFRESH_MS) refreshFromCloud(false);
     });
 
     (async () => {
