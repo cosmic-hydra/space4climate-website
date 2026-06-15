@@ -304,11 +304,11 @@
             <div class="planet"></div>
           </div>
           <h1>Orbit Scheduler</h1>
-          <p class="sub">A space-mission-grade group scheduling tool. Create a board, share the link, let your team mark when they're available, and discover the best orbit for your meeting.</p>
+          <p class="sub">A space-mission-grade group scheduling tool. Create a public board, share the link, let your team mark when they're available, and discover the best orbit for your meeting.</p>
           <div class="badges">
             <span class="badge badge-space">🛰 Satellite-inspired</span>
             <span class="badge badge-climate">🌍 Climate-focused</span>
-            <span class="badge badge-local">☁️ Shared cloud board</span>
+            <span class="badge badge-local">☁️ Public cloud board</span>
           </div>
         </div>
 
@@ -656,7 +656,8 @@
     const MY_NAME_KEY = 'orbit_myname';
     const CLOUD_BASE = 'https://jsonblob.com/api/jsonBlob';
     const CLOUD_SYNC_DEBOUNCE = 700;
-    const CLOUD_POLL_MS = 15000;
+    const CLOUD_POLL_MS = 5000;
+    const VISIBILITY_REFRESH_MS = 1500;
 
     const Cloud = {
       url(id) { return `${CLOUD_BASE}/${encodeURIComponent(id)}`; },
@@ -701,7 +702,8 @@
       if (!title || !startDate || !endDate || !Number.isInteger(startHour) || !Number.isInteger(endHour)) return null;
       if (startDate > endDate || startHour < 0 || endHour > 24 || startHour >= endHour) return null;
       if (dateRange(startDate, endDate).length > 21) return null;
-      const id = typeof raw.id === 'string' && raw.id.trim() ? raw.id.trim() : fallbackId;
+      const rawId = typeof raw.id === 'string' && raw.id.trim() ? raw.id.trim() : '';
+      const id = !rawId || rawId === 'pending' ? fallbackId : rawId;
       return {
         id,
         title,
@@ -760,7 +762,8 @@
       syncTimer: null,
       syncInFlight: false,
       syncQueued: false,
-      pollTimer: null
+      pollTimer: null,
+      lastCloudRefresh: 0
     };
 
     /* ── Board CRUD ─────────────────────────────────── */
@@ -826,6 +829,7 @@
       try {
         const doc = await Cloud.read(state.boardId);
         if (!doc) return false;
+        state.lastCloudRefresh = Date.now();
         if (!state.board || state.board.id !== doc.board.id) {
           applyRemoteDoc(state.boardId, doc);
           renderAll();
@@ -1334,15 +1338,14 @@
       const btn = $('create-btn');
       btn.disabled = true;
       try {
-        const id = await Cloud.create({ board: { ...draft, id: 'pending' }, participants: {}, updatedAt: Date.now() });
+        const id = await Cloud.create({ board: draft, participants: {}, updatedAt: Date.now() });
         const board = { ...draft, id };
-        await Cloud.write(id, { board, participants: {}, updatedAt: Date.now() });
         LS.set(BOARD_KEY(id), board);
         LS.set(PARTS_KEY(id), {});
         await openBoard(id);
         toast('Board launched to the shared cloud!');
       } catch (err) {
-        toast('Could not create the cloud board right now. Please try again.', 'err');
+        toast(`Could not create the cloud board: ${err && err.message ? err.message : 'unknown error'}.`, 'err');
       } finally {
         btn.disabled = false;
       }
@@ -1433,7 +1436,7 @@
 
     /* ── Init from URL ──────────────────────────────── */
     document.addEventListener('visibilitychange', () => {
-      if (!document.hidden && state.boardId) refreshFromCloud(true);
+      if (!document.hidden && state.boardId && Date.now() - state.lastCloudRefresh > VISIBILITY_REFRESH_MS) refreshFromCloud(true);
     });
 
     (async () => {
