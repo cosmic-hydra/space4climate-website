@@ -308,7 +308,7 @@
           <div class="badges">
             <span class="badge badge-space">🛰 Satellite-inspired</span>
             <span class="badge badge-climate">🌍 Climate-focused</span>
-            <span class="badge badge-local">🔒 Fully local</span>
+            <span class="badge badge-local">☁️ Shared cloud board</span>
           </div>
         </div>
 
@@ -391,7 +391,7 @@
             <div>
               <div style="font-size:1.5rem;margin-bottom:.4rem">📡</div>
               <div style="font-family:var(--font-head);font-weight:600;font-size:.9rem;color:var(--text);margin-bottom:.3rem">2. Transmit</div>
-              <div style="font-size:.8rem;color:var(--text2)">Share the board link with your team. On same device, multiple people can mark availability directly.</div>
+              <div style="font-size:.8rem;color:var(--text2)">Share the board link with your team. Anyone with the link can open the same cloud board and mark availability.</div>
             </div>
             <div>
               <div style="font-size:1.5rem;margin-bottom:.4rem">🗓</div>
@@ -406,7 +406,7 @@
             <div>
               <div style="font-size:1.5rem;margin-bottom:.4rem">📤</div>
               <div style="font-family:var(--font-head);font-weight:600;font-size:.9rem;color:var(--text);margin-bottom:.3rem">5. Cross-device</div>
-              <div style="font-size:.8rem;color:var(--text2)">Export your availability code and send it to the organiser to merge everyone's data.</div>
+              <div style="font-size:.8rem;color:var(--text2)">Need a backup? Export your response code or merge one manually if someone was offline.</div>
             </div>
           </div>
         </div>
@@ -507,7 +507,7 @@
               <div class="side-body">
                 <div class="text-xs" id="board-id-display" style="font-family:monospace;word-break:break-all;color:var(--text3)"></div>
                 <div class="help-note mt-05">
-                  <strong>Local storage only.</strong> All data is saved in this browser. Use <em>Export my response</em> to share your availability across devices, or <em>Merge response</em> to import a teammate's data.
+                  <strong>Public cloud board.</strong> This board syncs through a shared JSON document, so anyone with the link can view and edit it from any device. Export and merge are still available as manual backups.
                 </div>
               </div>
             </div>
@@ -531,13 +531,13 @@
         <h3>Share board link</h3>
         <button class="modal-close" onclick="App.closeModal('modal-share')">✕</button>
       </div>
-      <p class="text-sm" style="margin-bottom:.85rem;color:var(--text2)">Send this link to your team. Anyone who opens it on this device will see the board and can mark their availability.</p>
+      <p class="text-sm" style="margin-bottom:.85rem;color:var(--text2)">Send this link to your team. Anyone who opens it can join the same shared cloud board and mark their availability from any device.</p>
       <div class="link-box">
         <input id="share-link-input" readonly>
         <button class="btn btn-primary btn-sm" id="share-copy-btn" onclick="App.copyShareLink()">Copy</button>
       </div>
       <div class="help-note">
-        <strong>Cross-device tip:</strong> Since this is a local-only tool, others on different devices won't automatically see each other. Have each person use <em>Export my response</em> and send the code to the organiser to merge.
+        <strong>Public-link warning:</strong> This board is stored in a public cloud document so it works on GitHub Pages. Anyone with the link can view or edit it, so don't use it for private schedules.
       </div>
     </div>
   </div>
@@ -549,7 +549,7 @@
         <h3>Export your response</h3>
         <button class="modal-close" onclick="App.closeModal('modal-export')">✕</button>
       </div>
-      <p class="text-sm" style="margin-bottom:.85rem;color:var(--text2)">Copy this code and send it to your team organiser. They can import it using "Merge response" to see your availability on their device.</p>
+      <p class="text-sm" style="margin-bottom:.85rem;color:var(--text2)">Copy this code as a manual backup. A teammate can still import it with "Merge response" if they were offline or if the shared board needs to be rebuilt.</p>
       <textarea id="export-code" readonly style="height:100px"></textarea>
       <div style="display:flex;gap:.5rem;margin-top:.75rem">
         <button class="btn btn-primary btn-sm" onclick="App.copyExportCode()">Copy code</button>
@@ -565,7 +565,7 @@
         <h3>Merge a teammate's response</h3>
         <button class="modal-close" onclick="App.closeModal('modal-merge')">✕</button>
       </div>
-      <p class="text-sm" style="margin-bottom:.85rem;color:var(--text2)">Paste the response code your teammate exported. Their availability will be added to this board.</p>
+      <p class="text-sm" style="margin-bottom:.85rem;color:var(--text2)">Paste a teammate's exported backup code to add their availability to this board manually.</p>
       <div class="field">
         <label>Response code</label>
         <textarea id="merge-code-input" placeholder="Paste code here…"></textarea>
@@ -642,6 +642,7 @@
     const AVATAR_COLORS = ['#1a6bde','#0f9d7a','#8b3fa8','#c05020','#1a8fa0','#a04060','#4a8f1a','#6040b0'];
     const avatarColor = name => AVATAR_COLORS[(name.charCodeAt(0) || 0) % AVATAR_COLORS.length];
     const initials = name => name.trim().split(/\s+/).slice(0,2).map(w => w[0]).join('').toUpperCase() || '?';
+    const clone = obj => JSON.parse(JSON.stringify(obj));
 
     /* ── Storage ────────────────────────────────────── */
     const LS = {
@@ -653,6 +654,96 @@
     const PARTS_KEY = id => `orbit_parts_${id}`;
     const MY_ID_KEY = id => `orbit_myid_${id}`;
     const MY_NAME_KEY = 'orbit_myname';
+    const CLOUD_BASE = 'https://jsonblob.com/api/jsonBlob';
+    const CLOUD_SYNC_DEBOUNCE = 700;
+    const CLOUD_POLL_MS = 15000;
+
+    const Cloud = {
+      url(id) { return `${CLOUD_BASE}/${encodeURIComponent(id)}`; },
+      async create(doc) {
+        const res = await fetch(CLOUD_BASE, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(doc)
+        });
+        if (!res.ok) throw new Error(`create failed (${res.status})`);
+        const location = res.headers.get('Location') || res.headers.get('location') || '';
+        const match = location.match(/\/jsonBlob\/([^/?#]+)$/);
+        if (!match) throw new Error('missing board location');
+        return match[1];
+      },
+      async read(id) {
+        const res = await fetch(this.url(id), {
+          headers: { 'Accept': 'application/json' },
+          cache: 'no-store'
+        });
+        if (res.status === 404) return null;
+        if (!res.ok) throw new Error(`read failed (${res.status})`);
+        return normaliseDocument(await res.json(), id);
+      },
+      async write(id, doc) {
+        const res = await fetch(this.url(id), {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(doc)
+        });
+        if (!res.ok) throw new Error(`write failed (${res.status})`);
+      }
+    };
+
+    function normaliseBoard(raw, fallbackId='') {
+      if (!raw || typeof raw !== 'object') return null;
+      const title = typeof raw.title === 'string' && raw.title.trim() ? raw.title.trim().slice(0, 120) : null;
+      const startDate = typeof raw.startDate === 'string' ? raw.startDate : null;
+      const endDate = typeof raw.endDate === 'string' ? raw.endDate : null;
+      const startHour = Number.isInteger(raw.startHour) ? raw.startHour : parseInt(raw.startHour, 10);
+      const endHour = Number.isInteger(raw.endHour) ? raw.endHour : parseInt(raw.endHour, 10);
+      if (!title || !startDate || !endDate || !Number.isInteger(startHour) || !Number.isInteger(endHour)) return null;
+      if (startDate > endDate || startHour < 0 || endHour > 24 || startHour >= endHour) return null;
+      if (dateRange(startDate, endDate).length > 21) return null;
+      const id = typeof raw.id === 'string' && raw.id.trim() ? raw.id.trim() : fallbackId;
+      return {
+        id,
+        title,
+        startDate,
+        endDate,
+        startHour,
+        endHour,
+        timezone: typeof raw.timezone === 'string' ? raw.timezone : Intl.DateTimeFormat().resolvedOptions().timeZone,
+        createdAt: Number(raw.createdAt) || Date.now()
+      };
+    }
+
+    function normaliseParticipant(raw, fallbackId='') {
+      if (!raw || typeof raw !== 'object') return null;
+      const id = typeof raw.id === 'string' && raw.id.trim() ? raw.id.trim() : fallbackId;
+      const name = typeof raw.name === 'string' ? raw.name.trim().slice(0, 40) : '';
+      if (!id || !name) return null;
+      const slots = Array.isArray(raw.slots)
+        ? Array.from(new Set(raw.slots.filter(slot => typeof slot === 'string' && /^\d{4}-\d{2}-\d{2}T\d{2}$/.test(slot)))).sort()
+        : [];
+      return { id, name, slots, mergedAt: Number(raw.mergedAt) || undefined };
+    }
+
+    function normaliseParticipants(raw) {
+      const out = {};
+      if (!raw || typeof raw !== 'object') return out;
+      Object.entries(raw).forEach(([id, value]) => {
+        const participant = normaliseParticipant(value, id);
+        if (participant) out[participant.id] = participant;
+      });
+      return out;
+    }
+
+    function normaliseDocument(raw, fallbackId='') {
+      const board = normaliseBoard(raw && raw.board ? raw.board : raw, fallbackId);
+      if (!board) return null;
+      return {
+        board,
+        participants: normaliseParticipants(raw && raw.participants),
+        updatedAt: Number(raw && raw.updatedAt) || 0
+      };
+    }
 
     /* ── App state ──────────────────────────────────── */
     const state = {
@@ -663,7 +754,13 @@
       mode: 'mark',
       dragging: false,
       dragAdding: null,
-      touched: new Set()
+      touched: new Set(),
+      dirtyParticipants: {},
+      dirtyCounter: 0,
+      syncTimer: null,
+      syncInFlight: false,
+      syncQueued: false,
+      pollTimer: null
     };
 
     /* ── Board CRUD ─────────────────────────────────── */
@@ -676,8 +773,8 @@
       LS.set(PARTS_KEY(state.boardId), state.participants);
     }
     function loadBoardData(id) {
-      state.board = LS.get(BOARD_KEY(id));
-      state.participants = LS.get(PARTS_KEY(id)) || {};
+      state.board = normaliseBoard(LS.get(BOARD_KEY(id)), id);
+      state.participants = normaliseParticipants(LS.get(PARTS_KEY(id)));
       state.myId = LS.get(MY_ID_KEY(id));
       return !!state.board;
     }
@@ -687,6 +784,120 @@
       state.myId = pid;
       LS.set(MY_ID_KEY(state.boardId), pid);
       return pid;
+    }
+
+    function setBoardStatus(text) {
+      $('bv-status').textContent = text;
+    }
+
+    function markParticipantDirty(id) {
+      if (!id) return;
+      state.dirtyParticipants[id] = ++state.dirtyCounter;
+      scheduleCloudSync();
+    }
+
+    function clearCloudPolling() {
+      if (state.pollTimer) {
+        clearInterval(state.pollTimer);
+        state.pollTimer = null;
+      }
+    }
+
+    function startCloudPolling() {
+      clearCloudPolling();
+      state.pollTimer = setInterval(() => {
+        if (document.hidden || state.syncInFlight || state.dragging) return;
+        refreshFromCloud(true);
+      }, CLOUD_POLL_MS);
+    }
+
+    function applyRemoteDoc(id, doc) {
+      if (!doc || !doc.board) return false;
+      state.boardId = id;
+      state.board = doc.board;
+      state.participants = doc.participants || {};
+      saveBoard();
+      saveParts();
+      return true;
+    }
+
+    async function refreshFromCloud(silent=false) {
+      if (!state.boardId) return false;
+      try {
+        const doc = await Cloud.read(state.boardId);
+        if (!doc) return false;
+        if (!state.board || state.board.id !== doc.board.id) {
+          applyRemoteDoc(state.boardId, doc);
+          renderAll();
+        } else {
+          state.board = doc.board;
+          const merged = {};
+          Object.entries(doc.participants || {}).forEach(([id, participant]) => {
+            merged[id] = state.dirtyParticipants[id] ? (state.participants[id] || participant) : participant;
+          });
+          Object.entries(state.participants || {}).forEach(([id, participant]) => {
+            if (!merged[id]) merged[id] = participant;
+          });
+          state.participants = merged;
+          saveBoard();
+          saveParts();
+          renderAll();
+        }
+        if (!silent) setBoardStatus(Object.keys(state.dirtyParticipants).length ? 'Saving…' : 'Cloud synced');
+        return true;
+      } catch (err) {
+        if (!silent) setBoardStatus('Cloud paused');
+        return false;
+      }
+    }
+
+    function scheduleCloudSync(delay=CLOUD_SYNC_DEBOUNCE) {
+      if (!state.boardId || !state.board) return;
+      clearTimeout(state.syncTimer);
+      state.syncTimer = setTimeout(() => { syncToCloud(); }, delay);
+      setBoardStatus('Saving…');
+    }
+
+    async function syncToCloud() {
+      if (!state.boardId || !state.board) return;
+      const dirtySnapshot = { ...state.dirtyParticipants };
+      if (!Object.keys(dirtySnapshot).length) return;
+      if (state.syncInFlight) {
+        state.syncQueued = true;
+        return;
+      }
+      state.syncInFlight = true;
+      setBoardStatus('Saving…');
+      try {
+        const remoteDoc = await Cloud.read(state.boardId);
+        const mergedParticipants = normaliseParticipants(remoteDoc && remoteDoc.participants);
+        Object.keys(dirtySnapshot).forEach(id => {
+          const participant = normaliseParticipant(state.participants[id], id);
+          if (participant) mergedParticipants[id] = participant;
+        });
+        const payload = {
+          board: clone(state.board),
+          participants: mergedParticipants,
+          updatedAt: Date.now()
+        };
+        await Cloud.write(state.boardId, payload);
+        state.participants = mergedParticipants;
+        saveBoard();
+        saveParts();
+        renderAll();
+        Object.keys(dirtySnapshot).forEach(id => {
+          if (state.dirtyParticipants[id] === dirtySnapshot[id]) delete state.dirtyParticipants[id];
+        });
+        setBoardStatus('Cloud synced');
+      } catch (err) {
+        setBoardStatus('Cloud paused');
+      } finally {
+        state.syncInFlight = false;
+        if (state.syncQueued || Object.keys(state.dirtyParticipants).length) {
+          state.syncQueued = false;
+          scheduleCloudSync(1200);
+        }
+      }
     }
 
     /* ── Computed helpers ───────────────────────────── */
@@ -911,6 +1122,7 @@
       p.slots = Array.from(set).sort();
       state.participants[pid] = p;
       saveParts();
+       markParticipantDirty(pid);
       patchGrid();
       renderBest();
       renderParticipants();
@@ -997,8 +1209,21 @@
     }
 
     /* ── Boot board ─────────────────────────────────── */
-    function openBoard(id) {
-      if (!loadBoardData(id)) return false;
+    async function openBoard(id) {
+      clearCloudPolling();
+      clearTimeout(state.syncTimer);
+      state.board = null;
+      state.participants = {};
+      state.myId = LS.get(MY_ID_KEY(id));
+      state.boardId = id;
+      state.dirtyParticipants = {};
+      state.syncQueued = false;
+      setBoardStatus('Connecting…');
+      const remoteLoaded = await refreshFromCloud(true);
+      if (!remoteLoaded && !loadBoardData(id)) {
+        setBoardStatus('Board not found');
+        return false;
+      }
       state.boardId = id;
       // restore name
       const savedName = LS.get(MY_NAME_KEY) || '';
@@ -1012,6 +1237,8 @@
       history.replaceState({}, '', u.toString());
       showView('view-board');
       renderAll();
+      startCloudPolling();
+      setBoardStatus(remoteLoaded ? 'Cloud synced' : 'Local cache');
       return true;
     }
 
@@ -1028,12 +1255,13 @@
     /* ── App public API ─────────────────────────────── */
     window.App = {
       setGridMode,
-      showLanding() { showView('view-landing'); },
+      showLanding() { clearCloudPolling(); showView('view-landing'); },
       clearMySlots() {
         if (!state.myId || !state.participants[state.myId]) return;
         if (!confirm('Clear all your availability slots?')) return;
         state.participants[state.myId].slots = [];
         saveParts();
+        markParticipantDirty(state.myId);
         patchGrid(); renderBest(); renderParticipants();
         toast('Your slots cleared.');
       },
@@ -1066,6 +1294,7 @@
       if (!state.board) { toast('Load a board first.', 'err'); return; }
       state.participants[data.id] = { id: data.id, name: data.name, slots: data.slots, mergedAt: Date.now() };
       saveParts();
+      markParticipantDirty(data.id);
       patchGrid(); renderBest(); renderParticipants();
       toast(`Merged ${data.name}'s availability (${data.slots.length} slots).`);
       if (onSuccess) onSuccess();
@@ -1091,7 +1320,7 @@
       $('create-eh').value = '17';
     })();
 
-    $('create-btn').addEventListener('click', () => {
+    $('create-btn').addEventListener('click', async () => {
       const title = ($('create-name').value.trim()) || 'Space4Climate Session';
       const startDate = $('create-start').value;
       const endDate = $('create-end').value;
@@ -1101,16 +1330,26 @@
       if (startDate > endDate) return toast('Start date must be before end date.', 'err');
       if (dateRange(startDate, endDate).length > 21) return toast('Keep range to 21 days or fewer.', 'err');
       if (startHour >= endHour) return toast('End time must be after start time.', 'err');
-      const id = uid();
-      const board = { id, title, startDate, endDate, startHour, endHour, timezone: Intl.DateTimeFormat().resolvedOptions().timeZone, createdAt: Date.now() };
-      LS.set(BOARD_KEY(id), board);
-      LS.set(PARTS_KEY(id), {});
-      openBoard(id);
-      toast('Board launched!');
+      const draft = { title, startDate, endDate, startHour, endHour, timezone: Intl.DateTimeFormat().resolvedOptions().timeZone, createdAt: Date.now() };
+      const btn = $('create-btn');
+      btn.disabled = true;
+      try {
+        const id = await Cloud.create({ board: { ...draft, id: 'pending' }, participants: {}, updatedAt: Date.now() });
+        const board = { ...draft, id };
+        await Cloud.write(id, { board, participants: {}, updatedAt: Date.now() });
+        LS.set(BOARD_KEY(id), board);
+        LS.set(PARTS_KEY(id), {});
+        await openBoard(id);
+        toast('Board launched to the shared cloud!');
+      } catch (err) {
+        toast('Could not create the cloud board right now. Please try again.', 'err');
+      } finally {
+        btn.disabled = false;
+      }
     });
 
     // Join board
-    $('join-btn').addEventListener('click', () => {
+    $('join-btn').addEventListener('click', async () => {
       const raw = $('join-input').value.trim();
       if (!raw) return toast('Paste a link or ID.', 'err');
       let id = raw;
@@ -1118,21 +1357,21 @@
         const u = new URL(raw);
         id = u.searchParams.get('b') || raw;
       } catch {}
-      if (!openBoard(id)) toast('Board not found in this browser. Create a new one.', 'err');
+      if (!await openBoard(id)) toast('Board not found. Check the link or create a new cloud board.', 'err');
     });
 
     // Quick merge on landing
-    $('merge-quick-btn').addEventListener('click', () => {
+    $('merge-quick-btn').addEventListener('click', async () => {
       const raw = $('merge-quick-input').value.trim();
       if (!raw) return toast('Paste a response code.', 'err');
       const data = decode(raw);
       if (!data || !data.boardId) return toast('Invalid code or missing board ID.', 'err');
-      if (!openBoard(data.boardId)) {
+      if (!await openBoard(data.boardId)) {
         // Board not here yet — create a stub if encoded in code
         if (data.board) {
           LS.set(BOARD_KEY(data.boardId), data.board);
           LS.set(PARTS_KEY(data.boardId), {});
-          openBoard(data.boardId);
+          await openBoard(data.boardId);
         } else {
           return toast('Board not found. Load the board first, then merge.', 'err');
         }
@@ -1152,6 +1391,7 @@
         state.participants[pid].name = name;
       }
       saveParts();
+      markParticipantDirty(pid);
       renderParticipants();
       $('bv-name-hint').textContent = `Saved as ${name}`;
       toast(`Name saved: ${name}`);
@@ -1192,11 +1432,15 @@
     });
 
     /* ── Init from URL ──────────────────────────────── */
-    (() => {
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden && state.boardId) refreshFromCloud(true);
+    });
+
+    (async () => {
       const params = new URLSearchParams(window.location.search);
       const id = params.get('b');
       if (id) {
-        if (!openBoard(id)) toast('Board not found in this browser — create a new one.', 'err');
+        if (!await openBoard(id)) toast('Board not found — create a new one.', 'err');
       }
     })();
 
