@@ -639,6 +639,7 @@
     };
     const encode = obj => { try { return btoa(unescape(encodeURIComponent(JSON.stringify(obj)))); } catch { return ''; } };
     const decode = str => { try { return JSON.parse(decodeURIComponent(escape(atob(str)))); } catch { return null; } };
+    const SLOT_KEY_RE = /^\d{4}-\d{2}-\d{2}T\d{2}$/;
     const AVATAR_COLORS = ['#1a6bde','#0f9d7a','#8b3fa8','#c05020','#1a8fa0','#a04060','#4a8f1a','#6040b0'];
     const avatarColor = name => AVATAR_COLORS[(name.charCodeAt(0) || 0) % AVATAR_COLORS.length];
     const initials = name => name.trim().split(/\s+/).slice(0,2).map(w => w[0]).join('').toUpperCase() || '?';
@@ -728,7 +729,7 @@
       const name = typeof raw.name === 'string' ? raw.name.trim().slice(0, 40) : '';
       if (!id || !name) return null;
       const slots = Array.isArray(raw.slots)
-        ? Array.from(new Set(raw.slots.filter(slot => typeof slot === 'string' && /^\d{4}-\d{2}-\d{2}T\d{2}$/.test(slot)))).sort()
+        ? Array.from(new Set(raw.slots.filter(slot => typeof slot === 'string' && SLOT_KEY_RE.test(slot)))).sort()
         : [];
       return { id, name, slots, mergedAt: Number(raw.mergedAt) || undefined };
     }
@@ -904,6 +905,7 @@
         });
         setBoardStatus('Cloud synced');
       } catch (err) {
+        state.lastRemoteError = err;
         setBoardStatus('Cloud paused');
       } finally {
         state.syncInFlight = false;
@@ -1071,7 +1073,12 @@
       toggleSlot(slot);
       state.touched.add(slot);
     });
-    document.addEventListener('mouseup', () => { state.dragging = false; state.dragAdding = null; state.touched.clear(); });
+    document.addEventListener('mouseup', () => {
+      state.dragging = false;
+      state.dragAdding = null;
+      state.touched.clear();
+      if (state.boardId && !Object.keys(state.dirtyParticipants).length) refreshFromCloud(true);
+    });
     gridOuter.addEventListener('mouseover', ev => {
       if (!state.dragging) return;
       const td = ev.target.closest('.slot-cell');
@@ -1106,7 +1113,10 @@
       const isMine = mySlots().has(slot);
       if (state.dragAdding !== isMine) toggleSlot(slot);
     }, {passive:true});
-    gridOuter.addEventListener('touchend', () => { state.dragging = false; });
+    gridOuter.addEventListener('touchend', () => {
+      state.dragging = false;
+      if (state.boardId && !Object.keys(state.dirtyParticipants).length) refreshFromCloud(true);
+    });
 
     function checkName() {
       const nameInput = $('bv-name');
@@ -1371,7 +1381,12 @@
         const u = new URL(raw);
         id = u.searchParams.get('b') || raw;
       } catch {}
-      if (!await openBoard(id)) toast(state.lastRemoteError ? `Could not reach the cloud board: ${formatError(state.lastRemoteError)}.` : 'Board not found. Check the link or create a new cloud board.', 'err');
+      if (!await openBoard(id)) {
+        const joinError = state.lastRemoteError
+          ? `Could not reach the cloud board: ${formatError(state.lastRemoteError)}.`
+          : 'Board not found. Check the link or create a new cloud board.';
+        toast(joinError, 'err');
+      }
     });
 
     // Quick merge on landing
@@ -1446,8 +1461,8 @@
     });
 
     /* ── Init from URL ──────────────────────────────── */
-    document.addEventListener('visibilitychange', () => {
-      if (!document.hidden && state.boardId && Date.now() - state.lastCloudRefresh > VISIBILITY_REFRESH_MS) refreshFromCloud(false);
+    document.addEventListener('visibilitychange', async () => {
+      if (!document.hidden && state.boardId && Date.now() - state.lastCloudRefresh > VISIBILITY_REFRESH_MS) await refreshFromCloud(false);
     });
 
     (async () => {
