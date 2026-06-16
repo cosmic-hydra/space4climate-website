@@ -163,17 +163,17 @@
           <div class="step-num">4</div>
           <div class="step-body">
             <h3><span class="step-emoji">📡</span> Invite your team</h3>
-            <p>Click <strong>Share board</strong> and copy the link. Send it to your teammates. On the <strong>same device</strong>, anyone can open the link, type their name, and mark their slots — the board accumulates everyone's data locally. For teammates on <strong>different devices</strong>, see Step 5.</p>
+            <p>Click <strong>Share board</strong> and copy the link. Send it to your teammates. Anyone with the link can open the same shared board on any device, type their name, and mark their slots.</p>
           </div>
         </div>
         <div class="step">
           <div class="step-num">5</div>
           <div class="step-body">
-            <h3><span class="step-emoji">📤</span> Cross-device sharing</h3>
-            <p>Because Orbit Scheduler stores data locally (no cloud), cross-device responses use an <strong>export/import</strong> flow:
+            <h3><span class="step-emoji">📤</span> Cloud sync &amp; backup</h3>
+            <p>Orbit Scheduler now stores each board in a <strong>public cloud JSON document</strong>, so cross-device updates sync through the shared board link automatically.
             <br><br>
-            <strong>Responder:</strong> Mark your availability → click <strong>Export my response</strong> → copy the code → send it to the organiser.<br><br>
-            <strong>Organiser:</strong> Click <strong>Merge response</strong> → paste the code → click Merge. The teammate's slots are added to the board instantly.</p>
+            <strong>Normal workflow:</strong> Open the board link → enter your name → mark your availability → wait a moment for the board to sync.<br><br>
+            <strong>Backup workflow:</strong> If someone was offline, click <strong>Export my response</strong> to copy a backup code. The organiser can use <strong>Merge response</strong> to import it later.</p>
           </div>
         </div>
       </div>
@@ -217,13 +217,13 @@
         </div>
         <div class="feature-card">
           <div class="icon">🔒</div>
-          <h4>Fully local</h4>
-          <p>All data lives in your browser's localStorage — no servers, no accounts, no cloud. Your schedule never leaves your device unless you export it.</p>
+          <h4>Shared cloud board</h4>
+          <p>Each board is stored in a public JSON document so GitHub Pages users can access the same schedule from any device without Firebase or accounts.</p>
         </div>
         <div class="feature-card">
           <div class="icon">📤</div>
-          <h4>Export &amp; merge</h4>
-          <p>Each participant can export their response as a compact code. The organiser imports these codes to build the complete group picture.</p>
+          <h4>Export &amp; merge backup</h4>
+          <p>Each participant can still export a compact backup code. The organiser can import these codes later if they need to recover or merge offline responses.</p>
         </div>
         <div class="feature-card">
           <div class="icon">📅</div>
@@ -254,13 +254,13 @@
           <div class="faq-q">What happens if I open the link on a different device or browser?
             <svg class="faq-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
           </div>
-          <div class="faq-a">Because the data is local to each browser, a different device will show an empty board. Use <strong>Export my response</strong> on your first device, then on the second device open the board and use <strong>Merge response</strong> to import your availability code. The organiser can also merge responses from multiple people this way.</div>
+          <div class="faq-a">The shared board should load on any device that opens the link, and updates should appear after a short sync delay. If cloud access was interrupted, you can still use <strong>Export my response</strong> on one device and <strong>Merge response</strong> on another as a manual backup path.</div>
         </div>
         <div class="faq-item">
           <div class="faq-q">How do I share a board with someone who's never visited this site?
             <svg class="faq-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
           </div>
-          <div class="faq-a">Share the board link (click <strong>Share board → Copy</strong>). When they open it on <em>their</em> device it will show an empty board — that's normal, since their browser has no data yet. They enter their name, mark their slots, then export their response code back to you. You merge it in to see their availability.</div>
+          <div class="faq-a">Share the board link (click <strong>Share board → Copy</strong>). When they open it on <em>their</em> device they should see the same board immediately, enter their name, and mark their slots. Because the board is public, only share links for schedules you are comfortable exposing to anyone who receives the URL.</div>
         </div>
         <div class="faq-item">
           <div class="faq-q">Can I have multiple participants on one device (e.g. in a classroom)?
@@ -272,7 +272,7 @@
           <div class="faq-q">Will my boards still be there next week?
             <svg class="faq-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
           </div>
-          <div class="faq-a">Yes, as long as you don't clear your browser's site data. The board and all participants' availability are persisted in <code>localStorage</code>. Clearing cookies/storage in your browser settings will remove the data, so export important boards beforehand.</div>
+          <div class="faq-a">Usually yes. The board is stored in a public cloud document and each browser also keeps a local cache for convenience. Clearing your browser storage may remove your saved name on that device, but the shared board itself should still be available from the link unless the cloud service removes it.</div>
         </div>
         <div class="faq-item">
           <div class="faq-q">Where does the "best times" ranking come from?
