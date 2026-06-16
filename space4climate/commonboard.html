@@ -445,13 +445,13 @@
         <h3>Share this board</h3>
         <button class="modal-close" onclick="App.closeModal('modal-share')">&#215;</button>
       </div>
-      <p class="text-sm" style="margin-bottom:0.75rem;color:var(--text2)">Anyone with this link can join the board and mark their availability.</p>
+      <p class="text-sm" style="margin-bottom:0.75rem;color:var(--text2)">Share this link so others can open the board and mark their availability.</p>
       <div class="link-box">
         <input id="share-link-input" readonly>
         <button class="btn btn-primary btn-sm" id="share-copy-btn" onclick="App.copyShareLink()">Copy</button>
       </div>
       <div class="help-note">
-        <strong>Note:</strong> This board is publicly accessible. Don't share sensitive scheduling details.
+        <strong>How sharing works:</strong> The board definition is embedded in the link. Recipients will get their own local copy. Use Export &amp; Import codes to share individual responses.
       </div>
     </div>
   </div>
@@ -548,36 +548,32 @@
     const PARTS_KEY = id => `orbit_parts_${id}`;
     const MY_ID_KEY = id => `orbit_myid_${id}`;
     const MY_NAME_KEY = 'orbit_myname';
-    const CLOUD_BASE = window.S4C_ORBIT_CLOUD_BASE || 'https://jsonblob.com/api/jsonBlob';
+    const BOARDS_INDEX_KEY = 'orbit_boards_index';
+    function ensureInIndex(id) {
+      const index = LS.get(BOARDS_INDEX_KEY) || [];
+      if (!index.includes(id)) { index.push(id); LS.set(BOARDS_INDEX_KEY, index); }
+    }
 
-    /* Cloud API */
+    /* Local Storage API (GitHub Pages friendly - no external database) */
     const Cloud = {
-      url(id) { return `${CLOUD_BASE}/${encodeURIComponent(id)}`; },
-      async create(doc) {
-        const res = await fetch(CLOUD_BASE, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(doc)
-        });
-        if (!res.ok) throw new Error(`Cloud error (${res.status})`);
-        const loc = res.headers.get('Location') || res.headers.get('location') || '';
-        const m = loc.match(/\/jsonBlob\/([^/?#]+)$/);
-        if (!m) throw new Error('Could not get board ID from cloud');
-        return m[1];
+      create(doc) {
+        const id = uid();
+        const stored = { board: { ...doc.board, id }, participants: doc.participants || {}, updatedAt: Date.now() };
+        LS.set(BOARD_KEY(id), stored.board);
+        LS.set(PARTS_KEY(id), stored.participants);
+        ensureInIndex(id);
+        return id;
       },
-      async read(id) {
-        const res = await fetch(this.url(id), { headers: { 'Accept': 'application/json' }, cache: 'no-store' });
-        if (res.status === 404) return null;
-        if (!res.ok) throw new Error(`Cloud error (${res.status})`);
-        return normaliseDocument(await res.json(), id);
+      read(id) {
+        const board = normaliseBoard(LS.get(BOARD_KEY(id)), id);
+        if (!board) return null;
+        const participants = normaliseParticipants(LS.get(PARTS_KEY(id)));
+        return { board, participants, updatedAt: Date.now() };
       },
-      async write(id, doc) {
-        const res = await fetch(this.url(id), {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(doc)
-        });
-        if (!res.ok) throw new Error(`Cloud error (${res.status})`);
+      write(id, doc) {
+        if (doc.board) LS.set(BOARD_KEY(id), doc.board);
+        if (doc.participants) LS.set(PARTS_KEY(id), doc.participants);
+        ensureInIndex(id);
       }
     };
 
@@ -667,24 +663,28 @@
       scheduleSync();
     }
 
-    /* Cloud sync */
+    /* Local sync (localStorage-based, no external API) */
     function stopPolling() { if (state.pollTimer) { clearInterval(state.pollTimer); state.pollTimer = null; } }
     function startPolling() {
       stopPolling();
-      state.pollTimer = setInterval(() => {
-        if (document.hidden || state.syncInFlight || state.dragging) return;
-        refreshFromCloud(true);
-      }, 5000);
+      // Use storage event for instant cross-tab sync
+      window.addEventListener('storage', onStorageChange);
+    }
+    function onStorageChange(e) {
+      if (!state.boardId || state.dragging) return;
+      if (e.key === PARTS_KEY(state.boardId) || e.key === BOARD_KEY(state.boardId)) {
+        refreshFromLocal(true);
+      }
     }
 
-    async function refreshFromCloud(silent=false) {
+    function refreshFromLocal(silent=false) {
       if (!state.boardId) return false;
       try {
-        const doc = await Cloud.read(state.boardId);
+        const doc = Cloud.read(state.boardId);
         if (!doc) return false;
         state.lastRefresh = Date.now();
         state.board = doc.board;
-        // Merge: keep local dirty participants, take remote for others
+        // Merge: keep local dirty participants, take stored for others
         const merged = {};
         for (const [id, p] of Object.entries(doc.participants || {})) {
           merged[id] = state.dirty[id] ? (state.participants[id] || p) : p;
@@ -693,56 +693,41 @@
           if (!merged[id]) merged[id] = p;
         }
         state.participants = merged;
-        saveBoard();
-        saveParts();
         renderAll();
-        if (!silent) setStatus(Object.keys(state.dirty).length ? 'Saving...' : 'Synced');
+        if (!silent) setStatus('Saved');
         return true;
       } catch {
-        if (!silent) setStatus('Offline');
         return false;
       }
     }
 
-    function scheduleSync(delay=700) {
+    function scheduleSync(delay=100) {
       if (!state.boardId || !state.board) return;
       clearTimeout(state.syncTimer);
-      state.syncTimer = setTimeout(syncToCloud, delay);
-      setStatus('Saving...');
+      state.syncTimer = setTimeout(syncToLocal, delay);
     }
 
-    async function syncToCloud() {
+    function syncToLocal() {
       if (!state.boardId || !state.board) return;
       const snap = { ...state.dirty };
       if (!Object.keys(snap).length) return;
-      if (state.syncInFlight) { state.syncQueued = true; return; }
-      state.syncInFlight = true;
-      setStatus('Saving...');
       try {
-        const remote = await Cloud.read(state.boardId);
-        if (!remote) throw new Error('Board not found in cloud');
-        const merged = normaliseParticipants(remote.participants);
+        // Read-merge-write to avoid overwriting other tabs' changes
+        const current = normaliseParticipants(LS.get(PARTS_KEY(state.boardId)));
+        const merged = { ...current };
         for (const id of Object.keys(snap)) {
-          const p = normaliseParticipant(state.participants[id], id);
-          if (p) merged[id] = p;
+          const p = state.participants[id];
+          if (p) merged[id] = clone(p);
         }
-        await Cloud.write(state.boardId, { board: clone(state.board), participants: merged, updatedAt: Date.now() });
+        LS.set(PARTS_KEY(state.boardId), merged);
+        LS.set(BOARD_KEY(state.boardId), state.board);
         state.participants = merged;
-        saveBoard();
-        saveParts();
-        renderAll();
         for (const id of Object.keys(snap)) {
           if (state.dirty[id] === snap[id]) delete state.dirty[id];
         }
-        setStatus('Synced');
+        setStatus('Saved');
       } catch {
-        setStatus('Offline');
-      } finally {
-        state.syncInFlight = false;
-        if (state.syncQueued || Object.keys(state.dirty).length) {
-          state.syncQueued = false;
-          scheduleSync(1200);
-        }
+        setStatus('Error saving');
       }
     }
 
@@ -1046,7 +1031,7 @@
     }
 
     /* Open board */
-    async function openBoard(id) {
+    function openBoard(id) {
       stopPolling();
       clearTimeout(state.syncTimer);
       state.board = null;
@@ -1055,10 +1040,9 @@
       state.boardId = id;
       state.dirty = {};
       state.syncQueued = false;
-      setStatus('Connecting...');
 
-      const remoteOk = await refreshFromCloud(true);
-      if (!remoteOk && !loadLocal(id)) {
+      const loaded = refreshFromLocal(true) || loadLocal(id);
+      if (!loaded) {
         setStatus('Not found');
         return false;
       }
@@ -1076,7 +1060,7 @@
       showView('view-board');
       renderAll();
       startPolling();
-      setStatus(remoteOk ? 'Synced' : 'Local');
+      setStatus('Saved');
       return true;
     }
 
@@ -1168,7 +1152,7 @@
     })();
 
     /* Create board */
-    $('create-btn').addEventListener('click', async () => {
+    $('create-btn').addEventListener('click', () => {
       const title = $('create-name').value.trim() || 'Untitled Board';
       const startDate = $('create-start').value;
       const endDate = $('create-end').value;
@@ -1184,52 +1168,36 @@
       if (startHour >= endHour) return toast('End hour must be after start', 'err');
       if (endHour - startHour > 18) return toast('Maximum 18 hour window', 'err');
 
-      const btn = $('create-btn');
-      btn.disabled = true;
-      btn.textContent = 'Creating...';
       try {
         const draft = { title, startDate, endDate, startHour, endHour, timezone: Intl.DateTimeFormat().resolvedOptions().timeZone, createdAt: Date.now() };
-        const id = await Cloud.create({ board: draft, participants: {}, updatedAt: Date.now() });
-        LS.set(BOARD_KEY(id), { ...draft, id });
-        LS.set(PARTS_KEY(id), {});
-        await openBoard(id);
+        const id = Cloud.create({ board: draft, participants: {}, updatedAt: Date.now() });
+        openBoard(id);
         toast('Board created');
       } catch (err) {
         toast(err.message || 'Failed to create board', 'err');
-      } finally {
-        btn.disabled = false;
-        btn.textContent = 'Create board';
       }
     });
 
     /* Join board */
-    $('join-btn').addEventListener('click', async () => {
+    $('join-btn').addEventListener('click', () => {
       const raw = $('join-input').value.trim();
       if (!raw) return toast('Enter a board link or ID', 'err');
       let id = raw;
       try { const u = new URL(raw); id = u.searchParams.get('b') || raw; } catch {}
-      const btn = $('join-btn');
-      btn.disabled = true;
-      btn.textContent = 'Loading...';
-      try {
-        if (!await openBoard(id)) toast('Board not found', 'err');
-      } finally {
-        btn.disabled = false;
-        btn.textContent = 'Open board';
-      }
+      if (!openBoard(id)) toast('Board not found — ask the creator to share their export code', 'err');
     });
 
     /* Quick merge */
-    $('merge-quick-btn').addEventListener('click', async () => {
+    $('merge-quick-btn').addEventListener('click', () => {
       const raw = $('merge-quick-input').value.trim();
       if (!raw) return toast('Paste a response code', 'err');
       const data = decode(raw);
       if (!data || !data.boardId) return toast('Invalid code', 'err');
-      if (!await openBoard(data.boardId)) {
+      if (!openBoard(data.boardId)) {
         if (data.board) {
           LS.set(BOARD_KEY(data.boardId), data.board);
           LS.set(PARTS_KEY(data.boardId), {});
-          await openBoard(data.boardId);
+          openBoard(data.boardId);
         } else {
           return toast('Board not found', 'err');
         }
@@ -1261,8 +1229,11 @@
 
     /* Modal buttons */
     $('bv-share-btn').addEventListener('click', () => {
+      // Encode board data in URL so recipients can import it without needing a shared database
+      const boardData = encode({ board: state.board, boardId: state.boardId });
       const u = new URL(window.location.href);
       u.searchParams.set('b', state.boardId);
+      u.searchParams.set('d', boardData);
       $('share-link-input').value = u.toString();
       App.openModal('modal-share');
     });
@@ -1271,7 +1242,7 @@
         return toast('Mark your availability first', 'err');
       }
       const me = state.participants[state.myId];
-      $('export-code').value = encode({ id: me.id, name: me.name, slots: me.slots, boardId: state.boardId });
+      $('export-code').value = encode({ id: me.id, name: me.name, slots: me.slots, boardId: state.boardId, board: state.board });
       App.openModal('modal-export');
     });
     $('bv-merge-btn').addEventListener('click', () => App.openModal('modal-merge'));
@@ -1286,14 +1257,30 @@
 
     /* Visibility refresh */
     document.addEventListener('visibilitychange', () => {
-      if (!document.hidden && state.boardId && Date.now() - state.lastRefresh > 1500) refreshFromCloud(false);
+      if (!document.hidden && state.boardId && Date.now() - state.lastRefresh > 1500) refreshFromLocal(false);
     });
 
     /* Init */
-    (async () => {
-      const id = new URLSearchParams(window.location.search).get('b');
+    (() => {
+      const params = new URLSearchParams(window.location.search);
+      const id = params.get('b');
+      const data = params.get('d');
+      // If shared board data is in URL, import it to localStorage first
+      if (data && id) {
+        try {
+          const imported = decode(data);
+          if (imported && imported.board) {
+            const existing = LS.get(BOARD_KEY(id));
+            if (!existing) {
+              LS.set(BOARD_KEY(id), { ...imported.board, id });
+              LS.set(PARTS_KEY(id), {});
+              ensureInIndex(id);
+            }
+          }
+        } catch {}
+      }
       if (id) {
-        if (!await openBoard(id)) toast('Board not found', 'err');
+        if (!openBoard(id)) toast('Board not found', 'err');
       }
     })();
   })();
