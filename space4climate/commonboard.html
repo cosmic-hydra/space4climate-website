@@ -5,31 +5,29 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Orbit Scheduler | Space4Climate</title>
-  <meta name="description" content="A beautiful, space-themed group scheduling tool for Space4Climate workshops and missions. Create boards, mark availability, find the best meeting time.">
+  <meta name="description" content="Group scheduling for Space4Climate workshops. Create a board, share the link, find the best time to meet.">
   <link rel="canonical" href="https://www.space4climate.org/commonboard.html">
   <style>
-    /* ── Design Tokens ──────────────────────────────── */
     :root {
       --bg:        #ffffff;
       --bg2:       #f5f5f7;
       --surface:   #ffffff;
       --surface2:  #f5f5f7;
       --border:    #d2d2d7;
-      --border2:   #c7c7cc;
+      --border2:   #e8e8ed;
       --text:      #1d1d1f;
       --text2:     #6e6e73;
       --text3:     #86868b;
       --accent:    #0071e3;
+      --accent-hover: #0077ed;
       --accent2:   #34c759;
       --gold:      #ff9f0a;
       --danger:    #ff3b30;
-      --r:         18px;
+      --r:         16px;
       --r2:        12px;
-      --shadow:    0 4px 24px rgba(0,0,0,0.08);
-      --glow:      0 6px 22px rgba(0,113,227,0.16);
-      --font-head: -apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text","Helvetica Neue",Helvetica,Arial,sans-serif;
-      --font-body: -apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro Display","Helvetica Neue",Helvetica,Arial,sans-serif;
-      /* grid cell colors: 0→few→some→many→all (light→green) */
+      --shadow:    0 2px 12px rgba(0,0,0,0.06);
+      --shadow-lg: 0 8px 30px rgba(0,0,0,0.10);
+      --font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", Helvetica, Arial, sans-serif;
       --c0:  #f5f5f7;
       --c1:  #d8f3df;
       --c2:  #a8e5b8;
@@ -39,133 +37,110 @@
       --mine-ring: #0071e3;
     }
     *{box-sizing:border-box;margin:0;padding:0}
-    html,body{min-height:100%;background:var(--bg);color:var(--text);font-family:var(--font-body);font-size:15px;line-height:1.55;overflow-x:hidden;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
-    ::selection{background:rgba(0,113,227,0.18);color:var(--text)}
-    ::-webkit-scrollbar{width:8px;height:8px}
+    html,body{min-height:100%;background:var(--bg);color:var(--text);font-family:var(--font);font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
+    ::selection{background:rgba(0,113,227,0.15);color:var(--text)}
+    ::-webkit-scrollbar{width:7px;height:7px}
     ::-webkit-scrollbar-track{background:transparent}
-    ::-webkit-scrollbar-thumb{background:rgba(0,0,0,0.18);border-radius:99px}
-    ::-webkit-scrollbar-thumb:hover{background:rgba(0,0,0,0.32)}
+    ::-webkit-scrollbar-thumb{background:rgba(0,0,0,0.15);border-radius:99px}
+    ::-webkit-scrollbar-thumb:hover{background:rgba(0,0,0,0.28)}
 
-    /* ── Star canvas ────────────────────────────────── */
-    /* ── Layout ─────────────────────────────────────── */
     #app{position:relative;z-index:1;min-height:100vh;display:flex;flex-direction:column}
 
-    /* ── Nav ─────────────────────────────────────────── */
-    nav{display:flex;align-items:center;justify-content:space-between;padding:.75rem 1.5rem;position:sticky;top:0;z-index:50;background:rgba(255,255,255,0.72);backdrop-filter:saturate(180%) blur(20px);-webkit-backdrop-filter:saturate(180%) blur(20px);border-bottom:1px solid var(--border)}
-    .nav-brand{font-family:var(--font-head);font-weight:600;font-size:1.05rem;color:var(--text);text-decoration:none;display:flex;align-items:center;gap:.5rem;letter-spacing:-.01em}
-    .nav-brand .dot{width:8px;height:8px;border-radius:99px;background:var(--accent);flex-shrink:0}
+    /* Nav */
+    nav{display:flex;align-items:center;justify-content:space-between;padding:0.6rem 1.5rem;position:sticky;top:0;z-index:50;background:rgba(255,255,255,0.8);backdrop-filter:saturate(180%) blur(20px);-webkit-backdrop-filter:saturate(180%) blur(20px);border-bottom:0.5px solid rgba(0,0,0,0.08)}
+    .nav-brand{font-weight:600;font-size:0.95rem;color:var(--text);text-decoration:none;display:flex;align-items:center;gap:0.4rem;letter-spacing:-0.01em}
+    .nav-brand .dot{width:7px;height:7px;border-radius:50%;background:var(--accent)}
     .nav-brand span{color:var(--accent)}
-    .nav-crumb{display:flex;align-items:center;gap:.4rem;font-size:.8rem;color:var(--text3)}
-    .nav-crumb a{color:var(--text3);text-decoration:none;transition:color .2s}.nav-crumb a:hover{color:var(--accent)}
-    .nav-crumb .sep{color:var(--text3);opacity:.4}
-    .nav-actions{display:flex;gap:.5rem}
-    .nav-btn{font-family:var(--font-body);font-size:.8rem;font-weight:500;padding:.4rem .85rem;border-radius:980px;border:1px solid transparent;background:transparent;color:var(--accent);cursor:pointer;text-decoration:none;transition:all .2s}
-    .nav-btn:hover{background:var(--bg2);color:var(--accent);border-color:transparent}
+    .nav-crumb{display:flex;align-items:center;gap:0.35rem;font-size:0.78rem;color:var(--text3)}
+    .nav-crumb a{color:var(--text3);text-decoration:none;transition:color 0.15s}.nav-crumb a:hover{color:var(--accent)}
+    .nav-crumb .sep{opacity:0.4}
+    .nav-actions{display:flex;gap:0.4rem}
+    .nav-btn{font-size:0.78rem;font-weight:500;padding:0.35rem 0.75rem;border-radius:980px;border:none;background:transparent;color:var(--accent);cursor:pointer;text-decoration:none;transition:background 0.15s}
+    .nav-btn:hover{background:var(--bg2)}
 
-    /* ── Views ───────────────────────────────────────── */
+    /* Views */
     .view{display:none;flex:1;padding:1.5rem}
     .view.active{display:flex;flex-direction:column}
 
-    /* ── Landing View ────────────────────────────────── */
-    .landing-wrap{max-width:980px;margin:0 auto;width:100%}
-    .landing-hero{text-align:center;padding:3rem 1rem 2.5rem;position:relative}
-    .orbit-icon{display:inline-flex;position:relative;margin-bottom:1.5rem}
-    .orbit-icon .planet{width:52px;height:52px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#2a9bff,#0071e3 62%,#0058b0);box-shadow:0 10px 24px rgba(0,113,227,0.3);position:relative;z-index:2}
-    .orbit-icon .ring{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotateX(68deg);width:80px;height:80px;border-radius:50%;border:2px solid rgba(0,113,227,0.4);animation:ring-spin 4s linear infinite}
-    .orbit-icon .ring::after{content:'';position:absolute;width:8px;height:8px;background:var(--accent);border-radius:50%;top:-4px;left:50%;transform:translateX(-50%)}
-    @keyframes ring-spin{to{transform:translate(-50%,-50%) rotateX(68deg) rotate(360deg)}}
-    .landing-hero h1{font-family:var(--font-head);font-size:clamp(2.2rem,5.5vw,3.4rem);font-weight:700;line-height:1.07;letter-spacing:-.025em;margin-bottom:.75rem;color:var(--text)}
-    .landing-hero .sub{font-size:1.05rem;color:var(--text2);max-width:560px;margin:0 auto 2rem}
-    .badges{display:flex;justify-content:center;gap:.5rem;flex-wrap:wrap;margin-bottom:2.5rem}
-    .badge{padding:.25rem .65rem;border-radius:99px;font-size:.75rem;font-weight:600;letter-spacing:.02em}
-    .badge-space{background:var(--bg2);border:1px solid var(--border);color:var(--text2)}
-    .badge-climate{background:var(--bg2);border:1px solid var(--border);color:var(--text2)}
-    .badge-local{background:var(--bg2);border:1px solid var(--border);color:var(--text2)}
+    /* Landing */
+    .landing-wrap{max-width:720px;margin:0 auto;width:100%}
+    .landing-hero{text-align:center;padding:4rem 1rem 3rem}
+    .landing-hero h1{font-size:clamp(2rem,5vw,2.8rem);font-weight:700;line-height:1.08;letter-spacing:-0.03em;margin-bottom:0.6rem;color:var(--text)}
+    .landing-hero .sub{font-size:1.05rem;color:var(--text2);max-width:480px;margin:0 auto 0;line-height:1.5}
 
-    .cards-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;margin-bottom:2rem}
-    @media(max-width:680px){.cards-grid{grid-template-columns:1fr}}
-    .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:1.75rem;box-shadow:var(--shadow);transition:transform .25s ease,box-shadow .25s ease;position:relative;overflow:hidden}
-    .card::before{content:'';position:absolute;inset:0;background:transparent;pointer-events:none}
-    .card:hover{box-shadow:0 12px 36px rgba(0,0,0,0.1);transform:translateY(-2px)}
-    .card-head{display:flex;align-items:center;gap:.6rem;margin-bottom:1rem}
-    .card-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0}
-    .card-icon.blue{background:rgba(0,113,227,.1);border:1px solid rgba(0,113,227,.18)}
-    .card-icon.green{background:rgba(52,199,89,.12);border:1px solid rgba(52,199,89,.22)}
-    .card h3{font-family:var(--font-head);font-size:1.05rem;font-weight:600;color:var(--text)}
-    .card p{font-size:.85rem;color:var(--text2);margin-bottom:1rem;line-height:1.5}
+    .cards-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.5rem}
+    @media(max-width:640px){.cards-grid{grid-template-columns:1fr}}
+    .card{background:var(--surface);border:1px solid var(--border2);border-radius:var(--r);padding:1.5rem;transition:box-shadow 0.2s ease,border-color 0.2s ease}
+    .card:hover{box-shadow:var(--shadow);border-color:var(--border)}
+    .card h3{font-size:0.95rem;font-weight:600;color:var(--text);margin-bottom:0.4rem}
+    .card p{font-size:0.84rem;color:var(--text2);margin-bottom:1rem;line-height:1.5}
 
-    /* ── Form controls ───────────────────────────────── */
-    .field{display:flex;flex-direction:column;gap:.35rem;margin-bottom:.8rem}
-    .field label{font-size:.8rem;font-weight:500;color:var(--text2);letter-spacing:.01em}
-    .field input,.field select{width:100%;padding:.6rem .8rem;background:#fff;border:1px solid var(--border);border-radius:12px;color:var(--text);font-family:var(--font-body);font-size:.9rem;transition:border-color .2s,box-shadow .2s;outline:none;-webkit-appearance:none}
-    .field input:focus,.field select:focus{border-color:var(--accent);box-shadow:0 0 0 4px rgba(0,113,227,.15)}
+    /* Form controls */
+    .field{display:flex;flex-direction:column;gap:0.3rem;margin-bottom:0.7rem}
+    .field label{font-size:0.78rem;font-weight:500;color:var(--text2)}
+    .field input,.field select{width:100%;padding:0.55rem 0.75rem;background:#fff;border:1px solid var(--border);border-radius:var(--r2);color:var(--text);font-family:var(--font);font-size:0.875rem;transition:border-color 0.15s,box-shadow 0.15s;outline:none;-webkit-appearance:none}
+    .field input:focus,.field select:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(0,113,227,0.12)}
     .field input::placeholder{color:var(--text3)}
-    .field-row{display:grid;grid-template-columns:1fr 1fr;gap:.6rem}
+    .field-row{display:grid;grid-template-columns:1fr 1fr;gap:0.5rem}
     .field select{cursor:pointer}
-    .field select option{background:#fff;color:var(--text)}
 
-    /* ── Buttons ─────────────────────────────────────── */
-    .btn{display:inline-flex;align-items:center;justify-content:center;gap:.4rem;padding:.6rem 1.2rem;border-radius:980px;font-family:var(--font-body);font-size:.875rem;font-weight:500;cursor:pointer;text-decoration:none;border:1px solid transparent;transition:all .2s;outline:none;white-space:nowrap}
-    .btn:disabled{opacity:.45;pointer-events:none}
-    .btn-primary{background:var(--accent);border-color:var(--accent);color:#fff}
-    .btn-primary:hover{background:#0077ed}
-    .btn-primary:active{background:#006edb}
-    .btn-outline{background:var(--bg2);border-color:transparent;color:var(--accent)}
-    .btn-outline:hover{background:#ececef;color:var(--accent);border-color:transparent}
-    .btn-ghost{background:transparent;border-color:transparent;color:var(--accent)}
-    .btn-ghost:hover{background:var(--bg2);color:var(--accent)}
-    .btn-success{background:var(--accent2);border-color:var(--accent2);color:#fff}
-    .btn-success:hover{background:#30b753}
-    .btn-danger{background:transparent;border-color:rgba(255,59,48,.3);color:var(--danger)}
-    .btn-danger:hover{background:rgba(255,59,48,.1)}
-    .btn-sm{padding:.35rem .7rem;font-size:.8rem;border-radius:7px}
-    .btn-xs{padding:.25rem .55rem;font-size:.75rem;border-radius:6px}
+    /* Buttons */
+    .btn{display:inline-flex;align-items:center;justify-content:center;gap:0.35rem;padding:0.55rem 1.1rem;border-radius:980px;font-family:var(--font);font-size:0.84rem;font-weight:500;cursor:pointer;text-decoration:none;border:none;transition:all 0.15s;outline:none;white-space:nowrap}
+    .btn:disabled{opacity:0.4;pointer-events:none}
+    .btn-primary{background:var(--accent);color:#fff}
+    .btn-primary:hover{background:var(--accent-hover)}
+    .btn-outline{background:var(--bg2);color:var(--accent);border:1px solid transparent}
+    .btn-outline:hover{background:#ececef}
+    .btn-success{background:var(--accent2);color:#fff}
+    .btn-success:hover{background:#2eaa4e}
+    .btn-danger{background:transparent;border:1px solid rgba(255,59,48,0.25);color:var(--danger)}
+    .btn-danger:hover{background:rgba(255,59,48,0.06)}
+    .btn-ghost{background:transparent;color:var(--accent);border:none}
+    .btn-ghost:hover{background:var(--bg2)}
+    .btn-sm{padding:0.35rem 0.7rem;font-size:0.78rem}
+    .btn-xs{padding:0.25rem 0.5rem;font-size:0.72rem;border-radius:6px}
     .btn-full{width:100%}
-    .btn-icon{width:34px;height:34px;padding:0;border-radius:8px;border:1px solid var(--border)}
-    .btn svg{flex-shrink:0}
 
-    /* ── Board view ──────────────────────────────────── */
-    .board-wrap{max-width:1380px;margin:0 auto;width:100%;display:flex;flex-direction:column;gap:1rem}
-    .board-top{display:flex;align-items:flex-start;gap:.75rem;flex-wrap:wrap}
+    /* Board view */
+    .board-wrap{max-width:1280px;margin:0 auto;width:100%;display:flex;flex-direction:column;gap:0.85rem}
+    .board-top{display:flex;align-items:flex-start;gap:0.75rem;flex-wrap:wrap}
     .board-info{flex:1;min-width:0}
-    .board-title-row{display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;margin-bottom:.25rem}
-    .board-title{font-family:var(--font-head);font-size:1.35rem;font-weight:700;color:var(--text)}
-    .board-status{display:inline-flex;align-items:center;gap:.3rem;padding:.2rem .55rem;border-radius:99px;font-size:.72rem;font-weight:600;background:rgba(52,199,89,.12);border:1px solid rgba(52,199,89,.25);color:#248a3d}
-    .board-status::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--accent2);animation:pulse 2s ease-in-out infinite}
-    @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
-    .board-meta{font-size:.8rem;color:var(--text3);display:flex;gap:1rem;flex-wrap:wrap}
-    .board-meta span{display:flex;align-items:center;gap:.3rem}
-    .board-actions{display:flex;gap:.5rem;flex-wrap:wrap;align-items:flex-start}
+    .board-title-row{display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap;margin-bottom:0.2rem}
+    .board-title{font-size:1.25rem;font-weight:700;color:var(--text);letter-spacing:-0.01em}
+    .board-status{display:inline-flex;align-items:center;gap:0.25rem;padding:0.15rem 0.5rem;border-radius:99px;font-size:0.7rem;font-weight:600;background:rgba(52,199,89,0.1);border:1px solid rgba(52,199,89,0.2);color:#248a3d}
+    .board-status::before{content:'';width:5px;height:5px;border-radius:50%;background:var(--accent2);animation:pulse 2s ease-in-out infinite}
+    @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.35}}
+    .board-meta{font-size:0.78rem;color:var(--text3);display:flex;gap:0.85rem;flex-wrap:wrap}
+    .board-actions{display:flex;gap:0.4rem;flex-wrap:wrap;align-items:flex-start}
 
-    .name-row{background:var(--surface);border:1px solid var(--border);border-radius:var(--r2);padding:.75rem 1rem;display:flex;align-items:center;gap:.75rem;flex-wrap:wrap}
-    .name-row .label{font-size:.8rem;font-weight:500;color:var(--text2);white-space:nowrap}
-    .name-row input{flex:1;min-width:150px;padding:.5rem .8rem;background:#fff;border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:var(--font-body);font-size:.875rem;outline:none;transition:border-color .2s,box-shadow .2s}
-    .name-row input:focus{border-color:var(--accent);box-shadow:0 0 0 4px rgba(0,113,227,.15)}
+    .name-row{background:var(--surface);border:1px solid var(--border2);border-radius:var(--r2);padding:0.6rem 0.85rem;display:flex;align-items:center;gap:0.6rem;flex-wrap:wrap}
+    .name-row .label{font-size:0.78rem;font-weight:500;color:var(--text2);white-space:nowrap}
+    .name-row input{flex:1;min-width:140px;padding:0.45rem 0.7rem;background:#fff;border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:var(--font);font-size:0.84rem;outline:none;transition:border-color 0.15s,box-shadow 0.15s}
+    .name-row input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(0,113,227,0.12)}
     .name-row input::placeholder{color:var(--text3)}
 
-    /* ── Main board layout ───────────────────────────── */
-    .board-main{display:grid;grid-template-columns:minmax(0,1fr) 260px;gap:1rem;align-items:start}
+    /* Board main layout */
+    .board-main{display:grid;grid-template-columns:minmax(0,1fr) 250px;gap:0.85rem;align-items:start}
     @media(max-width:960px){.board-main{grid-template-columns:1fr}}
 
-    /* ── Grid ────────────────────────────────────────── */
-    .grid-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden}
-    .grid-card-head{padding:.75rem 1rem;display:flex;align-items:center;justify-content:space-between;gap:.5rem;border-bottom:1px solid var(--border);background:#fbfbfd}
-    .grid-card-head h3{font-family:var(--font-head);font-size:.9rem;font-weight:600;color:var(--text2)}
-    .grid-mode{display:flex;background:#e9e9eb;border:none;border-radius:9px;padding:2px;gap:2px}
-    .grid-mode-btn{padding:.3rem .7rem;border-radius:7px;border:none;background:transparent;color:var(--text);font-size:.75rem;font-weight:500;cursor:pointer;transition:all .2s;font-family:var(--font-body)}
-    .grid-mode-btn.active{background:#fff;color:var(--text);border:none;box-shadow:0 1px 3px rgba(0,0,0,.12)}
+    /* Grid */
+    .grid-card{background:var(--surface);border:1px solid var(--border2);border-radius:var(--r);overflow:hidden}
+    .grid-card-head{padding:0.6rem 0.85rem;display:flex;align-items:center;justify-content:space-between;gap:0.4rem;border-bottom:1px solid var(--border2);background:var(--bg2)}
+    .grid-card-head h3{font-size:0.82rem;font-weight:600;color:var(--text2)}
+    .grid-mode{display:flex;background:#e8e8ed;border-radius:8px;padding:2px;gap:1px}
+    .grid-mode-btn{padding:0.25rem 0.6rem;border-radius:6px;border:none;background:transparent;color:var(--text2);font-size:0.72rem;font-weight:500;cursor:pointer;transition:all 0.15s;font-family:var(--font)}
+    .grid-mode-btn.active{background:#fff;color:var(--text);box-shadow:0 1px 3px rgba(0,0,0,0.08)}
 
-    .grid-outer{overflow:auto;max-height:72vh;cursor:crosshair;user-select:none;-webkit-user-select:none;-moz-user-select:none}
-    .grid-table{border-collapse:separate;border-spacing:2px;min-width:500px}
-    .grid-table th{position:sticky;top:0;background:#fff;z-index:10;padding:.4rem .3rem;font-size:.72rem;font-weight:600;color:var(--text2);text-align:center;white-space:nowrap;border-bottom:1px solid var(--border)}
-    .grid-table th.time-head{position:sticky;left:0;top:0;z-index:20;background:#fff;padding:.4rem .6rem}
-    .grid-table td.time-cell{position:sticky;left:0;background:#fff;z-index:5;padding:.25rem .6rem .25rem .5rem;font-size:.72rem;font-weight:600;color:var(--text3);white-space:nowrap;border-right:1px solid var(--border)}
-    .slot-cell{cursor:crosshair;border-radius:5px;transition:filter .1s,transform .05s}
-    .slot-cell:hover{filter:brightness(1.35);z-index:2;position:relative}
+    .grid-outer{overflow:auto;max-height:70vh;cursor:crosshair;user-select:none;-webkit-user-select:none}
+    .grid-table{border-collapse:separate;border-spacing:2px;min-width:480px}
+    .grid-table th{position:sticky;top:0;background:#fff;z-index:10;padding:0.35rem 0.25rem;font-size:0.7rem;font-weight:600;color:var(--text2);text-align:center;white-space:nowrap;border-bottom:1px solid var(--border2)}
+    .grid-table th.time-head{position:sticky;left:0;top:0;z-index:20;background:#fff}
+    .grid-table td.time-cell{position:sticky;left:0;background:#fff;z-index:5;padding:0.2rem 0.5rem;font-size:0.7rem;font-weight:600;color:var(--text3);white-space:nowrap;border-right:1px solid var(--border2)}
+    .slot-cell{cursor:crosshair;border-radius:4px;transition:filter 0.08s}
+    .slot-cell:hover{filter:brightness(1.25)}
     .slot-cell.mine{outline:2px solid var(--accent);outline-offset:-2px;position:relative;z-index:3}
-    .slot-cell.dragging{filter:brightness(1.5)}
+    .slot-cell.dragging{filter:brightness(1.4)}
 
-    /* heatmap colors applied by JS */
     .heat-0{background:var(--c0)}
     .heat-1{background:var(--c1)}
     .heat-2{background:var(--c2)}
@@ -173,105 +148,98 @@
     .heat-4{background:var(--c4)}
     .heat-5{background:var(--c5)}
 
-    /* ── Legend ──────────────────────────────────────── */
-    .legend{display:flex;align-items:center;gap:.4rem;font-size:.72rem;color:var(--text3);padding:.5rem 1rem;border-top:1px solid var(--border);flex-wrap:wrap}
-    .legend-swatch{width:12px;height:12px;border-radius:3px;flex-shrink:0}
-    .legend-sep{width:1px;height:12px;background:var(--border);margin:0 .2rem}
-    .legend-mine{width:12px;height:12px;border-radius:3px;background:var(--c3);outline:2px solid var(--accent);outline-offset:-1px}
+    /* Legend */
+    .legend{display:flex;align-items:center;gap:0.35rem;font-size:0.7rem;color:var(--text3);padding:0.45rem 0.85rem;border-top:1px solid var(--border2);flex-wrap:wrap}
+    .legend-swatch{width:11px;height:11px;border-radius:3px;flex-shrink:0}
+    .legend-sep{width:1px;height:11px;background:var(--border);margin:0 0.15rem}
+    .legend-mine{width:11px;height:11px;border-radius:3px;background:var(--c3);outline:2px solid var(--accent);outline-offset:-1px}
 
-    /* ── Sidebar ─────────────────────────────────────── */
-    .sidebar{display:flex;flex-direction:column;gap:.75rem}
-    .side-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden}
-    .side-head{padding:.65rem .85rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:.4rem;background:#fbfbfd}
-    .side-head h4{font-family:var(--font-head);font-size:.82rem;font-weight:600;color:var(--text2);letter-spacing:.01em}
-    .side-body{padding:.75rem .85rem;display:flex;flex-direction:column;gap:.45rem}
+    /* Sidebar */
+    .sidebar{display:flex;flex-direction:column;gap:0.65rem}
+    .side-card{background:var(--surface);border:1px solid var(--border2);border-radius:var(--r);overflow:hidden}
+    .side-head{padding:0.55rem 0.75rem;border-bottom:1px solid var(--border2);display:flex;align-items:center;justify-content:space-between;gap:0.35rem;background:var(--bg2)}
+    .side-head h4{font-size:0.78rem;font-weight:600;color:var(--text2)}
+    .side-body{padding:0.65rem 0.75rem;display:flex;flex-direction:column;gap:0.4rem}
 
     /* Best times */
-    .best-slot{display:flex;align-items:center;gap:.6rem;padding:.45rem .55rem;border-radius:10px;background:#fbfbfd;border:1px solid var(--border);transition:border-color .2s}
-    .best-slot:hover{border-color:var(--accent2);cursor:default}
-    .best-slot .rank{font-size:.7rem;font-weight:700;color:var(--text3);width:16px;text-align:center;flex-shrink:0}
+    .best-slot{display:flex;align-items:center;gap:0.5rem;padding:0.4rem 0.5rem;border-radius:8px;background:var(--bg2);border:1px solid transparent;transition:border-color 0.15s}
+    .best-slot:hover{border-color:var(--border)}
+    .best-slot .rank{font-size:0.68rem;font-weight:700;color:var(--text3);width:14px;text-align:center;flex-shrink:0}
     .best-slot .info{flex:1;min-width:0}
-    .best-slot .date{font-size:.75rem;font-weight:600;color:var(--text)}
-    .best-slot .time{font-size:.7rem;color:var(--text3)}
-    .best-slot .bar-wrap{width:44px;flex-shrink:0}
-    .best-slot .bar{height:4px;border-radius:99px;background:linear-gradient(90deg,var(--accent),var(--accent2));margin-bottom:2px}
-    .best-slot .pct{font-size:.68rem;color:var(--accent2);text-align:right}
+    .best-slot .date{font-size:0.72rem;font-weight:600;color:var(--text)}
+    .best-slot .time{font-size:0.68rem;color:var(--text3)}
+    .best-slot .bar-wrap{width:40px;flex-shrink:0}
+    .best-slot .bar{height:3px;border-radius:99px;background:linear-gradient(90deg,var(--accent),var(--accent2));margin-bottom:1px}
+    .best-slot .pct{font-size:0.65rem;color:var(--accent2);text-align:right}
 
     /* Participants */
-    .participant-item{display:flex;align-items:center;gap:.55rem;padding:.38rem .45rem;border-radius:7px;transition:background .15s}
+    .participant-item{display:flex;align-items:center;gap:0.5rem;padding:0.3rem 0.4rem;border-radius:6px;transition:background 0.12s}
     .participant-item:hover{background:var(--bg2)}
-    .participant-avatar{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:700;flex-shrink:0;border:1.5px solid rgba(255,255,255,.1)}
-    .participant-name{flex:1;font-size:.8rem;font-weight:500;color:var(--text);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .participant-avatar{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.68rem;font-weight:700;flex-shrink:0}
+    .participant-name{flex:1;font-size:0.78rem;font-weight:500;color:var(--text);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
     .participant-name.you{color:var(--accent)}
-    .participant-slots{font-size:.7rem;color:var(--text3)}
-    .participant-del{opacity:0;transition:opacity .15s;background:none;border:none;color:var(--danger);cursor:pointer;padding:.15rem .3rem;border-radius:4px;font-size:.7rem}
+    .participant-slots{font-size:0.68rem;color:var(--text3)}
+    .participant-del{opacity:0;transition:opacity 0.12s;background:none;border:none;color:var(--danger);cursor:pointer;padding:0.1rem 0.25rem;border-radius:4px;font-size:0.68rem}
     .participant-item:hover .participant-del{opacity:1}
 
-    /* ── Tooltip ─────────────────────────────────────── */
-    #tooltip{position:fixed;z-index:100;pointer-events:none;background:#fff;border:1px solid var(--border);border-radius:12px;padding:.55rem .75rem;font-size:.78rem;max-width:200px;box-shadow:0 8px 28px rgba(0,0,0,.16);display:none}
-    #tooltip .tt-time{font-weight:700;color:var(--text);margin-bottom:.3rem}
-    #tooltip .tt-count{color:var(--accent2);font-weight:600;font-size:.75rem;margin-bottom:.25rem}
+    /* Tooltip */
+    #tooltip{position:fixed;z-index:100;pointer-events:none;background:#fff;border:1px solid var(--border);border-radius:10px;padding:0.5rem 0.65rem;font-size:0.75rem;max-width:190px;box-shadow:var(--shadow-lg);display:none}
+    #tooltip .tt-time{font-weight:700;color:var(--text);margin-bottom:0.2rem}
+    #tooltip .tt-count{color:var(--accent2);font-weight:600;font-size:0.72rem;margin-bottom:0.15rem}
     #tooltip .tt-names{color:var(--text2);line-height:1.4}
 
-    /* ── Modal ───────────────────────────────────────── */
-    .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:80;display:none;align-items:center;justify-content:center;padding:1rem;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+    /* Modal */
+    .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.35);z-index:80;display:none;align-items:center;justify-content:center;padding:1rem;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}
     .modal-overlay.open{display:flex}
-    .modal-box{background:#fff;border:1px solid var(--border);border-radius:var(--r);padding:1.75rem;max-width:440px;width:100%;position:relative;box-shadow:0 20px 60px rgba(0,0,0,.2);max-height:90vh;overflow-y:auto}
-    .modal-head{display:flex;align-items:center;justify-content:space-between;gap:.5rem;margin-bottom:1.25rem}
-    .modal-head h3{font-family:var(--font-head);font-size:1.05rem;font-weight:700;color:var(--text)}
-    .modal-close{background:transparent;border:1px solid var(--border);color:var(--text2);width:28px;height:28px;border-radius:6px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.9rem;transition:all .2s}
-    .modal-close:hover{background:var(--bg2);color:var(--text)}
+    .modal-box{background:#fff;border:1px solid var(--border2);border-radius:var(--r);padding:1.5rem;max-width:420px;width:100%;position:relative;box-shadow:var(--shadow-lg);max-height:90vh;overflow-y:auto}
+    .modal-head{display:flex;align-items:center;justify-content:space-between;gap:0.4rem;margin-bottom:1rem}
+    .modal-head h3{font-size:1rem;font-weight:700;color:var(--text)}
+    .modal-close{background:var(--bg2);border:none;color:var(--text2);width:26px;height:26px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:0.8rem;transition:background 0.12s}
+    .modal-close:hover{background:#e5e5ea}
 
-    /* ── Toast ───────────────────────────────────────── */
-    #toast{position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%) translateY(8px);z-index:200;background:rgba(0,0,0,.85);border:none;border-radius:99px;padding:.55rem 1.2rem;font-size:.82rem;color:#fff;box-shadow:0 8px 28px rgba(0,0,0,.25);pointer-events:none;opacity:0;transition:opacity .25s,transform .25s;-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
+    /* Toast */
+    #toast{position:fixed;bottom:1.25rem;left:50%;transform:translateX(-50%) translateY(6px);z-index:200;background:rgba(29,29,31,0.9);border-radius:99px;padding:0.5rem 1.1rem;font-size:0.8rem;color:#fff;box-shadow:var(--shadow-lg);pointer-events:none;opacity:0;transition:opacity 0.2s,transform 0.2s;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
     #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
-    #toast.toast-ok{border-color:rgba(52,199,89,.4);color:var(--accent2)}
-    #toast.toast-err{border-color:rgba(255,59,48,.4);color:var(--danger)}
+    #toast.toast-ok{color:#fff}
+    #toast.toast-err{color:#ff6961}
 
-    /* ── Share link box ──────────────────────────────── */
-    .link-box{display:flex;gap:.4rem;margin-bottom:.75rem}
-    .link-box input{flex:1;padding:.5rem .65rem;background:#f5f5f7;border:1px solid var(--border);border-radius:10px;color:var(--text2);font-size:.78rem;outline:none;font-family:monospace;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-
-    /* ── Merge textarea ──────────────────────────────── */
-    textarea{width:100%;padding:.55rem .75rem;background:#fff;border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:monospace;font-size:.78rem;resize:vertical;outline:none;transition:border-color .2s;min-height:90px}
+    /* Misc */
+    .link-box{display:flex;gap:0.35rem;margin-bottom:0.6rem}
+    .link-box input{flex:1;padding:0.45rem 0.6rem;background:var(--bg2);border:1px solid var(--border2);border-radius:8px;color:var(--text2);font-size:0.75rem;outline:none;font-family:monospace;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    textarea{width:100%;padding:0.5rem 0.65rem;background:#fff;border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:monospace;font-size:0.75rem;resize:vertical;outline:none;transition:border-color 0.15s;min-height:80px}
     textarea:focus{border-color:var(--accent)}
     textarea::placeholder{color:var(--text3)}
+    .help-note{background:var(--bg2);border:1px solid var(--border2);border-radius:8px;padding:0.5rem 0.65rem;font-size:0.75rem;color:var(--text2);line-height:1.45}
+    .help-note strong{color:var(--text)}
+    .empty{text-align:center;padding:1.5rem 0.75rem;color:var(--text3);font-size:0.82rem}
+    .sep-line{height:1px;background:var(--border2);margin:0.5rem 0}
+    .text-sm{font-size:0.8rem;color:var(--text2)}
+    .text-xs{font-size:0.72rem;color:var(--text3)}
+    .mt-05{margin-top:0.4rem}
+    .mt-1{margin-top:0.85rem}
 
-    /* ── Help note ───────────────────────────────────── */
-    .help-note{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:.55rem .75rem;font-size:.78rem;color:var(--text2);line-height:1.5}
-    .help-note strong{color:var(--accent)}
+    /* Steps */
+    .steps-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1rem;margin-top:1.5rem}
+    .step{text-align:center}
+    .step-num{width:28px;height:28px;border-radius:50%;background:var(--bg2);border:1px solid var(--border2);display:inline-flex;align-items:center;justify-content:center;font-size:0.72rem;font-weight:700;color:var(--text2);margin-bottom:0.4rem}
+    .step h4{font-size:0.82rem;font-weight:600;margin-bottom:0.2rem;color:var(--text)}
+    .step p{font-size:0.75rem;color:var(--text2);line-height:1.4}
 
-    /* ── Empty state ─────────────────────────────────── */
-    .empty{text-align:center;padding:2rem 1rem;color:var(--text3);font-size:.85rem}
-    .empty .empty-icon{font-size:2rem;margin-bottom:.6rem;opacity:.4}
+    @keyframes fadein{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+    .fadein{animation:fadein 0.3s ease both}
 
-    /* ── Misc ────────────────────────────────────────── */
-    .sep-line{height:1px;background:var(--border);margin:.5rem 0}
-    .text-sm{font-size:.82rem;color:var(--text2)}
-    .text-xs{font-size:.75rem;color:var(--text3)}
-    .mt-05{margin-top:.5rem}
-    .mt-1{margin-top:1rem}
-    .flex{display:flex}.gap-5{gap:.5rem}.aic{align-items:center}.jcsb{justify-content:space-between}
-
-    /* ── Animations ──────────────────────────────────── */
-    @keyframes fadein{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
-    .fadein{animation:fadein .35s ease both}
-    @keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
-    .loading-shimmer{background:linear-gradient(90deg,var(--c0) 25%,var(--c1) 50%,var(--c0) 75%);background-size:200% 100%;animation:shimmer 1.5s infinite}
-
-    /* ── Responsive ──────────────────────────────────── */
-    @media(max-width:680px){
-      nav{padding:.6rem 1rem}
-      .view{padding:1rem .75rem}
+    @media(max-width:640px){
+      nav{padding:0.5rem 0.85rem}
+      .view{padding:0.85rem 0.6rem}
       .board-top{flex-direction:column}
       .board-actions{width:100%}
-      .name-row{gap:.5rem}
+      .name-row{gap:0.4rem}
+      .landing-hero{padding:2.5rem 0.5rem 2rem}
     }
   </style>
 </head>
 <body>
   <div id="app">
-    <!-- ── Nav ── -->
     <nav>
       <a class="nav-brand" href="/index.html">
         <div class="dot"></div>
@@ -288,34 +256,22 @@
       </div>
     </nav>
 
-    <!-- ── Landing View ── -->
+    <!-- Landing -->
     <div id="view-landing" class="view active fadein">
       <div class="landing-wrap">
         <div class="landing-hero">
-          <div class="orbit-icon">
-            <div class="ring"></div>
-            <div class="planet"></div>
-          </div>
-          <h1>Orbit Scheduler</h1>
-          <p class="sub">A space-mission-grade group scheduling tool. Create a public board, share the link, let your team mark when they're available, and discover the best orbit for your meeting.</p>
-          <div class="badges">
-            <span class="badge badge-space">🛰 Satellite-inspired</span>
-            <span class="badge badge-climate">🌍 Climate-focused</span>
-            <span class="badge badge-local">☁️ Public cloud board</span>
-          </div>
+          <h1>Find the right time, together.</h1>
+          <p class="sub">Create a shared scheduling board for your workshop or meeting. Everyone marks when they're free, and the best overlap surfaces instantly.</p>
         </div>
 
         <div class="cards-grid">
-          <!-- Create card -->
-          <div class="card fadein" style="animation-delay:.05s">
-            <div class="card-head">
-              <div class="card-icon blue">🚀</div>
-              <h3>Launch new board</h3>
-            </div>
-            <p>Create a scheduling board for your team. Set the date range and time window, then share the unique link.</p>
+          <!-- Create -->
+          <div class="card fadein" style="animation-delay:0.04s">
+            <h3>Create a board</h3>
+            <p>Set up a new scheduling board with your date range and hours.</p>
             <div class="field">
               <label>Board name</label>
-              <input id="create-name" maxlength="80" placeholder="e.g. Climate Mission Kickoff">
+              <input id="create-name" maxlength="80" placeholder="e.g. Workshop Planning">
             </div>
             <div class="field-row">
               <div class="field">
@@ -329,127 +285,97 @@
             </div>
             <div class="field-row">
               <div class="field">
-                <label>Start time</label>
+                <label>Start hour</label>
                 <select id="create-sh"></select>
               </div>
               <div class="field">
-                <label>End time</label>
+                <label>End hour</label>
                 <select id="create-eh"></select>
               </div>
             </div>
             <div class="mt-05">
-              <button class="btn btn-primary btn-full" id="create-btn">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
-                Launch board
-              </button>
+              <button class="btn btn-primary btn-full" id="create-btn">Create board</button>
             </div>
           </div>
 
-          <!-- Join card -->
-          <div class="card fadein" style="animation-delay:.1s">
-            <div class="card-icon green" style="margin-bottom:.75rem;width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.1rem">🌐</div>
-            <h3 style="margin-bottom:.5rem">Join existing board</h3>
-            <p>Have a board link or ID? Enter it below to load the schedule and add your availability.</p>
+          <!-- Join -->
+          <div class="card fadein" style="animation-delay:0.08s">
+            <h3>Join a board</h3>
+            <p>Paste a board link or ID to open an existing schedule.</p>
             <div class="field">
               <label>Board link or ID</label>
-              <input id="join-input" placeholder="Paste link or board ID…">
+              <input id="join-input" placeholder="Paste link or ID">
             </div>
-            <button class="btn btn-outline btn-full mt-05" id="join-btn">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3"/></svg>
-              Open board
-            </button>
+            <button class="btn btn-outline btn-full mt-05" id="join-btn">Open board</button>
 
-            <div class="sep-line" style="margin:1.25rem 0"></div>
-            <h3 style="margin-bottom:.5rem">Merge a response</h3>
-            <p>If a teammate shared their availability code, paste it here to combine it with the board.</p>
+            <div class="sep-line" style="margin:1.1rem 0"></div>
+            <h3>Import a response</h3>
+            <p>A teammate shared their availability code? Paste it below.</p>
             <div class="field">
               <label>Response code</label>
-              <input id="merge-quick-input" placeholder="Paste response code…">
+              <input id="merge-quick-input" placeholder="Paste code">
             </div>
-            <button class="btn btn-outline btn-full mt-05" id="merge-quick-btn">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
-              Import response
-            </button>
+            <button class="btn btn-outline btn-full mt-05" id="merge-quick-btn">Import</button>
           </div>
         </div>
 
         <!-- How it works -->
-        <div class="card fadein" style="animation-delay:.15s;grid-column:1/-1">
-          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1.25rem">
-            <div>
-              <div style="font-size:1.5rem;margin-bottom:.4rem">🚀</div>
-              <div style="font-family:var(--font-head);font-weight:600;font-size:.9rem;color:var(--text);margin-bottom:.3rem">1. Launch</div>
-              <div style="font-size:.8rem;color:var(--text2)">Create a board with your date range and time window.</div>
-            </div>
-            <div>
-              <div style="font-size:1.5rem;margin-bottom:.4rem">📡</div>
-              <div style="font-family:var(--font-head);font-weight:600;font-size:.9rem;color:var(--text);margin-bottom:.3rem">2. Transmit</div>
-              <div style="font-size:.8rem;color:var(--text2)">Share the board link with your team. Anyone with the link can open the same cloud board and mark availability.</div>
-            </div>
-            <div>
-              <div style="font-size:1.5rem;margin-bottom:.4rem">🗓</div>
-              <div style="font-family:var(--font-head);font-weight:600;font-size:.9rem;color:var(--text);margin-bottom:.3rem">3. Mark</div>
-              <div style="font-size:.8rem;color:var(--text2)">Click or drag across slots to mark when you're free. Your selections glow instantly.</div>
-            </div>
-            <div>
-              <div style="font-size:1.5rem;margin-bottom:.4rem">🌍</div>
-              <div style="font-family:var(--font-head);font-weight:600;font-size:.9rem;color:var(--text);margin-bottom:.3rem">4. Orbit found</div>
-              <div style="font-size:.8rem;color:var(--text2)">The heat map highlights when the most people are free. Best times are ranked automatically.</div>
-            </div>
-            <div>
-              <div style="font-size:1.5rem;margin-bottom:.4rem">📤</div>
-              <div style="font-family:var(--font-head);font-weight:600;font-size:.9rem;color:var(--text);margin-bottom:.3rem">5. Cross-device</div>
-              <div style="font-size:.8rem;color:var(--text2)">Need a backup? Export your response code or merge one manually if someone was offline.</div>
-            </div>
+        <div class="steps-row fadein" style="animation-delay:0.12s">
+          <div class="step">
+            <div class="step-num">1</div>
+            <h4>Create</h4>
+            <p>Set your date range and time window.</p>
+          </div>
+          <div class="step">
+            <div class="step-num">2</div>
+            <h4>Share</h4>
+            <p>Send the link to your team.</p>
+          </div>
+          <div class="step">
+            <div class="step-num">3</div>
+            <h4>Mark</h4>
+            <p>Everyone clicks when they're available.</p>
+          </div>
+          <div class="step">
+            <div class="step-num">4</div>
+            <h4>Decide</h4>
+            <p>See the best overlap at a glance.</p>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- ── Board View ── -->
+    <!-- Board View -->
     <div id="view-board" class="view fadein">
       <div class="board-wrap">
-        <!-- Board header -->
         <div class="board-top">
           <div class="board-info">
             <div class="board-title-row">
-              <div class="board-title" id="bv-title">—</div>
+              <div class="board-title" id="bv-title"></div>
               <div class="board-status" id="bv-status">Live</div>
             </div>
             <div class="board-meta" id="bv-meta"></div>
           </div>
           <div class="board-actions">
-            <button class="btn btn-outline btn-sm" id="bv-share-btn">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8M16 6l-4-4-4 4M12 2v13"/></svg>
-              Share board
-            </button>
-            <button class="btn btn-outline btn-sm" id="bv-export-btn">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
-              Export my response
-            </button>
-            <button class="btn btn-outline btn-sm" id="bv-merge-btn">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
-              Merge response
-            </button>
+            <button class="btn btn-outline btn-sm" id="bv-share-btn">Share</button>
+            <button class="btn btn-outline btn-sm" id="bv-export-btn">Export</button>
+            <button class="btn btn-outline btn-sm" id="bv-merge-btn">Merge</button>
           </div>
         </div>
 
-        <!-- Name bar -->
         <div class="name-row">
-          <span class="label">Your name:</span>
-          <input id="bv-name" maxlength="40" placeholder="Enter your name to mark availability…">
+          <span class="label">Your name</span>
+          <input id="bv-name" maxlength="40" placeholder="Enter your name to participate">
           <button class="btn btn-success btn-sm" id="bv-name-save">Save</button>
-          <span class="text-xs" id="bv-name-hint" style="margin-left:.25rem"></span>
+          <span class="text-xs" id="bv-name-hint"></span>
         </div>
 
-        <!-- Main layout -->
         <div class="board-main">
-          <!-- Grid -->
           <div class="grid-card">
             <div class="grid-card-head">
-              <h3 id="bv-grid-label">Availability Grid</h3>
-              <div style="display:flex;align-items:center;gap:.5rem">
-                <span class="text-xs" id="bv-grid-hint">Click or drag to mark your availability</span>
+              <h3 id="bv-grid-label">Availability</h3>
+              <div style="display:flex;align-items:center;gap:0.4rem">
+                <span class="text-xs" id="bv-grid-hint">Click or drag to mark slots</span>
                 <div class="grid-mode">
                   <button class="grid-mode-btn active" id="mode-mark" onclick="App.setGridMode('mark')">Mark</button>
                   <button class="grid-mode-btn" id="mode-view" onclick="App.setGridMode('view')">Overview</button>
@@ -460,47 +386,43 @@
               <table class="grid-table" id="grid-table"></table>
             </div>
             <div class="legend" id="grid-legend">
-              <span class="legend-swatch" style="background:var(--c0)"></span><span>0 available</span>
+              <span class="legend-swatch" style="background:var(--c0)"></span><span>None</span>
               <span class="legend-sep"></span>
-              <span class="legend-swatch" style="background:var(--c2)"></span><span>some</span>
-              <span class="legend-swatch" style="background:var(--c4)"></span><span>most</span>
-              <span class="legend-swatch" style="background:var(--c5)"></span><span>all</span>
+              <span class="legend-swatch" style="background:var(--c2)"></span><span>Some</span>
+              <span class="legend-swatch" style="background:var(--c4)"></span><span>Most</span>
+              <span class="legend-swatch" style="background:var(--c5)"></span><span>All</span>
               <span class="legend-sep"></span>
-              <span class="legend-mine"></span><span>your selection</span>
+              <span class="legend-mine"></span><span>You</span>
             </div>
           </div>
 
-          <!-- Sidebar -->
           <div class="sidebar">
-            <!-- Best times -->
             <div class="side-card">
               <div class="side-head">
                 <h4>Best times</h4>
-                <span class="text-xs" id="best-count">—</span>
+                <span class="text-xs" id="best-count"></span>
               </div>
               <div class="side-body" id="best-list">
-                <div class="empty"><div class="empty-icon">🌑</div>No data yet — mark availability to see best times.</div>
+                <div class="empty">Mark availability to see results.</div>
               </div>
             </div>
 
-            <!-- Participants -->
             <div class="side-card">
               <div class="side-head">
                 <h4>Participants</h4>
-                <span class="text-xs" id="parts-count">0 people</span>
+                <span class="text-xs" id="parts-count">0</span>
               </div>
               <div class="side-body" id="parts-list">
-                <div class="empty"><div class="empty-icon">👥</div>No participants yet.</div>
+                <div class="empty">No participants yet.</div>
               </div>
             </div>
 
-            <!-- Board info -->
             <div class="side-card">
               <div class="side-head"><h4>Board info</h4></div>
               <div class="side-body">
                 <div class="text-xs" id="board-id-display" style="font-family:monospace;word-break:break-all;color:var(--text3)"></div>
                 <div class="help-note mt-05">
-                  <strong>Public cloud board.</strong> This board syncs through a shared JSON document, so anyone with the link can view and edit it from any device. Export and merge are still available as manual backups.
+                  <strong>Public board.</strong> Synced through a shared document. Anyone with the link can view and edit.
                 </div>
               </div>
             </div>
@@ -508,124 +430,127 @@
         </div>
       </div>
     </div>
-  </div><!-- #app -->
+  </div>
 
-  <!-- ── Tooltip ── -->
   <div id="tooltip">
     <div class="tt-time" id="tt-time"></div>
     <div class="tt-count" id="tt-count"></div>
     <div class="tt-names" id="tt-names"></div>
   </div>
 
-  <!-- ── Share Modal ── -->
+  <!-- Share Modal -->
   <div class="modal-overlay" id="modal-share">
     <div class="modal-box fadein">
       <div class="modal-head">
-        <h3>Share board link</h3>
-        <button class="modal-close" onclick="App.closeModal('modal-share')">✕</button>
+        <h3>Share this board</h3>
+        <button class="modal-close" onclick="App.closeModal('modal-share')">&#215;</button>
       </div>
-      <p class="text-sm" style="margin-bottom:.85rem;color:var(--text2)">Send this link to your team. Anyone who opens it can join the same shared cloud board and mark their availability from any device.</p>
+      <p class="text-sm" style="margin-bottom:0.75rem;color:var(--text2)">Anyone with this link can join the board and mark their availability.</p>
       <div class="link-box">
         <input id="share-link-input" readonly>
         <button class="btn btn-primary btn-sm" id="share-copy-btn" onclick="App.copyShareLink()">Copy</button>
       </div>
       <div class="help-note">
-        <strong>Public-link warning:</strong> This board is stored in a public cloud document so it works on GitHub Pages. Anyone with the link can view or edit it, so don't use it for private schedules.
+        <strong>Note:</strong> This board is publicly accessible. Don't share sensitive scheduling details.
       </div>
     </div>
   </div>
 
-  <!-- ── Export Modal ── -->
+  <!-- Export Modal -->
   <div class="modal-overlay" id="modal-export">
     <div class="modal-box fadein">
       <div class="modal-head">
         <h3>Export your response</h3>
-        <button class="modal-close" onclick="App.closeModal('modal-export')">✕</button>
+        <button class="modal-close" onclick="App.closeModal('modal-export')">&#215;</button>
       </div>
-      <p class="text-sm" style="margin-bottom:.85rem;color:var(--text2)">Copy this code as a manual backup. A teammate can still import it with "Merge response" if they were offline or if the shared board needs to be rebuilt.</p>
-      <textarea id="export-code" readonly style="height:100px"></textarea>
-      <div style="display:flex;gap:.5rem;margin-top:.75rem">
+      <p class="text-sm" style="margin-bottom:0.75rem;color:var(--text2)">Copy this code as a backup. A teammate can import it using the Merge option.</p>
+      <textarea id="export-code" readonly style="height:90px"></textarea>
+      <div style="display:flex;gap:0.4rem;margin-top:0.6rem">
         <button class="btn btn-primary btn-sm" onclick="App.copyExportCode()">Copy code</button>
-        <button class="btn btn-outline btn-sm" onclick="App.closeModal('modal-export')">Close</button>
+        <button class="btn btn-outline btn-sm" onclick="App.closeModal('modal-export')">Done</button>
       </div>
     </div>
   </div>
 
-  <!-- ── Merge Modal ── -->
+  <!-- Merge Modal -->
   <div class="modal-overlay" id="modal-merge">
     <div class="modal-box fadein">
       <div class="modal-head">
-        <h3>Merge a teammate's response</h3>
-        <button class="modal-close" onclick="App.closeModal('modal-merge')">✕</button>
+        <h3>Merge a response</h3>
+        <button class="modal-close" onclick="App.closeModal('modal-merge')">&#215;</button>
       </div>
-      <p class="text-sm" style="margin-bottom:.85rem;color:var(--text2)">Paste a teammate's exported backup code to add their availability to this board manually.</p>
+      <p class="text-sm" style="margin-bottom:0.75rem;color:var(--text2)">Paste a teammate's exported code to add their availability to this board.</p>
       <div class="field">
         <label>Response code</label>
-        <textarea id="merge-code-input" placeholder="Paste code here…"></textarea>
+        <textarea id="merge-code-input" placeholder="Paste code here"></textarea>
       </div>
-      <div style="display:flex;gap:.5rem;margin-top:.25rem">
-        <button class="btn btn-success btn-sm" id="merge-confirm-btn" onclick="App.mergeCode()">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>
-          Merge
-        </button>
+      <div style="display:flex;gap:0.4rem;margin-top:0.2rem">
+        <button class="btn btn-success btn-sm" id="merge-confirm-btn" onclick="App.mergeCode()">Merge</button>
         <button class="btn btn-outline btn-sm" onclick="App.closeModal('modal-merge')">Cancel</button>
       </div>
     </div>
   </div>
 
-  <!-- ── Toast ── -->
   <div id="toast"></div>
 
   <script>
   (() => {
-    /* ── Star field ─────────────────────────────────── */
-    // Background starfield removed for the Apple-style light theme.
-
-    /* ── Utilities ──────────────────────────────────── */
+    /* Utilities */
     const $ = id => document.getElementById(id);
     const toast = (msg, type='ok') => {
       const el = $('toast');
       el.textContent = msg;
       el.className = `show toast-${type}`;
       clearTimeout(toast._t);
-      toast._t = setTimeout(() => el.className = '', 2800);
+      toast._t = setTimeout(() => el.className = '', 2600);
     };
-    const uid = () => 'ob-' + (crypto.randomUUID ? crypto.randomUUID().slice(0,12) : Date.now().toString(36) + Math.random().toString(36).slice(2,7));
-    const today = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; };
-    const addDays = (iso, n) => { const d = new Date(iso + 'T00:00:00'); d.setDate(d.getDate() + n); return d.toISOString().slice(0,10); };
+    const uid = () => {
+      if (crypto.randomUUID) return crypto.randomUUID().slice(0, 12);
+      return Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+    };
+    const today = () => {
+      const d = new Date();
+      return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    };
+    const addDays = (iso, n) => {
+      const d = new Date(iso + 'T00:00:00');
+      d.setDate(d.getDate() + n);
+      return d.toISOString().slice(0, 10);
+    };
     const fmtDate = iso => new Date(iso + 'T00:00:00').toLocaleDateString(undefined, {weekday:'short', month:'short', day:'numeric'});
     const fmtDateShort = iso => new Date(iso + 'T00:00:00').toLocaleDateString(undefined, {month:'short', day:'numeric'});
     const fmtHour = h => `${String(h).padStart(2,'0')}:00`;
     const dateRange = (start, end, max=21) => {
-      const out = [], a = new Date(start + 'T00:00:00'), b = new Date(end + 'T00:00:00');
-      while (a <= b && out.length < max) { out.push(a.toISOString().slice(0,10)); a.setDate(a.getDate()+1); }
+      const out = [];
+      const a = new Date(start + 'T00:00:00');
+      const b = new Date(end + 'T00:00:00');
+      while (a <= b && out.length < max) {
+        out.push(a.toISOString().slice(0, 10));
+        a.setDate(a.getDate() + 1);
+      }
       return out;
     };
     const encode = obj => { try { return btoa(unescape(encodeURIComponent(JSON.stringify(obj)))); } catch { return ''; } };
-    const decode = str => { try { return JSON.parse(decodeURIComponent(escape(atob(str)))); } catch { return null; } };
-    const SLOT_KEY_RE = /^\d{4}-\d{2}-\d{2}T\d{2}$/;
+    const decode = str => { try { return JSON.parse(decodeURIComponent(escape(atob(str.trim())))); } catch { return null; } };
+    const SLOT_RE = /^\d{4}-\d{2}-\d{2}T\d{2}$/;
     const AVATAR_COLORS = ['#1a6bde','#0f9d7a','#8b3fa8','#c05020','#1a8fa0','#a04060','#4a8f1a','#6040b0'];
     const avatarColor = name => AVATAR_COLORS[(name.charCodeAt(0) || 0) % AVATAR_COLORS.length];
     const initials = name => name.trim().split(/\s+/).slice(0,2).map(w => w[0]).join('').toUpperCase() || '?';
     const clone = obj => JSON.parse(JSON.stringify(obj));
-    const formatError = err => err && err.message ? err.message : 'unknown error';
 
-    /* ── Storage ────────────────────────────────────── */
+    /* Storage */
     const LS = {
       get: k => { try { return JSON.parse(localStorage.getItem(k)); } catch { return null; } },
-      set: (k, v) => localStorage.setItem(k, JSON.stringify(v)),
-      del: k => localStorage.removeItem(k)
+      set: (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} },
+      del: k => { try { localStorage.removeItem(k); } catch {} }
     };
     const BOARD_KEY = id => `orbit_board_${id}`;
     const PARTS_KEY = id => `orbit_parts_${id}`;
     const MY_ID_KEY = id => `orbit_myid_${id}`;
     const MY_NAME_KEY = 'orbit_myname';
     const CLOUD_BASE = window.S4C_ORBIT_CLOUD_BASE || 'https://jsonblob.com/api/jsonBlob';
-    const CLOUD_SYNC_DEBOUNCE = 700;
-    const CLOUD_POLL_MS = 5000;
-    const CLOUD_SYNC_RETRY_MS = 1200;
-    const VISIBILITY_REFRESH_MS = 1500;
 
+    /* Cloud API */
     const Cloud = {
       url(id) { return `${CLOUD_BASE}/${encodeURIComponent(id)}`; },
       async create(doc) {
@@ -634,24 +559,17 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(doc)
         });
-        if (!res.ok) throw new Error(`create failed (${res.status})`);
-        const location = res.headers.get('Location') || res.headers.get('location') || '';
-        const match = location.match(/\/jsonBlob\/([^/?#]+)$/);
-        if (!match) throw new Error('missing board location');
-        return match[1];
+        if (!res.ok) throw new Error(`Cloud error (${res.status})`);
+        const loc = res.headers.get('Location') || res.headers.get('location') || '';
+        const m = loc.match(/\/jsonBlob\/([^/?#]+)$/);
+        if (!m) throw new Error('Could not get board ID from cloud');
+        return m[1];
       },
       async read(id) {
-        const res = await fetch(this.url(id), {
-          headers: { 'Accept': 'application/json' },
-          cache: 'no-store'
-        });
+        const res = await fetch(this.url(id), { headers: { 'Accept': 'application/json' }, cache: 'no-store' });
         if (res.status === 404) return null;
-        if (!res.ok) throw new Error(`read failed (${res.status})`);
-        try {
-          return normaliseDocument(await res.json(), id);
-        } catch {
-          throw new Error('cloud data is malformed');
-        }
+        if (!res.ok) throw new Error(`Cloud error (${res.status})`);
+        return normaliseDocument(await res.json(), id);
       },
       async write(id, doc) {
         const res = await fetch(this.url(id), {
@@ -659,32 +577,23 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(doc)
         });
-        if (!res.ok) throw new Error(`write failed (${res.status})`);
+        if (!res.ok) throw new Error(`Cloud error (${res.status})`);
       }
     };
 
+    /* Data normalization */
     function normaliseBoard(raw, fallbackId='') {
       if (!raw || typeof raw !== 'object') return null;
       const title = typeof raw.title === 'string' && raw.title.trim() ? raw.title.trim().slice(0, 120) : null;
-      const startDate = typeof raw.startDate === 'string' ? raw.startDate : null;
-      const endDate = typeof raw.endDate === 'string' ? raw.endDate : null;
-      const startHour = Number.isInteger(raw.startHour) ? raw.startHour : parseInt(raw.startHour, 10);
-      const endHour = Number.isInteger(raw.endHour) ? raw.endHour : parseInt(raw.endHour, 10);
-      if (!title || !startDate || !endDate || !Number.isInteger(startHour) || !Number.isInteger(endHour)) return null;
+      const startDate = typeof raw.startDate === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(raw.startDate) ? raw.startDate : null;
+      const endDate = typeof raw.endDate === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(raw.endDate) ? raw.endDate : null;
+      const startHour = Number.isInteger(+raw.startHour) ? +raw.startHour : NaN;
+      const endHour = Number.isInteger(+raw.endHour) ? +raw.endHour : NaN;
+      if (!title || !startDate || !endDate || isNaN(startHour) || isNaN(endHour)) return null;
       if (startDate > endDate || startHour < 0 || endHour > 24 || startHour >= endHour) return null;
       if (dateRange(startDate, endDate).length > 21) return null;
-      const rawId = typeof raw.id === 'string' && raw.id.trim() ? raw.id.trim() : '';
-      const id = !rawId || rawId === 'pending' ? fallbackId : rawId;
-      return {
-        id,
-        title,
-        startDate,
-        endDate,
-        startHour,
-        endHour,
-        timezone: typeof raw.timezone === 'string' ? raw.timezone : Intl.DateTimeFormat().resolvedOptions().timeZone,
-        createdAt: Number(raw.createdAt) || Date.now()
-      };
+      const id = (typeof raw.id === 'string' && raw.id.trim() && raw.id !== 'pending') ? raw.id.trim() : fallbackId;
+      return { id, title, startDate, endDate, startHour, endHour, timezone: typeof raw.timezone === 'string' ? raw.timezone : Intl.DateTimeFormat().resolvedOptions().timeZone, createdAt: Number(raw.createdAt) || Date.now() };
     }
 
     function normaliseParticipant(raw, fallbackId='') {
@@ -693,7 +602,7 @@
       const name = typeof raw.name === 'string' ? raw.name.trim().slice(0, 40) : '';
       if (!id || !name) return null;
       const slots = Array.isArray(raw.slots)
-        ? Array.from(new Set(raw.slots.filter(slot => typeof slot === 'string' && SLOT_KEY_RE.test(slot)))).sort()
+        ? [...new Set(raw.slots.filter(s => typeof s === 'string' && SLOT_RE.test(s)))].sort()
         : [];
       return { id, name, slots, mergedAt: Number(raw.mergedAt) || undefined };
     }
@@ -701,24 +610,20 @@
     function normaliseParticipants(raw) {
       const out = {};
       if (!raw || typeof raw !== 'object') return out;
-      Object.entries(raw).forEach(([id, value]) => {
-        const participant = normaliseParticipant(value, id);
-        if (participant) out[participant.id] = participant;
-      });
+      for (const [id, val] of Object.entries(raw)) {
+        const p = normaliseParticipant(val, id);
+        if (p) out[p.id] = p;
+      }
       return out;
     }
 
     function normaliseDocument(raw, fallbackId='') {
       const board = normaliseBoard(raw && raw.board ? raw.board : raw, fallbackId);
       if (!board) return null;
-      return {
-        board,
-        participants: normaliseParticipants(raw && raw.participants),
-        updatedAt: Number(raw && raw.updatedAt) || 0
-      };
+      return { board, participants: normaliseParticipants(raw && raw.participants), updatedAt: Number(raw && raw.updatedAt) || 0 };
     }
 
-    /* ── App state ──────────────────────────────────── */
+    /* State */
     const state = {
       boardId: null,
       board: null,
@@ -728,26 +633,19 @@
       dragging: false,
       dragAdding: null,
       touched: new Set(),
-      dirtyParticipants: {},
-      dirtyCounter: 0,
+      dirty: {},
+      dirtySeq: 0,
       syncTimer: null,
       syncInFlight: false,
       syncQueued: false,
       pollTimer: null,
-      lastCloudRefresh: 0,
-      lastRemoteError: null
+      lastRefresh: 0
     };
 
-    /* ── Board CRUD ─────────────────────────────────── */
-    function saveBoard() {
-      if (!state.boardId || !state.board) return;
-      LS.set(BOARD_KEY(state.boardId), state.board);
-    }
-    function saveParts() {
-      if (!state.boardId) return;
-      LS.set(PARTS_KEY(state.boardId), state.participants);
-    }
-    function loadBoardData(id) {
+    /* Board persistence */
+    function saveBoard() { if (state.boardId && state.board) LS.set(BOARD_KEY(state.boardId), state.board); }
+    function saveParts() { if (state.boardId) LS.set(PARTS_KEY(state.boardId), state.participants); }
+    function loadLocal(id) {
       state.board = normaliseBoard(LS.get(BOARD_KEY(id)), id);
       state.participants = normaliseParticipants(LS.get(PARTS_KEY(id)));
       state.myId = LS.get(MY_ID_KEY(id));
@@ -755,142 +653,105 @@
     }
     function ensureMyId() {
       if (state.myId) return state.myId;
-      const pid = uid();
-      state.myId = pid;
-      LS.set(MY_ID_KEY(state.boardId), pid);
-      return pid;
+      const id = uid();
+      state.myId = id;
+      LS.set(MY_ID_KEY(state.boardId), id);
+      return id;
     }
 
-    function setBoardStatus(text) {
-      $('bv-status').textContent = text;
+    function setStatus(text) { $('bv-status').textContent = text; }
+
+    function markDirty(pid) {
+      if (!pid) return;
+      state.dirty[pid] = ++state.dirtySeq;
+      scheduleSync();
     }
 
-    function markParticipantDirty(id) {
-      if (!id) return;
-      state.dirtyParticipants[id] = ++state.dirtyCounter;
-      scheduleCloudSync();
-    }
-
-    function clearCloudPolling() {
-      if (state.pollTimer) {
-        clearInterval(state.pollTimer);
-        state.pollTimer = null;
-      }
-    }
-
-    function startCloudPolling() {
-      clearCloudPolling();
+    /* Cloud sync */
+    function stopPolling() { if (state.pollTimer) { clearInterval(state.pollTimer); state.pollTimer = null; } }
+    function startPolling() {
+      stopPolling();
       state.pollTimer = setInterval(() => {
         if (document.hidden || state.syncInFlight || state.dragging) return;
         refreshFromCloud(true);
-      }, CLOUD_POLL_MS);
-    }
-
-    function applyRemoteDoc(id, doc) {
-      if (!doc || !doc.board) return false;
-      state.boardId = id;
-      state.board = doc.board;
-      state.participants = doc.participants || {};
-      saveBoard();
-      saveParts();
-      return true;
+      }, 5000);
     }
 
     async function refreshFromCloud(silent=false) {
       if (!state.boardId) return false;
       try {
         const doc = await Cloud.read(state.boardId);
-        state.lastRemoteError = null;
         if (!doc) return false;
-        state.lastCloudRefresh = Date.now();
-        if (!state.board || state.board.id !== doc.board.id) {
-          applyRemoteDoc(state.boardId, doc);
-          renderAll();
-        } else {
-          state.board = doc.board;
-          const merged = {};
-          Object.entries(doc.participants || {}).forEach(([id, participant]) => {
-            merged[id] = state.dirtyParticipants[id] ? (state.participants[id] || participant) : participant;
-          });
-          Object.entries(state.participants || {}).forEach(([id, participant]) => {
-            if (!merged[id]) merged[id] = participant;
-          });
-          state.participants = merged;
-          saveBoard();
-          saveParts();
-          renderAll();
+        state.lastRefresh = Date.now();
+        state.board = doc.board;
+        // Merge: keep local dirty participants, take remote for others
+        const merged = {};
+        for (const [id, p] of Object.entries(doc.participants || {})) {
+          merged[id] = state.dirty[id] ? (state.participants[id] || p) : p;
         }
-        if (!silent) setBoardStatus(Object.keys(state.dirtyParticipants).length ? 'Saving…' : 'Cloud synced');
+        for (const [id, p] of Object.entries(state.participants || {})) {
+          if (!merged[id]) merged[id] = p;
+        }
+        state.participants = merged;
+        saveBoard();
+        saveParts();
+        renderAll();
+        if (!silent) setStatus(Object.keys(state.dirty).length ? 'Saving...' : 'Synced');
         return true;
-      } catch (err) {
-        state.lastRemoteError = err;
-        if (!silent) setBoardStatus('Cloud paused');
+      } catch {
+        if (!silent) setStatus('Offline');
         return false;
       }
     }
 
-    function scheduleCloudSync(delay=CLOUD_SYNC_DEBOUNCE) {
+    function scheduleSync(delay=700) {
       if (!state.boardId || !state.board) return;
       clearTimeout(state.syncTimer);
       state.syncTimer = setTimeout(syncToCloud, delay);
-      setBoardStatus('Saving…');
+      setStatus('Saving...');
     }
 
     async function syncToCloud() {
       if (!state.boardId || !state.board) return;
-      const dirtySnapshot = { ...state.dirtyParticipants };
-      if (!Object.keys(dirtySnapshot).length) return;
-      if (state.syncInFlight) {
-        state.syncQueued = true;
-        return;
-      }
+      const snap = { ...state.dirty };
+      if (!Object.keys(snap).length) return;
+      if (state.syncInFlight) { state.syncQueued = true; return; }
       state.syncInFlight = true;
-      setBoardStatus('Saving…');
+      setStatus('Saving...');
       try {
-        const remoteDoc = await Cloud.read(state.boardId);
-        if (remoteDoc === null) throw new Error('board missing in cloud');
-        const mergedParticipants = normaliseParticipants(remoteDoc && remoteDoc.participants);
-        Object.keys(dirtySnapshot).forEach(id => {
-          const participant = normaliseParticipant(state.participants[id], id);
-          if (participant) mergedParticipants[id] = participant;
-        });
-        const payload = {
-          board: clone(state.board),
-          participants: mergedParticipants,
-          updatedAt: Date.now()
-        };
-        await Cloud.write(state.boardId, payload);
-        state.participants = mergedParticipants;
+        const remote = await Cloud.read(state.boardId);
+        if (!remote) throw new Error('Board not found in cloud');
+        const merged = normaliseParticipants(remote.participants);
+        for (const id of Object.keys(snap)) {
+          const p = normaliseParticipant(state.participants[id], id);
+          if (p) merged[id] = p;
+        }
+        await Cloud.write(state.boardId, { board: clone(state.board), participants: merged, updatedAt: Date.now() });
+        state.participants = merged;
         saveBoard();
         saveParts();
         renderAll();
-        Object.keys(dirtySnapshot).forEach(id => {
-          if (state.dirtyParticipants[id] === dirtySnapshot[id]) delete state.dirtyParticipants[id];
-        });
-        setBoardStatus('Cloud synced');
-      } catch (err) {
-        state.lastRemoteError = err;
-        setBoardStatus('Cloud paused');
+        for (const id of Object.keys(snap)) {
+          if (state.dirty[id] === snap[id]) delete state.dirty[id];
+        }
+        setStatus('Synced');
+      } catch {
+        setStatus('Offline');
       } finally {
         state.syncInFlight = false;
-        if (state.syncQueued || Object.keys(state.dirtyParticipants).length) {
+        if (state.syncQueued || Object.keys(state.dirty).length) {
           state.syncQueued = false;
-          scheduleCloudSync(CLOUD_SYNC_RETRY_MS);
+          scheduleSync(1200);
         }
       }
     }
 
-    /* ── Computed helpers ───────────────────────────── */
-    function allSlotKeys(board) {
-      const days = dateRange(board.startDate, board.endDate);
-      const keys = [];
-      for (let h = board.startHour; h < board.endHour; h++)
-        for (const d of days) keys.push(`${d}T${String(h).padStart(2,'0')}`);
-      return keys;
-    }
+    /* Computed */
     function countMap() {
       const c = {};
-      Object.values(state.participants).forEach(p => (p.slots || []).forEach(s => c[s] = (c[s] || 0) + 1));
+      for (const p of Object.values(state.participants)) {
+        for (const s of p.slots || []) c[s] = (c[s] || 0) + 1;
+      }
       return c;
     }
     function whoAtSlot(slot) {
@@ -899,9 +760,6 @@
     function mySlots() {
       const me = state.participants[state.myId];
       return me ? new Set(me.slots || []) : new Set();
-    }
-    function participantCount() {
-      return Object.keys(state.participants).length;
     }
     function heatLevel(count, max) {
       if (!count) return 0;
@@ -914,64 +772,61 @@
       return 1;
     }
 
-    /* ── Grid rendering ─────────────────────────────── */
-    let gridDays = [], gridStartH = 0, gridEndH = 0;
+    /* Grid */
+    let gridDays = [];
 
     function buildGrid() {
       if (!state.board) return;
       const { startDate, endDate, startHour, endHour } = state.board;
       gridDays = dateRange(startDate, endDate);
-      gridStartH = startHour; gridEndH = endHour;
       const table = $('grid-table');
       table.innerHTML = '';
       const c = countMap(), mine = mySlots();
       const max = Math.max(0, ...Object.values(c));
 
-      // Header
       const thead = document.createElement('thead');
       const headRow = document.createElement('tr');
-      const thTime = document.createElement('th');
-      thTime.className = 'time-head';
-      thTime.textContent = '';
-      headRow.appendChild(thTime);
-      gridDays.forEach(d => {
+      const thCorner = document.createElement('th');
+      thCorner.className = 'time-head';
+      headRow.appendChild(thCorner);
+      for (const d of gridDays) {
         const th = document.createElement('th');
-        th.innerHTML = `<div style="font-size:.68rem;font-weight:400;color:var(--text3)">${new Date(d+'T00:00:00').toLocaleDateString(undefined,{weekday:'short'})}</div><div>${fmtDateShort(d)}</div>`;
+        const wd = new Date(d + 'T00:00:00').toLocaleDateString(undefined, {weekday:'short'});
+        th.innerHTML = `<div style="font-size:0.65rem;font-weight:400;color:var(--text3)">${wd}</div><div>${fmtDateShort(d)}</div>`;
         headRow.appendChild(th);
-      });
+      }
       thead.appendChild(headRow);
       table.appendChild(thead);
 
-      // Body
       const tbody = document.createElement('tbody');
-      for (let h = gridStartH; h < gridEndH; h++) {
+      for (let h = startHour; h < endHour; h++) {
         const tr = document.createElement('tr');
         const tdTime = document.createElement('td');
         tdTime.className = 'time-cell';
         tdTime.textContent = fmtHour(h);
         tr.appendChild(tdTime);
-        gridDays.forEach(d => {
+        for (const d of gridDays) {
           const slot = `${d}T${String(h).padStart(2,'0')}`;
           const n = c[slot] || 0;
           const isMine = mine.has(slot);
           const td = document.createElement('td');
           td.className = `slot-cell heat-${heatLevel(n, max)}${isMine ? ' mine' : ''}`;
           td.dataset.slot = slot;
-          td.style.width = `${Math.max(52, Math.floor(520 / gridDays.length))}px`;
-          td.style.height = '34px';
+          td.style.width = `${Math.max(48, Math.floor(480 / gridDays.length))}px`;
+          td.style.height = '32px';
           if (state.mode === 'view' && n > 0) {
-            td.style.fontSize = '.7rem';
+            td.style.fontSize = '0.68rem';
             td.style.fontWeight = '700';
-            td.style.color = n >= max * 0.8 ? '#ffffff' : '#1d1d1f';
+            td.style.color = n >= max * 0.8 ? '#fff' : 'var(--text)';
             td.textContent = n;
           }
           td.addEventListener('mouseenter', ev => {
-            const c2 = countMap(), mine2 = mySlots();
-            showTooltip(ev, slot, c2[slot] || 0, mine2.has(slot));
+            const c2 = countMap();
+            showTooltip(ev, slot, c2[slot] || 0);
           });
           td.addEventListener('mouseleave', hideTooltip);
           tr.appendChild(td);
-        });
+        }
         tbody.appendChild(tr);
       }
       table.appendChild(tbody);
@@ -981,15 +836,15 @@
       if (!state.board) return;
       const c = countMap(), mine = mySlots();
       const max = Math.max(0, ...Object.values(c));
-      document.querySelectorAll('.slot-cell').forEach(td => {
+      for (const td of document.querySelectorAll('.slot-cell')) {
         const slot = td.dataset.slot;
-        if (!slot) return;
-        const n = c[slot] || 0, isMine = mine.has(slot);
-        td.className = `slot-cell heat-${heatLevel(n, max)}${isMine ? ' mine' : ''}`;
+        if (!slot) continue;
+        const n = c[slot] || 0;
+        td.className = `slot-cell heat-${heatLevel(n, max)}${mine.has(slot) ? ' mine' : ''}`;
         if (state.mode === 'view' && n > 0) {
-          td.style.fontSize = '.7rem';
+          td.style.fontSize = '0.68rem';
           td.style.fontWeight = '700';
-          td.style.color = n >= max * 0.8 ? '#ffffff' : '#1d1d1f';
+          td.style.color = n >= max * 0.8 ? '#fff' : 'var(--text)';
           td.textContent = n;
         } else {
           td.style.fontSize = '';
@@ -997,32 +852,31 @@
           td.style.color = '';
           td.textContent = '';
         }
-      });
+      }
     }
 
-    /* ── Tooltip ────────────────────────────────────── */
+    /* Tooltip */
     const tt = $('tooltip');
-    function showTooltip(ev, slot, count, isMine) {
+    function showTooltip(ev, slot, count) {
       const [date, hour] = slot.split('T');
-      const who = whoAtSlot(slot);
-      $('tt-time').textContent = `${fmtDate(date)} ${fmtHour(parseInt(hour, 10))}–${fmtHour(parseInt(hour, 10)+1)}`;
-      $('tt-count').textContent = count ? `${count} available` : 'Nobody yet';
-      $('tt-names').textContent = who.length ? who.join(', ') : '';
+      const h = parseInt(hour, 10);
+      $('tt-time').textContent = `${fmtDate(date)}, ${fmtHour(h)}\u2013${fmtHour(h+1)}`;
+      $('tt-count').textContent = count ? `${count} available` : 'No one yet';
+      $('tt-names').textContent = whoAtSlot(slot).join(', ');
       tt.style.display = 'block';
       posTooltip(ev);
     }
     function posTooltip(ev) {
-      const pad = 12;
-      let x = ev.clientX + pad, y = ev.clientY + pad;
-      if (x + 200 > window.innerWidth) x = ev.clientX - 200 - pad;
-      if (y + 100 > window.innerHeight) y = ev.clientY - 100 - pad;
+      let x = ev.clientX + 12, y = ev.clientY + 12;
+      if (x + 190 > window.innerWidth) x = ev.clientX - 190 - 12;
+      if (y + 90 > window.innerHeight) y = ev.clientY - 90 - 12;
       tt.style.left = x + 'px';
       tt.style.top = y + 'px';
     }
     function hideTooltip() { tt.style.display = 'none'; }
     document.addEventListener('mousemove', ev => { if (tt.style.display !== 'none') posTooltip(ev); });
 
-    /* ── Drag / click interaction ───────────────────── */
+    /* Drag interaction */
     const gridOuter = $('grid-outer');
     gridOuter.addEventListener('mousedown', ev => {
       const td = ev.target.closest('.slot-cell');
@@ -1032,16 +886,15 @@
       state.dragging = true;
       state.touched.clear();
       const slot = td.dataset.slot;
-      const isMine = mySlots().has(slot);
-      state.dragAdding = !isMine;
+      state.dragAdding = !mySlots().has(slot);
       toggleSlot(slot);
       state.touched.add(slot);
     });
     document.addEventListener('mouseup', () => {
+      if (!state.dragging) return;
       state.dragging = false;
       state.dragAdding = null;
       state.touched.clear();
-      if (state.boardId && !Object.keys(state.dirtyParticipants).length) refreshFromCloud(true);
     });
     gridOuter.addEventListener('mouseover', ev => {
       if (!state.dragging) return;
@@ -1053,7 +906,8 @@
       const isMine = mySlots().has(slot);
       if (state.dragAdding !== isMine) toggleSlot(slot);
     });
-    // Touch support
+
+    // Touch
     gridOuter.addEventListener('touchstart', ev => {
       const td = ev.target.closest('.slot-cell');
       if (!td || state.mode !== 'mark') return;
@@ -1064,7 +918,7 @@
       state.dragAdding = !mySlots().has(slot);
       toggleSlot(slot);
       state.touched.add(slot);
-    }, {passive:true});
+    }, {passive: true});
     gridOuter.addEventListener('touchmove', ev => {
       if (!state.dragging) return;
       const touch = ev.touches[0];
@@ -1076,20 +930,21 @@
       state.touched.add(slot);
       const isMine = mySlots().has(slot);
       if (state.dragAdding !== isMine) toggleSlot(slot);
-    }, {passive:true});
+    }, {passive: true});
     gridOuter.addEventListener('touchend', () => {
       state.dragging = false;
-      if (state.boardId && !Object.keys(state.dirtyParticipants).length) refreshFromCloud(true);
+      state.dragAdding = null;
+      state.touched.clear();
     });
 
     function checkName() {
-      const nameInput = $('bv-name');
-      const name = nameInput.value.trim();
+      const input = $('bv-name');
+      const name = input.value.trim();
       if (!name) {
-        nameInput.focus();
-        nameInput.style.borderColor = 'var(--danger)';
-        setTimeout(() => nameInput.style.borderColor = '', 1500);
-        toast('Enter your name first!', 'err');
+        input.focus();
+        input.style.borderColor = 'var(--danger)';
+        setTimeout(() => input.style.borderColor = '', 1200);
+        toast('Enter your name first', 'err');
         return false;
       }
       return true;
@@ -1107,44 +962,38 @@
       } else {
         set.has(slot) ? set.delete(slot) : set.add(slot);
       }
-      p.slots = Array.from(set).sort();
+      p.slots = [...set].sort();
       state.participants[pid] = p;
       saveParts();
-       markParticipantDirty(pid);
+      markDirty(pid);
       patchGrid();
       renderBest();
       renderParticipants();
     }
 
-    /* ── Sidebar renders ────────────────────────────── */
+    /* Sidebar */
     function renderBest() {
       if (!state.board) return;
       const c = countMap();
-      const total = participantCount();
+      const total = Object.keys(state.participants).length;
       const entries = Object.entries(c).sort((a, b) => b[1] - a[1]).slice(0, 8);
       const list = $('best-list');
       if (!entries.length) {
-        list.innerHTML = '<div class="empty"><div class="empty-icon">🌑</div>Mark availability to see best times.</div>';
-        $('best-count').textContent = '—';
+        list.innerHTML = '<div class="empty">Mark availability to see results.</div>';
+        $('best-count').textContent = '';
         return;
       }
       const max = entries[0][1];
-      $('best-count').textContent = `${max} of ${total || 1} available`;
+      $('best-count').textContent = `${max}/${total || 1}`;
       list.innerHTML = entries.map(([slot, n], i) => {
         const [date, hour] = slot.split('T');
         const h = parseInt(hour, 10);
         const pct = total ? Math.round(n / total * 100) : 100;
         const barW = Math.round(n / max * 100);
         return `<div class="best-slot">
-          <div class="rank">#${i+1}</div>
-          <div class="info">
-            <div class="date">${fmtDate(date)}</div>
-            <div class="time">${fmtHour(h)} – ${fmtHour(h+1)}</div>
-          </div>
-          <div class="bar-wrap">
-            <div class="bar" style="width:${barW}%"></div>
-            <div class="pct">${pct}%</div>
-          </div>
+          <div class="rank">${i+1}</div>
+          <div class="info"><div class="date">${fmtDate(date)}</div><div class="time">${fmtHour(h)}\u2013${fmtHour(h+1)}</div></div>
+          <div class="bar-wrap"><div class="bar" style="width:${barW}%"></div><div class="pct">${pct}%</div></div>
         </div>`;
       }).join('');
     }
@@ -1152,19 +1001,19 @@
     function renderParticipants() {
       const list = $('parts-list');
       const parts = Object.values(state.participants);
-      $('parts-count').textContent = `${parts.length} ${parts.length === 1 ? 'person' : 'people'}`;
+      $('parts-count').textContent = parts.length;
       if (!parts.length) {
-        list.innerHTML = '<div class="empty"><div class="empty-icon">👥</div>No participants yet.</div>';
+        list.innerHTML = '<div class="empty">No participants yet.</div>';
         return;
       }
       list.innerHTML = parts.map(p => {
         const isMe = p.id === state.myId;
         const col = avatarColor(p.name);
         return `<div class="participant-item">
-          <div class="participant-avatar" style="background:${col}20;border-color:${col}60;color:${col}">${initials(p.name)}</div>
+          <div class="participant-avatar" style="background:${col}18;color:${col}">${initials(p.name)}</div>
           <div class="participant-name${isMe ? ' you' : ''}">${p.name}${isMe ? ' (you)' : ''}</div>
-          <div class="participant-slots">${(p.slots || []).length} slots</div>
-          ${isMe ? `<button class="participant-del btn-xs" onclick="App.clearMySlots()" title="Clear my availability">✕ Clear</button>` : ''}
+          <div class="participant-slots">${(p.slots || []).length}</div>
+          ${isMe ? `<button class="participant-del btn-xs" onclick="App.clearMySlots()" title="Clear">&#215;</button>` : ''}
         </div>`;
       }).join('');
     }
@@ -1175,11 +1024,11 @@
       $('bv-title').textContent = title;
       const days = dateRange(startDate, endDate);
       $('bv-meta').innerHTML = `
-        <span>📅 ${fmtDate(startDate)}${days.length > 1 ? ` → ${fmtDate(endDate)}` : ''}</span>
-        <span>🕐 ${fmtHour(startHour)} – ${fmtHour(endHour)}</span>
-        <span>📍 ${Intl.DateTimeFormat().resolvedOptions().timeZone}</span>
+        <span>${fmtDate(startDate)}${days.length > 1 ? ` \u2014 ${fmtDate(endDate)}` : ''}</span>
+        <span>${fmtHour(startHour)}\u2013${fmtHour(endHour)}</span>
+        <span>${Intl.DateTimeFormat().resolvedOptions().timeZone}</span>
       `;
-      $('board-id-display').textContent = `Board ID: ${state.boardId}`;
+      $('board-id-display').textContent = state.boardId;
     }
 
     function renderAll() {
@@ -1189,84 +1038,89 @@
       renderParticipants();
     }
 
-    /* ── View switching ─────────────────────────────── */
+    /* Views */
     function showView(id) {
       document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
       $(id).classList.add('active');
       $('nav-new-btn').style.display = id === 'view-board' ? '' : 'none';
     }
 
-    /* ── Boot board ─────────────────────────────────── */
+    /* Open board */
     async function openBoard(id) {
-      clearCloudPolling();
+      stopPolling();
       clearTimeout(state.syncTimer);
       state.board = null;
       state.participants = {};
       state.myId = LS.get(MY_ID_KEY(id));
       state.boardId = id;
-      state.dirtyParticipants = {};
+      state.dirty = {};
       state.syncQueued = false;
-      state.lastRemoteError = null;
-      setBoardStatus('Connecting…');
-      const remoteLoaded = await refreshFromCloud(true);
-      if (!remoteLoaded && !loadBoardData(id)) {
-        setBoardStatus('Board not found');
+      setStatus('Connecting...');
+
+      const remoteOk = await refreshFromCloud(true);
+      if (!remoteOk && !loadLocal(id)) {
+        setStatus('Not found');
         return false;
       }
       state.boardId = id;
-      // restore name
       const savedName = LS.get(MY_NAME_KEY) || '';
       $('bv-name').value = savedName;
       if (savedName && state.myId && state.participants[state.myId]) {
         $('bv-name-hint').textContent = `Welcome back, ${savedName}`;
+      } else {
+        $('bv-name-hint').textContent = '';
       }
-      // update URL
       const u = new URL(window.location.href);
       u.searchParams.set('b', id);
       history.replaceState({}, '', u.toString());
       showView('view-board');
       renderAll();
-      startCloudPolling();
-      setBoardStatus(remoteLoaded ? 'Cloud synced' : 'Local cache');
+      startPolling();
+      setStatus(remoteOk ? 'Synced' : 'Local');
       return true;
     }
 
-    /* ── Grid mode ──────────────────────────────────── */
+    /* Grid mode */
     function setGridMode(mode) {
       state.mode = mode;
       $('mode-mark').classList.toggle('active', mode === 'mark');
       $('mode-view').classList.toggle('active', mode === 'view');
-      $('bv-grid-hint').textContent = mode === 'mark' ? 'Click or drag to mark your availability' : 'Showing group availability heatmap';
+      $('bv-grid-hint').textContent = mode === 'mark' ? 'Click or drag to mark slots' : 'Group availability overview';
       $('grid-outer').style.cursor = mode === 'mark' ? 'crosshair' : 'default';
       patchGrid();
     }
 
-    /* ── App public API ─────────────────────────────── */
+    /* Public API */
     window.App = {
       setGridMode,
-      showLanding() { clearCloudPolling(); showView('view-landing'); },
+      showLanding() { stopPolling(); showView('view-landing'); },
       clearMySlots() {
         if (!state.myId || !state.participants[state.myId]) return;
-        if (!confirm('Clear all your availability slots?')) return;
+        if (!confirm('Clear all your availability?')) return;
         state.participants[state.myId].slots = [];
         saveParts();
-        markParticipantDirty(state.myId);
+        markDirty(state.myId);
         patchGrid(); renderBest(); renderParticipants();
-        toast('Your slots cleared.');
+        toast('Availability cleared');
       },
       openModal(id) { $(id).classList.add('open'); },
       closeModal(id) { $(id).classList.remove('open'); },
       copyShareLink() {
         const val = $('share-link-input').value;
-        navigator.clipboard.writeText(val).then(() => { toast('Link copied!'); $('share-copy-btn').textContent = 'Copied!'; setTimeout(() => $('share-copy-btn').textContent = 'Copy', 1800); }).catch(() => toast('Copy failed — select the link manually.', 'err'));
+        navigator.clipboard.writeText(val).then(() => {
+          toast('Link copied');
+          $('share-copy-btn').textContent = 'Copied';
+          setTimeout(() => $('share-copy-btn').textContent = 'Copy', 1500);
+        }).catch(() => toast('Copy failed', 'err'));
       },
       copyExportCode() {
-        const val = $('export-code').value;
-        navigator.clipboard.writeText(val).then(() => toast('Code copied!')).catch(() => toast('Copy failed.', 'err'));
+        navigator.clipboard.writeText($('export-code').value)
+          .then(() => toast('Copied'))
+          .catch(() => toast('Copy failed', 'err'));
       },
       mergeCode() {
         const raw = $('merge-code-input').value.trim();
-        if (!raw) return toast('Paste a code first.', 'err');
+        if (!raw) return toast('Paste a code first', 'err');
         doMerge(raw, () => { App.closeModal('modal-merge'); $('merge-code-input').value = ''; });
       }
     };
@@ -1274,108 +1128,120 @@
     function doMerge(raw, onSuccess) {
       const data = decode(raw);
       if (!data || !data.id || !data.name || !Array.isArray(data.slots)) {
-        toast('Invalid response code.', 'err'); return;
+        return toast('Invalid response code', 'err');
       }
       if (data.boardId && data.boardId !== state.boardId) {
-        toast('This code is for a different board.', 'err'); return;
+        return toast('This code belongs to a different board', 'err');
       }
-      // If no board loaded, try to load or error
-      if (!state.board) { toast('Load a board first.', 'err'); return; }
-      state.participants[data.id] = { id: data.id, name: data.name, slots: data.slots, mergedAt: Date.now() };
+      if (!state.board) return toast('Open a board first', 'err');
+      const participant = normaliseParticipant(data, data.id);
+      if (!participant) return toast('Invalid participant data', 'err');
+      participant.mergedAt = Date.now();
+      state.participants[participant.id] = participant;
       saveParts();
-      markParticipantDirty(data.id);
+      markDirty(participant.id);
       patchGrid(); renderBest(); renderParticipants();
-      toast(`Merged ${data.name}'s availability (${data.slots.length} slots).`);
+      toast(`Merged ${participant.name}'s availability`);
       if (onSuccess) onSuccess();
     }
 
-    /* ── UI bindings ────────────────────────────────── */
-    // Create board
+    /* Form setup */
     (() => {
       const t = today();
       $('create-start').value = t;
       $('create-end').value = addDays(t, 4);
+      const shSel = $('create-sh'), ehSel = $('create-eh');
       for (let h = 0; h < 24; h++) {
-        const a = document.createElement('option');
-        a.value = h; a.textContent = fmtHour(h);
-        $('create-sh').appendChild(a);
+        const opt = document.createElement('option');
+        opt.value = h;
+        opt.textContent = fmtHour(h);
+        shSel.appendChild(opt);
       }
       for (let h = 1; h <= 24; h++) {
-        const a = document.createElement('option');
-        a.value = h; a.textContent = fmtHour(h % 24 || 24);
-        $('create-eh').appendChild(a);
+        const opt = document.createElement('option');
+        opt.value = h;
+        opt.textContent = fmtHour(h);
+        ehSel.appendChild(opt);
       }
-      $('create-sh').value = '9';
-      $('create-eh').value = '17';
+      shSel.value = '9';
+      ehSel.value = '17';
     })();
 
+    /* Create board */
     $('create-btn').addEventListener('click', async () => {
-      const title = ($('create-name').value.trim()) || 'Space4Climate Session';
+      const title = $('create-name').value.trim() || 'Untitled Board';
       const startDate = $('create-start').value;
       const endDate = $('create-end').value;
       const startHour = parseInt($('create-sh').value, 10);
       const endHour = parseInt($('create-eh').value, 10);
-      if (!startDate || !endDate) return toast('Set both dates.', 'err');
-      if (startDate > endDate) return toast('Start date must be before end date.', 'err');
-      if (dateRange(startDate, endDate).length > 21) return toast('Keep range to 21 days or fewer.', 'err');
-      if (startHour >= endHour) return toast('End time must be after start time.', 'err');
-      const draft = { title, startDate, endDate, startHour, endHour, timezone: Intl.DateTimeFormat().resolvedOptions().timeZone, createdAt: Date.now() };
+
+      // Validation
+      if (!startDate || !endDate) return toast('Select both dates', 'err');
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(startDate) || !/^\d{4}-\d{2}-\d{2}$/.test(endDate)) return toast('Invalid date format', 'err');
+      if (startDate > endDate) return toast('Start must be before end', 'err');
+      if (dateRange(startDate, endDate).length > 21) return toast('Maximum 21 days', 'err');
+      if (isNaN(startHour) || isNaN(endHour)) return toast('Select valid hours', 'err');
+      if (startHour >= endHour) return toast('End hour must be after start', 'err');
+      if (endHour - startHour > 18) return toast('Maximum 18 hour window', 'err');
+
       const btn = $('create-btn');
       btn.disabled = true;
+      btn.textContent = 'Creating...';
       try {
+        const draft = { title, startDate, endDate, startHour, endHour, timezone: Intl.DateTimeFormat().resolvedOptions().timeZone, createdAt: Date.now() };
         const id = await Cloud.create({ board: draft, participants: {}, updatedAt: Date.now() });
-        const board = { ...draft, id };
-        LS.set(BOARD_KEY(id), board);
+        LS.set(BOARD_KEY(id), { ...draft, id });
         LS.set(PARTS_KEY(id), {});
         await openBoard(id);
-        toast('Board launched to the shared cloud!');
+        toast('Board created');
       } catch (err) {
-        toast(`Could not create the cloud board: ${formatError(err)}.`, 'err');
+        toast(err.message || 'Failed to create board', 'err');
       } finally {
         btn.disabled = false;
+        btn.textContent = 'Create board';
       }
     });
 
-    // Join board
+    /* Join board */
     $('join-btn').addEventListener('click', async () => {
       const raw = $('join-input').value.trim();
-      if (!raw) return toast('Paste a link or ID.', 'err');
+      if (!raw) return toast('Enter a board link or ID', 'err');
       let id = raw;
+      try { const u = new URL(raw); id = u.searchParams.get('b') || raw; } catch {}
+      const btn = $('join-btn');
+      btn.disabled = true;
+      btn.textContent = 'Loading...';
       try {
-        const u = new URL(raw);
-        id = u.searchParams.get('b') || raw;
-      } catch {}
-      if (!await openBoard(id)) {
-        const joinError = state.lastRemoteError
-          ? `Could not reach the cloud board: ${formatError(state.lastRemoteError)}.`
-          : 'Board not found. Check the link or create a new cloud board.';
-        toast(joinError, 'err');
+        if (!await openBoard(id)) toast('Board not found', 'err');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Open board';
       }
     });
 
-    // Quick merge on landing
+    /* Quick merge */
     $('merge-quick-btn').addEventListener('click', async () => {
       const raw = $('merge-quick-input').value.trim();
-      if (!raw) return toast('Paste a response code.', 'err');
+      if (!raw) return toast('Paste a response code', 'err');
       const data = decode(raw);
-      if (!data || !data.boardId) return toast('Invalid code or missing board ID.', 'err');
+      if (!data || !data.boardId) return toast('Invalid code', 'err');
       if (!await openBoard(data.boardId)) {
-        // Board not here yet — create a stub if encoded in code
         if (data.board) {
           LS.set(BOARD_KEY(data.boardId), data.board);
           LS.set(PARTS_KEY(data.boardId), {});
           await openBoard(data.boardId);
         } else {
-          return toast('Board not found. Load the board first, then merge.', 'err');
+          return toast('Board not found', 'err');
         }
       }
       doMerge(raw, () => { $('merge-quick-input').value = ''; });
     });
 
-    // Name save
+    /* Name save */
     $('bv-name-save').addEventListener('click', () => {
       const name = $('bv-name').value.trim();
-      if (!name) return toast('Enter your name.', 'err');
+      if (!name) return toast('Enter your name', 'err');
+      if (name.length < 2) return toast('Name too short', 'err');
       LS.set(MY_NAME_KEY, name);
       const pid = ensureMyId();
       if (!state.participants[pid]) {
@@ -1384,59 +1250,52 @@
         state.participants[pid].name = name;
       }
       saveParts();
-      markParticipantDirty(pid);
+      markDirty(pid);
       renderParticipants();
       $('bv-name-hint').textContent = `Saved as ${name}`;
-      toast(`Name saved: ${name}`);
+      toast('Name saved');
     });
     $('bv-name').addEventListener('keydown', ev => {
       if (ev.key === 'Enter') $('bv-name-save').click();
     });
 
-    // Share
+    /* Modal buttons */
     $('bv-share-btn').addEventListener('click', () => {
       const u = new URL(window.location.href);
       u.searchParams.set('b', state.boardId);
       $('share-link-input').value = u.toString();
       App.openModal('modal-share');
     });
-
-    // Export
     $('bv-export-btn').addEventListener('click', () => {
       if (!state.myId || !state.participants[state.myId]) {
-        return toast('Add your name and mark availability first.', 'err');
+        return toast('Mark your availability first', 'err');
       }
       const me = state.participants[state.myId];
-      const payload = { id: me.id, name: me.name, slots: me.slots, boardId: state.boardId, board: state.board };
-      $('export-code').value = encode(payload);
+      $('export-code').value = encode({ id: me.id, name: me.name, slots: me.slots, boardId: state.boardId });
       App.openModal('modal-export');
     });
-
-    // Merge
     $('bv-merge-btn').addEventListener('click', () => App.openModal('modal-merge'));
 
-    // Close modals on overlay click
+    // Close modals
     document.querySelectorAll('.modal-overlay').forEach(el => {
       el.addEventListener('click', ev => { if (ev.target === el) el.classList.remove('open'); });
     });
-    // ESC closes modals
     document.addEventListener('keydown', ev => {
       if (ev.key === 'Escape') document.querySelectorAll('.modal-overlay.open').forEach(el => el.classList.remove('open'));
     });
 
-    /* ── Init from URL ──────────────────────────────── */
-    document.addEventListener('visibilitychange', async () => {
-      if (!document.hidden && state.boardId && Date.now() - state.lastCloudRefresh > VISIBILITY_REFRESH_MS) await refreshFromCloud(false);
+    /* Visibility refresh */
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden && state.boardId && Date.now() - state.lastRefresh > 1500) refreshFromCloud(false);
     });
 
+    /* Init */
     (async () => {
-      const params = new URLSearchParams(window.location.search);
-      const id = params.get('b');
+      const id = new URLSearchParams(window.location.search).get('b');
       if (id) {
-        if (!await openBoard(id)) toast('Board not found — create a new one.', 'err');
+        if (!await openBoard(id)) toast('Board not found', 'err');
       }
     })();
-
   })();
   </script>
   <script src="/site-support.js"></script>
