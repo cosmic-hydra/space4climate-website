@@ -549,6 +549,10 @@
     const MY_ID_KEY = id => `orbit_myid_${id}`;
     const MY_NAME_KEY = 'orbit_myname';
     const BOARDS_INDEX_KEY = 'orbit_boards_index';
+    function ensureInIndex(id) {
+      const index = LS.get(BOARDS_INDEX_KEY) || [];
+      if (!index.includes(id)) { index.push(id); LS.set(BOARDS_INDEX_KEY, index); }
+    }
 
     /* Local Storage API (GitHub Pages friendly - no external database) */
     const Cloud = {
@@ -557,9 +561,7 @@
         const stored = { board: { ...doc.board, id }, participants: doc.participants || {}, updatedAt: Date.now() };
         LS.set(BOARD_KEY(id), stored.board);
         LS.set(PARTS_KEY(id), stored.participants);
-        // Track board in index for listing
-        const index = LS.get(BOARDS_INDEX_KEY) || [];
-        if (!index.includes(id)) { index.push(id); LS.set(BOARDS_INDEX_KEY, index); }
+        ensureInIndex(id);
         return id;
       },
       read(id) {
@@ -571,9 +573,7 @@
       write(id, doc) {
         if (doc.board) LS.set(BOARD_KEY(id), doc.board);
         if (doc.participants) LS.set(PARTS_KEY(id), doc.participants);
-        // Ensure board is in index
-        const index = LS.get(BOARDS_INDEX_KEY) || [];
-        if (!index.includes(id)) { index.push(id); LS.set(BOARDS_INDEX_KEY, index); }
+        ensureInIndex(id);
       }
     };
 
@@ -667,11 +667,14 @@
     function stopPolling() { if (state.pollTimer) { clearInterval(state.pollTimer); state.pollTimer = null; } }
     function startPolling() {
       stopPolling();
-      // Poll localStorage for multi-tab sync
-      state.pollTimer = setInterval(() => {
-        if (document.hidden || state.dragging) return;
+      // Use storage event for instant cross-tab sync
+      window.addEventListener('storage', onStorageChange);
+    }
+    function onStorageChange(e) {
+      if (!state.boardId || state.dragging) return;
+      if (e.key === PARTS_KEY(state.boardId) || e.key === BOARD_KEY(state.boardId)) {
         refreshFromLocal(true);
-      }, 3000);
+      }
     }
 
     function refreshFromLocal(silent=false) {
@@ -709,7 +712,16 @@
       const snap = { ...state.dirty };
       if (!Object.keys(snap).length) return;
       try {
-        Cloud.write(state.boardId, { board: clone(state.board), participants: clone(state.participants), updatedAt: Date.now() });
+        // Read-merge-write to avoid overwriting other tabs' changes
+        const current = normaliseParticipants(LS.get(PARTS_KEY(state.boardId)));
+        const merged = { ...current };
+        for (const id of Object.keys(snap)) {
+          const p = state.participants[id];
+          if (p) merged[id] = clone(p);
+        }
+        LS.set(PARTS_KEY(state.boardId), merged);
+        LS.set(BOARD_KEY(state.boardId), state.board);
+        state.participants = merged;
         for (const id of Object.keys(snap)) {
           if (state.dirty[id] === snap[id]) delete state.dirty[id];
         }
@@ -1262,8 +1274,7 @@
             if (!existing) {
               LS.set(BOARD_KEY(id), { ...imported.board, id });
               LS.set(PARTS_KEY(id), {});
-              const index = LS.get(BOARDS_INDEX_KEY) || [];
-              if (!index.includes(id)) { index.push(id); LS.set(BOARDS_INDEX_KEY, index); }
+              ensureInIndex(id);
             }
           }
         } catch {}
