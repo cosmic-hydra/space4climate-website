@@ -933,6 +933,7 @@
     }, {passive: true});
     gridOuter.addEventListener('touchend', () => {
       state.dragging = false;
+      state.dragAdding = null;
       state.touched.clear();
     });
 
@@ -1159,7 +1160,7 @@
       for (let h = 1; h <= 24; h++) {
         const opt = document.createElement('option');
         opt.value = h;
-        opt.textContent = fmtHour(h === 24 ? 0 : h);
+        opt.textContent = fmtHour(h);
         ehSel.appendChild(opt);
       }
       shSel.value = '9';
