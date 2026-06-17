@@ -198,13 +198,46 @@
     .best-slot .bar{height:4px;border-radius:99px;background:linear-gradient(90deg,var(--accent),var(--accent2));margin-bottom:2px}
     .best-slot .pct{font-size:.68rem;color:var(--accent2);text-align:right}
 
-    /* Booking */
-    #booking-card{border-color:#34c75933;background:#f0fdf4}
-    #booking-card .side-head{background:#dcfce7;border-bottom-color:#86efac}
-    .book-ref{font-family:monospace;font-size:.9rem;font-weight:700;color:#166534;background:#fff;border:1px solid #4ade80;border-radius:6px;padding:.1rem .35rem;display:inline-block;margin:.15rem 0}
+    /* Booking — confirmation pass (Apple-inspired, not a literal boarding pass) */
     .book-btn{font-size:.65rem;padding:.15rem .4rem;border-radius:5px;border:1px solid var(--accent);background:#fff;color:var(--accent);cursor:pointer;margin-left:.25rem}
     .book-btn:hover{background:var(--accent);color:#fff}
-    .book-meta{color:#166534;font-size:.72rem}
+    #booking-card{border:none;background:transparent;overflow:visible}
+    #booking-card > .side-head{display:none}
+    #booking-card > .side-body{padding:0;gap:.6rem}
+    .tkt{position:relative;background:var(--surface);border:1px solid var(--border);border-radius:18px;box-shadow:0 8px 30px rgba(0,0,0,.07);overflow:hidden;font-family:var(--font-body)}
+    .tkt-top{display:flex;align-items:center;justify-content:space-between;gap:.5rem;padding:15px 17px 0}
+    .tkt-brand{display:flex;align-items:center;gap:.4rem;font-family:var(--font-head);font-weight:600;font-size:.82rem;color:var(--text);letter-spacing:-.01em}
+    .tkt-brand .d{width:7px;height:7px;border-radius:50%;background:var(--accent);flex-shrink:0}
+    .tkt-status{display:inline-flex;align-items:center;gap:.34rem;font-size:.68rem;font-weight:600;color:#248a3d;background:rgba(52,199,89,.12);border:1px solid rgba(52,199,89,.24);padding:.18rem .55rem;border-radius:980px;white-space:nowrap}
+    .tkt-status::before{content:'';width:5px;height:5px;border-radius:50%;background:var(--accent2)}
+    .tkt-event{padding:12px 17px 6px}
+    .tkt-eyebrow{font-size:.64rem;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--text3);margin-bottom:.3rem}
+    .tkt-title{font-family:var(--font-head);font-size:1.2rem;font-weight:600;letter-spacing:-.02em;line-height:1.2;color:var(--text);word-break:break-word}
+    .tkt-rows{padding:4px 17px 6px;display:flex;flex-direction:column}
+    .tkt-row{display:flex;align-items:baseline;justify-content:space-between;gap:.9rem;padding:.52rem 0;border-top:1px solid var(--border)}
+    .tkt-row:first-child{border-top:none}
+    .tkt-k{font-size:.78rem;color:var(--text2);flex-shrink:0}
+    .tkt-v{font-size:.82rem;font-weight:500;color:var(--text);text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+    .tkt-v.mono{font-family:ui-monospace,Menlo,Consolas,monospace;font-weight:600;letter-spacing:.01em}
+    .tkt-perf{position:relative;height:0;border-top:1px dashed var(--border2);margin:4px 0}
+    .tkt-perf::before,.tkt-perf::after{content:'';position:absolute;top:-9px;width:18px;height:18px;border-radius:50%;background:var(--bg2);border:1px solid var(--border)}
+    .tkt-perf::before{left:-10px}.tkt-perf::after{right:-10px}
+    .tkt-qrwrap{display:flex;flex-direction:column;align-items:center;gap:.6rem;padding:16px 16px 20px}
+    .tkt-qr{background:#fff;border:1px solid var(--border);border-radius:14px;padding:11px;line-height:0}
+    .tkt-qr img{width:146px;height:146px;display:block;image-rendering:pixelated}
+    .tkt-qrcap{font-size:.72rem;color:var(--text3);text-align:center;line-height:1.45}
+    .tkt-actions{display:grid;grid-template-columns:1fr 1fr;gap:.5rem}
+    .tkt-btn{font-family:var(--font-body);font-size:.8rem;font-weight:500;padding:.56rem .8rem;border-radius:980px;border:1px solid var(--border);background:var(--surface);color:var(--text);cursor:pointer;transition:all .2s;display:inline-flex;align-items:center;justify-content:center;gap:.4rem}
+    .tkt-btn:hover{background:var(--bg2)}
+    .tkt-btn:active{transform:scale(.985)}
+    .tkt-btn svg{flex-shrink:0}
+    .tkt-btn.primary{grid-column:1/-1;background:var(--accent);border-color:var(--accent);color:#fff}
+    .tkt-btn.primary:hover{background:#0077ed}
+    .tkt-btn.wide{grid-column:1/-1}
+    .tkt-btn.ghost{border-color:transparent;background:transparent;color:var(--accent)}
+    .tkt-btn.ghost:hover{background:var(--bg2)}
+    .tkt-btn.danger{border-color:transparent;background:transparent;color:var(--danger)}
+    .tkt-btn.danger:hover{background:rgba(255,59,48,.08)}
 
     /* Participants */
     .participant-item{display:flex;align-items:center;gap:.55rem;padding:.38rem .45rem;border-radius:7px;transition:background .15s}
@@ -656,6 +689,84 @@
       return 'S4C-' + (base || 'BK' + Math.floor(Math.random()*900000+100000));
     };
 
+    /* QR code generator (self-contained, byte mode, ECC level M, versions 1-10).
+       Implements ISO/IEC 18004; no external dependencies so tickets work offline. */
+    const QR = (() => {
+      const EXP = new Array(256), LOG = new Array(256);
+      (() => { let x = 1; for (let i = 0; i < 255; i++) { EXP[i] = x; LOG[x] = i; x <<= 1; if (x & 0x100) x ^= 0x11d; } })();
+      const gmul = (a, b) => (a === 0 || b === 0) ? 0 : EXP[(LOG[a] + LOG[b]) % 255];
+      const ECC_M = { 1:[10,[[1,16]]], 2:[16,[[1,28]]], 3:[26,[[1,44]]], 4:[18,[[2,32]]], 5:[24,[[2,43]]],
+        6:[16,[[4,27]]], 7:[18,[[4,31]]], 8:[22,[[2,38],[2,39]]], 9:[22,[[3,36],[2,37]]], 10:[26,[[4,43],[1,44]]] };
+      const TOTAL = { 1:16,2:28,3:44,4:64,5:86,6:108,7:124,8:154,9:182,10:216 };
+      const ALIGN = { 1:[],2:[6,18],3:[6,22],4:[6,26],5:[6,30],6:[6,34],7:[6,22,38],8:[6,24,42],9:[6,26,46],10:[6,28,50] };
+      const MASKS = [
+        (r,c)=>((r+c)&1)===0, (r,c)=>(r&1)===0, (r,c)=>c%3===0, (r,c)=>(r+c)%3===0,
+        (r,c)=>(((r/2|0)+(c/3|0))&1)===0, (r,c)=>((r*c)%2 + (r*c)%3)===0,
+        (r,c)=>(((r*c)%2 + (r*c)%3)&1)===0, (r,c)=>((((r+c)%2) + (r*c)%3)&1)===0
+      ];
+      function genPoly(n){ let g=[1]; for(let i=0;i<n;i++){ const ng=new Array(g.length+1).fill(0); for(let j=0;j<g.length;j++){ ng[j]^=g[j]; ng[j+1]^=gmul(g[j],EXP[i]); } g=ng; } return g; }
+      function ecCw(data,n){ const g=genPoly(n), res=data.concat(new Array(n).fill(0)); for(let i=0;i<data.length;i++){ const co=res[i]; if(co) for(let j=0;j<g.length;j++) res[i+j]^=gmul(g[j],co); } return res.slice(data.length); }
+      function toBytes(str){ if(typeof TextEncoder!=='undefined') return Array.from(new TextEncoder().encode(str)); const e=unescape(encodeURIComponent(str)),o=[]; for(let i=0;i<e.length;i++)o.push(e.charCodeAt(i)&0xff); return o; }
+      function chooseVersion(len){ for(let v=1;v<=10;v++){ const cb=v>=10?16:8; if(4+cb+8*len<=TOTAL[v]*8) return v; } return null; }
+      function encodeData(bytes,version){ const cap=TOTAL[version]*8, bits=[]; const push=(val,len)=>{ for(let i=len-1;i>=0;i--) bits.push((val>>i)&1); };
+        push(0b0100,4); push(bytes.length,version>=10?16:8); bytes.forEach(b=>push(b,8));
+        push(0,Math.min(4,cap-bits.length)); while(bits.length%8) bits.push(0);
+        let pad=0xEC; while(bits.length<cap){ push(pad,8); pad=pad===0xEC?0x11:0xEC; }
+        const cw=[]; for(let i=0;i<bits.length;i+=8){ let v=0; for(let j=0;j<8;j++) v=(v<<1)|bits[i+j]; cw.push(v); } return cw; }
+      function interleave(dataCw,version){ const [ecPer,groups]=ECC_M[version], blocks=[]; let idx=0;
+        groups.forEach(([num,per])=>{ for(let b=0;b<num;b++){ const d=dataCw.slice(idx,idx+per); idx+=per; blocks.push({d,e:ecCw(d,ecPer)}); } });
+        const out=[], maxD=Math.max(...blocks.map(b=>b.d.length));
+        for(let i=0;i<maxD;i++) blocks.forEach(b=>{ if(i<b.d.length) out.push(b.d[i]); });
+        for(let i=0;i<ecPer;i++) blocks.forEach(b=>out.push(b.e[i])); return out; }
+      function fmtBits(mask){ let data=(0<<3)|mask, rem=data; for(let i=0;i<10;i++) rem=(rem<<1)^((rem>>>9)*0x537); return ((data<<10)|rem)^0x5412; }
+      function verBits(version){ let rem=version; for(let i=0;i<12;i++) rem=(rem<<1)^((rem>>>11)*0x1f25); return (version<<12)|rem; }
+      function buildBase(version){ const size=17+4*version;
+        const m=Array.from({length:size},()=>new Array(size).fill(0)), fn=Array.from({length:size},()=>new Array(size).fill(false));
+        const set=(r,c,v)=>{ m[r][c]=v?1:0; fn[r][c]=true; };
+        const finder=(r,c)=>{ for(let dr=-1;dr<=7;dr++) for(let dc=-1;dc<=7;dc++){ const rr=r+dr,cc=c+dc; if(rr<0||rr>=size||cc<0||cc>=size) continue;
+          const ring=(dr>=0&&dr<=6&&(dc===0||dc===6))||(dc>=0&&dc<=6&&(dr===0||dr===6)), ctr=dr>=2&&dr<=4&&dc>=2&&dc<=4; set(rr,cc,ring||ctr?1:0); } };
+        finder(0,0); finder(0,size-7); finder(size-7,0);
+        for(let i=8;i<size-8;i++){ if(!fn[6][i]) set(6,i,i%2===0?1:0); if(!fn[i][6]) set(i,6,i%2===0?1:0); }
+        const pos=ALIGN[version], first=pos[0], last=pos[pos.length-1];
+        pos.forEach(r=>pos.forEach(c=>{ if((r===first&&c===first)||(r===first&&c===last)||(r===last&&c===first)) return;
+          for(let dr=-2;dr<=2;dr++) for(let dc=-2;dc<=2;dc++) set(r+dr,c+dc,(Math.max(Math.abs(dr),Math.abs(dc))%2===0)?1:0); }));
+        set(size-8,8,1);
+        for(let i=0;i<=8;i++){ if(!fn[8][i]) fn[8][i]=true; if(!fn[i][8]) fn[i][8]=true; }
+        for(let i=0;i<8;i++){ fn[8][size-1-i]=true; fn[size-1-i][8]=true; }
+        if(version>=7) for(let i=0;i<6;i++) for(let j=0;j<3;j++){ fn[size-11+j][i]=true; fn[i][size-11+j]=true; }
+        return { m, fn, size }; }
+      function placeData(base,codewords){ const {m,fn,size}=base, bits=[]; codewords.forEach(cw=>{ for(let i=7;i>=0;i--) bits.push((cw>>i)&1); });
+        let bi=0, up=true; for(let col=size-1;col>0;col-=2){ if(col===6) col--;
+          for(let i=0;i<size;i++){ const row=up?size-1-i:i; for(let c=0;c<2;c++){ const cc=col-c; if(!fn[row][cc]){ m[row][cc]=bi<bits.length?bits[bi]:0; bi++; } } } up=!up; } }
+      function applyMask(m,fn,size,mask){ const out=m.map(r=>r.slice()); for(let r=0;r<size;r++) for(let c=0;c<size;c++) if(!fn[r][c]&&MASKS[mask](r,c)) out[r][c]^=1; return out; }
+      function drawFmtVer(m,size,mask,version){ const fb=fmtBits(mask), gb=i=>(fb>>(14-i))&1;
+        for(let i=0;i<=5;i++) m[8][i]=gb(i); m[8][7]=gb(6); m[8][8]=gb(7); m[7][8]=gb(8);
+        for(let i=9;i<15;i++) m[14-i][8]=gb(i);
+        for(let i=0;i<8;i++) m[size-1-i][8]=gb(i); for(let i=8;i<15;i++) m[8][size-15+i]=gb(i); m[size-8][8]=1;
+        if(version>=7){ const vb=verBits(version), vg=i=>(vb>>i)&1; for(let i=0;i<18;i++){ const a=size-11+i%3, b=(i/3)|0; m[a][b]=vg(i); m[b][a]=vg(i); } } }
+      function penalty(m,size){ let p=0;
+        for(let r=0;r<size;r++){ let col=m[r][0],len=1; for(let c=1;c<size;c++){ if(m[r][c]===col)len++; else{ if(len>=5)p+=3+len-5; col=m[r][c];len=1; } } if(len>=5)p+=3+len-5; }
+        for(let c=0;c<size;c++){ let col=m[0][c],len=1; for(let r=1;r<size;r++){ if(m[r][c]===col)len++; else{ if(len>=5)p+=3+len-5; col=m[r][c];len=1; } } if(len>=5)p+=3+len-5; }
+        for(let r=0;r<size-1;r++) for(let c=0;c<size-1;c++){ const v=m[r][c]; if(v===m[r][c+1]&&v===m[r+1][c]&&v===m[r+1][c+1]) p+=3; }
+        const p1=[1,0,1,1,1,0,1,0,0,0,0], p2=[0,0,0,0,1,0,1,1,1,0,1];
+        const chk=g=>{ let a=true,b=true; for(let k=0;k<11;k++){ const v=g(k); if(v!==p1[k])a=false; if(v!==p2[k])b=false; } return a||b; };
+        for(let r=0;r<size;r++) for(let c=0;c<=size-11;c++) if(chk(k=>m[r][c+k])) p+=40;
+        for(let c=0;c<size;c++) for(let r=0;r<=size-11;r++) if(chk(k=>m[r+k][c])) p+=40;
+        let dark=0; for(let r=0;r<size;r++) for(let c=0;c<size;c++) if(m[r][c]) dark++;
+        p+=Math.floor(Math.abs(dark*100/(size*size)-50)/5)*10; return p; }
+      function build(text){ const bytes=toBytes(text), version=chooseVersion(bytes.length);
+        if(!version) throw new Error('data too long for QR');
+        const codewords=interleave(encodeData(bytes,version),version), base=buildBase(version); placeData(base,codewords);
+        let best=null, bestP=Infinity;
+        for(let mask=0;mask<8;mask++){ const cand=applyMask(base.m,base.fn,base.size,mask); drawFmtVer(cand,base.size,mask,version); const p=penalty(cand,base.size); if(p<bestP){ bestP=p; best=cand; } }
+        return best; }
+      function toCanvas(text,{scale=6,margin=4,dark='#0b1020',light='#ffffff'}={}){ const m=build(text), size=m.length, dim=(size+margin*2)*scale;
+        const cv=document.createElement('canvas'); cv.width=cv.height=dim; const x=cv.getContext('2d');
+        x.fillStyle=light; x.fillRect(0,0,dim,dim); x.fillStyle=dark;
+        for(let r=0;r<size;r++) for(let c=0;c<size;c++) if(m[r][c]) x.fillRect((c+margin)*scale,(r+margin)*scale,scale,scale); return cv; }
+      return { build, toCanvas, toDataURL:(t,o)=>toCanvas(t,o).toDataURL('image/png') };
+    })();
+
     /* ── Storage ────────────────────────────────────── */
     const LS = {
       get: k => { try { return JSON.parse(localStorage.getItem(k)); } catch { return null; } },
@@ -666,6 +777,7 @@
     const PARTS_KEY = id => `orbit_parts_${id}`;
     const MY_ID_KEY = id => `orbit_myid_${id}`;
     const MY_NAME_KEY = 'orbit_myname';
+    const MY_EMAIL_KEY = 'orbit_myemail';
     const BOOKING_KEY = id => `orbit_booking_${id}`;
     const CLOUD_BASE = window.S4C_ORBIT_CLOUD_BASE || 'https://jsonblob.com/api/jsonBlob';
     const CLOUD_SYNC_DEBOUNCE = 700;
@@ -1298,26 +1410,153 @@
       `).join('');
     }
 
+    /* ── Booking ticket helpers ─────────────────────── */
+    function bookingUrl() {
+      try { const u = new URL(window.location.href); u.searchParams.set('b', state.boardId); if (state.booking) u.searchParams.set('ref', state.booking.id); return u.toString(); }
+      catch { return window.location.href; }
+    }
+    function buildBookingPayload(b, bd, date, h) {
+      const title = String(bd.title || 'Session').replace(/\s+/g, ' ').trim().slice(0, 48);
+      const host = String(b.name || '').replace(/\s+/g, ' ').trim().slice(0, 28);
+      const lines = [
+        'SPACE4CLIMATE BOOKING',
+        'Ref: ' + b.id,
+        'Event: ' + title,
+        'Date: ' + fmtDate(date),
+        'Time: ' + fmtHour(h) + '-' + fmtHour(h + 1)
+      ];
+      if (host) lines.push('Host: ' + host);
+      if (bd.timezone) lines.push('TZ: ' + bd.timezone);
+      lines.push(bookingUrl());
+      return lines.join('\n');
+    }
+    function bookingQrDataUrl(b, bd, date, h) {
+      // Try the full event-details payload; fall back to a compact one if it won't fit.
+      const payloads = [buildBookingPayload(b, bd, date, h), 'Space4Climate booking ' + b.id + '\n' + bookingUrl()];
+      for (const payload of payloads) {
+        try { return { dataUrl: QR.toDataURL(payload, { scale: 6, margin: 4 }), payload }; } catch (e) {}
+      }
+      return null;
+    }
+    function loadImage(src) { return new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = src; }); }
+
+    // Compose a printable booking ticket (details + QR) as one PNG to attach to receipts.
+    async function composeTicket(b, bd, date, h, qrDataUrl) {
+      const W = 360, S = 3, P = 22;
+      const FB = '-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",Arial,sans-serif';
+      const FH = '-apple-system,BlinkMacSystemFont,"SF Pro Display","Helvetica Neue",Arial,sans-serif';
+      const FM = 'ui-monospace,Menlo,Consolas,monospace';
+      const title = String(bd.title || 'Space4Climate session').replace(/\s+/g, ' ').trim();
+      const rows = [
+        ['Date', fmtDate(date)],
+        ['Time', `${fmtHour(h)} - ${fmtHour(h + 1)}`],
+        b.name ? ['Booked by', String(b.name).trim()] : null,
+        bd.timezone ? ['Time zone', String(bd.timezone)] : null,
+        ['Reference', b.id]
+      ].filter(Boolean);
+      const rowsTop = 112, rowH = 32, qw = 150, qpad = 12, qbox = qw + qpad * 2;
+      const rowsBottom = rowsTop + rows.length * rowH;
+      const perfY = rowsBottom + 16, qY = perfY + 20, capY = qY + qbox + 22, H = capY + 14;
+      const cv = document.createElement('canvas'); cv.width = W * S; cv.height = H * S;
+      const x = cv.getContext('2d'); x.scale(S, S); x.textBaseline = 'alphabetic';
+      const rr = (rx, ry, rw, rh, r) => { x.beginPath(); x.moveTo(rx + r, ry); x.arcTo(rx + rw, ry, rx + rw, ry + rh, r); x.arcTo(rx + rw, ry + rh, rx, ry + rh, r); x.arcTo(rx, ry + rh, rx, ry, r); x.arcTo(rx, ry, rx + rw, ry, r); x.closePath(); };
+      const trunc = (t, maxW) => { t = String(t); if (x.measureText(t).width <= maxW) return t; let s = t; while (s.length > 1 && x.measureText(s + '…').width > maxW) s = s.slice(0, -1); return s + '…'; };
+      // card
+      x.fillStyle = '#ffffff'; rr(0.5, 0.5, W - 1, H - 1, 20); x.fill();
+      x.strokeStyle = '#d2d2d7'; x.lineWidth = 1; rr(0.5, 0.5, W - 1, H - 1, 20); x.stroke();
+      // brand
+      x.fillStyle = '#0071e3'; x.beginPath(); x.arc(P + 4, 35, 4, 0, 7); x.fill();
+      x.fillStyle = '#1d1d1f'; x.font = `600 14px ${FH}`; x.fillText('Space4Climate', P + 14, 40);
+      // status pill (right)
+      x.font = `600 11px ${FB}`; const pillT = 'Confirmed', pw = x.measureText(pillT).width + 30, pxx = W - P - pw, pyy = 25, ph = 21;
+      x.fillStyle = 'rgba(52,199,89,0.12)'; rr(pxx, pyy, pw, ph, 10.5); x.fill();
+      x.fillStyle = '#34c759'; x.beginPath(); x.arc(pxx + 13, pyy + ph / 2, 3, 0, 7); x.fill();
+      x.fillStyle = '#248a3d'; x.fillText(pillT, pxx + 21, pyy + 14);
+      // eyebrow + title
+      x.fillStyle = '#86868b'; x.font = `600 10px ${FB}`; x.fillText('SESSION BOOKED', P, 72);
+      x.fillStyle = '#1d1d1f'; x.font = `600 21px ${FH}`; x.fillText(trunc(title, W - 2 * P), P, 97);
+      // detail rows
+      rows.forEach((r, i) => {
+        const yy = rowsTop + i * rowH, ty = yy + 21;
+        if (i > 0) { x.strokeStyle = '#ececef'; x.lineWidth = 1; x.beginPath(); x.moveTo(P, yy); x.lineTo(W - P, yy); x.stroke(); }
+        x.fillStyle = '#6e6e73'; x.font = `13px ${FB}`; x.textAlign = 'left'; x.fillText(r[0], P, ty);
+        const isRef = r[0] === 'Reference';
+        x.fillStyle = '#1d1d1f'; x.font = isRef ? `600 13px ${FM}` : `500 13px ${FB}`; x.textAlign = 'right';
+        x.fillText(trunc(r[1], W - 2 * P - 96), W - P, ty); x.textAlign = 'left';
+      });
+      // perforation + side notches
+      x.strokeStyle = '#c7c7cc'; x.lineWidth = 1; x.setLineDash([4, 4]); x.beginPath(); x.moveTo(P, perfY); x.lineTo(W - P, perfY); x.stroke(); x.setLineDash([]);
+      x.fillStyle = '#f5f5f7'; x.strokeStyle = '#d2d2d7';
+      x.beginPath(); x.arc(0, perfY, 9, 0, 7); x.fill(); x.stroke();
+      x.beginPath(); x.arc(W, perfY, 9, 0, 7); x.fill(); x.stroke();
+      // qr panel
+      const qx = (W - qbox) / 2;
+      x.fillStyle = '#ffffff'; x.strokeStyle = '#d2d2d7'; x.lineWidth = 1; rr(qx, qY, qbox, qbox, 14); x.fill(); x.stroke();
+      if (qrDataUrl) { try { const img = await loadImage(qrDataUrl); x.imageSmoothingEnabled = false; x.drawImage(img, qx + qpad, qY + qpad, qw, qw); } catch (e) {} }
+      x.fillStyle = '#86868b'; x.font = `11px ${FB}`; x.textAlign = 'center';
+      x.fillText('Scan to verify · space4climate.org', W / 2, capY); x.textAlign = 'left';
+      return cv;
+    }
+
     function renderBooking() {
       const card = $('booking-card');
       const body = $('booking-body');
       if (!state.booking || !state.board) {
         if (card) card.style.display = 'none';
+        state._tktKey = null; state._lastQR = null;
         return;
       }
-      if (card) card.style.display = '';
-      const b = state.booking;
-      const [date, hour] = b.slot.split('T');
-      const h = parseInt(hour, 10);
-      const timeStr = `${fmtDate(date)} ${fmtHour(h)}–${fmtHour(h+1)}`;
+      card.style.display = '';
+      const b = state.booking, bd = state.board;
+      const [date, hourStr] = b.slot.split('T');
+      const h = parseInt(hourStr, 10);
+      const key = [b.id, b.slot, bd.title, b.name, bd.timezone].join('|');
+      const qrImg = $('booking-qr');
+      if (state._tktKey === key && qrImg && qrImg.getAttribute('src')) return; // unchanged — skip rebuild (avoids QR flicker on poll)
+      const title = String(bd.title || 'Space4Climate session').trim();
+      const timeStr = `${fmtHour(h)}–${fmtHour(h + 1)}`;
       body.innerHTML = `
-        <div class="book-meta"><strong>${timeStr}</strong></div>
-        <div>Ref: <span class="book-ref" id="booking-ref">${b.id}</span>
-          <button class="book-btn" onclick="App.copyBookingRef()">Copy</button>
+        <div class="tkt">
+          <div class="tkt-top">
+            <div class="tkt-brand"><span class="d"></span>Space4Climate</div>
+            <div class="tkt-status">Confirmed</div>
+          </div>
+          <div class="tkt-event">
+            <div class="tkt-eyebrow">Session booked</div>
+            <div class="tkt-title">${esc(title)}</div>
+          </div>
+          <div class="tkt-rows">
+            <div class="tkt-row"><span class="tkt-k">Date</span><span class="tkt-v">${esc(fmtDate(date))}</span></div>
+            <div class="tkt-row"><span class="tkt-k">Time</span><span class="tkt-v">${esc(timeStr)}</span></div>
+            ${b.name ? `<div class="tkt-row"><span class="tkt-k">Booked by</span><span class="tkt-v">${esc(b.name)}</span></div>` : ''}
+            ${bd.timezone ? `<div class="tkt-row"><span class="tkt-k">Time zone</span><span class="tkt-v">${esc(bd.timezone)}</span></div>` : ''}
+            <div class="tkt-row"><span class="tkt-k">Reference</span><span class="tkt-v mono" id="booking-ref">${esc(b.id)}</span></div>
+          </div>
+          <div class="tkt-perf"></div>
+          <div class="tkt-qrwrap">
+            <div class="tkt-qr"><img id="booking-qr" alt="Booking QR code with event details"></div>
+            <div class="tkt-qrcap" id="booking-qrcap">Scan to verify · quote ${esc(b.id)} when paying</div>
+          </div>
         </div>
-        <div style="margin-top:.2rem;color:#166534">Use this ID when paying Space4Climate.</div>
-        <button class="btn btn-xs btn-danger" style="margin-top:.35rem" onclick="App.clearBooking()">Clear booking</button>
+        <div class="tkt-actions">
+          <button class="tkt-btn primary" onclick="App.downloadTicket()">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0l-4-4m4 4l4-4M5 21h14"/></svg>
+            Save ticket
+          </button>
+          <button class="tkt-btn wide" onclick="App.emailTicket()">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="M4 7.5l8 5.5 8-5.5"/></svg>
+            Email to myself
+          </button>
+          <button class="tkt-btn ghost" onclick="App.copyBookingRef()">Copy reference</button>
+          <button class="tkt-btn danger" onclick="App.clearBooking()">Cancel booking</button>
+        </div>
       `;
+      const qr = bookingQrDataUrl(b, bd, date, h);
+      state._lastQR = qr;
+      const img = $('booking-qr');
+      if (qr && img) img.src = qr.dataUrl;
+      else if (!qr) { const cap = $('booking-qrcap'); if (cap) cap.textContent = 'QR could not be generated for this booking.'; }
+      state._tktKey = key;
     }
 
     function renderParticipants() {
@@ -1470,6 +1709,49 @@
           try { const t = document.createElement('textarea'); t.value = ref; document.body.appendChild(t); t.select(); document.execCommand('copy'); document.body.removeChild(t); doCopy(); }
           catch { toast('Ref: ' + ref + ' (copy manually)'); }
         });
+      },
+      emailTicket() {
+        if (!state.booking || !state.board) return toast('No booking to email yet.', 'err');
+        const b = state.booking, bd = state.board;
+        const [date, hourStr] = b.slot.split('T');
+        const h = parseInt(hourStr, 10);
+        const prev = LS.get(MY_EMAIL_KEY) || '';
+        const to = (window.prompt('Email this booking confirmation to:', prev) || '').trim();
+        if (!to) return;
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(to)) return toast('Enter a valid email address.', 'err');
+        LS.set(MY_EMAIL_KEY, to);
+        const lines = [];
+        lines.push('Your Space4Climate session is confirmed.', '');
+        lines.push('Event:      ' + (bd.title || 'Space4Climate session'));
+        lines.push('Date:       ' + fmtDate(date));
+        lines.push('Time:       ' + fmtHour(h) + ' - ' + fmtHour(h + 1));
+        if (b.name) lines.push('Booked by:  ' + b.name);
+        if (bd.timezone) lines.push('Time zone:  ' + bd.timezone);
+        lines.push('Reference:  ' + b.id, '');
+        lines.push('View or verify this booking:', bookingUrl(), '');
+        lines.push('Please quote the reference above when paying Space4Climate.');
+        lines.push('Tip: use "Save ticket" to attach the QR ticket image to this email.');
+        const href = 'mailto:' + encodeURIComponent(to) + '?subject=' + encodeURIComponent('Space4Climate booking · ' + b.id) + '&body=' + encodeURIComponent(lines.join('\n'));
+        window.location.href = href;
+        toast('Opening your email app…');
+      },
+      async downloadTicket() {
+        if (!state.booking || !state.board) return toast('No booking to save yet.', 'err');
+        const b = state.booking, bd = state.board;
+        const [date, hourStr] = b.slot.split('T');
+        const h = parseInt(hourStr, 10);
+        let qr = state._lastQR;
+        if (!qr) qr = bookingQrDataUrl(b, bd, date, h);
+        try {
+          const canvas = await composeTicket(b, bd, date, h, qr && qr.dataUrl);
+          const a = document.createElement('a');
+          a.download = `S4C-ticket-${b.id}.png`;
+          a.href = canvas.toDataURL('image/png');
+          document.body.appendChild(a); a.click(); a.remove();
+          toast('Ticket saved — attach the PNG to your receipt.');
+        } catch (e) {
+          toast('Could not build ticket image: ' + formatError(e), 'err');
+        }
       },
       openModal(id) { $(id).classList.add('open'); },
       closeModal(id) { $(id).classList.remove('open'); },
