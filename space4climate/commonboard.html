@@ -163,6 +163,7 @@
     .slot-cell{cursor:crosshair;border-radius:5px;transition:filter .1s,transform .05s}
     .slot-cell:hover{filter:brightness(1.35);z-index:2;position:relative}
     .slot-cell.mine{outline:2px solid var(--accent);outline-offset:-2px;position:relative;z-index:3}
+    .slot-cell.booked{outline:2px solid #34c759;outline-offset:-2px;position:relative;z-index:3;box-shadow:0 0 0 3px rgba(52,199,89,.25) inset}
     .slot-cell.dragging{filter:brightness(1.5)}
 
     /* heatmap colors applied by JS */
@@ -197,6 +198,14 @@
     .best-slot .bar{height:4px;border-radius:99px;background:linear-gradient(90deg,var(--accent),var(--accent2));margin-bottom:2px}
     .best-slot .pct{font-size:.68rem;color:var(--accent2);text-align:right}
 
+    /* Booking */
+    #booking-card{border-color:#34c75933;background:#f0fdf4}
+    #booking-card .side-head{background:#dcfce7;border-bottom-color:#86efac}
+    .book-ref{font-family:monospace;font-size:.9rem;font-weight:700;color:#166534;background:#fff;border:1px solid #4ade80;border-radius:6px;padding:.1rem .35rem;display:inline-block;margin:.15rem 0}
+    .book-btn{font-size:.65rem;padding:.15rem .4rem;border-radius:5px;border:1px solid var(--accent);background:#fff;color:var(--accent);cursor:pointer;margin-left:.25rem}
+    .book-btn:hover{background:var(--accent);color:#fff}
+    .book-meta{color:#166534;font-size:.72rem}
+
     /* Participants */
     .participant-item{display:flex;align-items:center;gap:.55rem;padding:.38rem .45rem;border-radius:7px;transition:background .15s}
     .participant-item:hover{background:var(--bg2)}
@@ -206,6 +215,16 @@
     .participant-slots{font-size:.7rem;color:var(--text3)}
     .participant-del{opacity:0;transition:opacity .15s;background:none;border:none;color:var(--danger);cursor:pointer;padding:.15rem .3rem;border-radius:4px;font-size:.7rem}
     .participant-item:hover .participant-del{opacity:1}
+
+    /* Bookable windows (combined availability) */
+    .book-day{padding:.1rem 0}
+    .book-day + .book-day{margin-top:.55rem;padding-top:.55rem;border-top:1px solid var(--border)}
+    .book-date{font-size:.75rem;font-weight:700;color:var(--text);margin-bottom:.4rem}
+    .book-range{display:flex;align-items:center;justify-content:space-between;gap:.6rem;padding:.4rem .6rem;border-radius:10px;background:rgba(52,199,89,.1);border:1px solid rgba(52,199,89,.22);margin-bottom:.35rem}
+    .book-range:last-child{margin-bottom:0}
+    .book-time{font-size:.78rem;font-weight:600;color:#248a3d;white-space:nowrap}
+    .book-who{font-size:.7rem;color:var(--text3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;text-align:right}
+    .book-foot{padding:.55rem .85rem;border-top:1px solid var(--border);font-size:.72rem;color:var(--text3);line-height:1.45}
 
     /* ── Tooltip ─────────────────────────────────────── */
     #tooltip{position:fixed;z-index:100;pointer-events:none;background:#fff;border:1px solid var(--border);border-radius:12px;padding:.55rem .75rem;font-size:.78rem;max-width:200px;box-shadow:0 8px 28px rgba(0,0,0,.16);display:none}
@@ -453,6 +472,7 @@
                 <div class="grid-mode">
                   <button class="grid-mode-btn active" id="mode-mark" onclick="App.setGridMode('mark')">Mark</button>
                   <button class="grid-mode-btn" id="mode-view" onclick="App.setGridMode('view')">Overview</button>
+                  <button class="grid-mode-btn" id="mode-combined" onclick="App.setGridMode('combined')">Bookable</button>
                 </div>
               </div>
             </div>
@@ -472,6 +492,18 @@
 
           <!-- Sidebar -->
           <div class="sidebar">
+            <!-- Bookable windows (combined team availability for schools) -->
+            <div class="side-card">
+              <div class="side-head">
+                <h4>Bookable windows</h4>
+                <span class="text-xs" id="bookable-count">—</span>
+              </div>
+              <div class="side-body" id="bookable-list">
+                <div class="empty"><div class="empty-icon">🗓</div>No combined availability yet.</div>
+              </div>
+              <div class="book-foot">Combined team availability — every window where at least one of us is free for a school to book.</div>
+            </div>
+
             <!-- Best times -->
             <div class="side-card">
               <div class="side-head">
@@ -481,6 +513,14 @@
               <div class="side-body" id="best-list">
                 <div class="empty"><div class="empty-icon">🌑</div>No data yet — mark availability to see best times.</div>
               </div>
+            </div>
+
+            <!-- Booking confirmation (shown when a time is booked) -->
+            <div class="side-card" id="booking-card" style="display:none">
+              <div class="side-head">
+                <h4 style="color:#248a3d">✓ Booked</h4>
+              </div>
+              <div class="side-body" id="booking-body" style="font-size:.82rem;line-height:1.4"></div>
             </div>
 
             <!-- Participants -->
@@ -498,9 +538,9 @@
             <div class="side-card">
               <div class="side-head"><h4>Board info</h4></div>
               <div class="side-body">
-                <div class="text-xs" id="board-id-display" style="font-family:monospace;word-break:break-all;color:var(--text3)"></div>
+                <div id="board-id-display" style="font-family:monospace;font-size:.68rem;line-height:1.25;color:var(--text3);white-space:pre-wrap;word-break:break-all"></div>
                 <div class="help-note mt-05">
-                  <strong>Public cloud board.</strong> This board syncs through a shared JSON document, so anyone with the link can view and edit it from any device. Export and merge are still available as manual backups.
+                  <strong>Public cloud board.</strong> When you "Book" a time, a short <strong>Booking ref</strong> (S4C-XXXXXX) is generated — teachers can quote it when paying Space4Climate.
                 </div>
               </div>
             </div>
@@ -609,6 +649,12 @@
     const initials = name => name.trim().split(/\s+/).slice(0,2).map(w => w[0]).join('').toUpperCase() || '?';
     const clone = obj => JSON.parse(JSON.stringify(obj));
     const formatError = err => err && err.message ? err.message : 'unknown error';
+    const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+    const generateBookingId = () => {
+      // Short, copyable reference like S4C-7K9P2Q for teachers to quote when paying
+      const base = (Date.now().toString(36) + Math.random().toString(36)).replace(/[^a-z0-9]/gi, '').toUpperCase().slice(0, 6);
+      return 'S4C-' + (base || 'BK' + Math.floor(Math.random()*900000+100000));
+    };
 
     /* ── Storage ────────────────────────────────────── */
     const LS = {
@@ -620,6 +666,7 @@
     const PARTS_KEY = id => `orbit_parts_${id}`;
     const MY_ID_KEY = id => `orbit_myid_${id}`;
     const MY_NAME_KEY = 'orbit_myname';
+    const BOOKING_KEY = id => `orbit_booking_${id}`;
     const CLOUD_BASE = window.S4C_ORBIT_CLOUD_BASE || 'https://jsonblob.com/api/jsonBlob';
     const CLOUD_SYNC_DEBOUNCE = 700;
     const CLOUD_POLL_MS = 5000;
@@ -687,6 +734,19 @@
       };
     }
 
+    function normaliseBooking(raw) {
+      if (!raw || typeof raw !== 'object') return null;
+      const slot = typeof raw.slot === 'string' && SLOT_KEY_RE.test(raw.slot) ? raw.slot : null;
+      let id = typeof raw.id === 'string' && raw.id.trim() ? raw.id.trim().slice(0, 32) : null;
+      if (!slot || !id) return null;
+      return {
+        slot,
+        id,
+        bookedAt: Number(raw.bookedAt) || Date.now(),
+        name: typeof raw.name === 'string' ? raw.name.trim().slice(0, 40) : ''
+      };
+    }
+
     function normaliseParticipant(raw, fallbackId='') {
       if (!raw || typeof raw !== 'object') return null;
       const id = typeof raw.id === 'string' && raw.id.trim() ? raw.id.trim() : fallbackId;
@@ -714,6 +774,7 @@
       return {
         board,
         participants: normaliseParticipants(raw && raw.participants),
+        booking: normaliseBooking(raw && raw.booking),
         updatedAt: Number(raw && raw.updatedAt) || 0
       };
     }
@@ -723,12 +784,14 @@
       boardId: null,
       board: null,
       participants: {},
+      booking: null,
       myId: null,
       mode: 'mark',
       dragging: false,
       dragAdding: null,
       touched: new Set(),
       dirtyParticipants: {},
+      dirtyBooking: false,
       dirtyCounter: 0,
       syncTimer: null,
       syncInFlight: false,
@@ -747,9 +810,14 @@
       if (!state.boardId) return;
       LS.set(PARTS_KEY(state.boardId), state.participants);
     }
+    function saveBooking() {
+      if (!state.boardId) return;
+      LS.set(BOOKING_KEY(state.boardId), state.booking);
+    }
     function loadBoardData(id) {
       state.board = normaliseBoard(LS.get(BOARD_KEY(id)), id);
       state.participants = normaliseParticipants(LS.get(PARTS_KEY(id)));
+      state.booking = normaliseBooking(LS.get(BOOKING_KEY(id)));
       state.myId = LS.get(MY_ID_KEY(id));
       return !!state.board;
     }
@@ -768,6 +836,11 @@
     function markParticipantDirty(id) {
       if (!id) return;
       state.dirtyParticipants[id] = ++state.dirtyCounter;
+      scheduleCloudSync();
+    }
+
+    function markBookingDirty() {
+      state.dirtyBooking = true;
       scheduleCloudSync();
     }
 
@@ -791,8 +864,10 @@
       state.boardId = id;
       state.board = doc.board;
       state.participants = doc.participants || {};
+      state.booking = doc.booking || null;
       saveBoard();
       saveParts();
+      saveBooking();
       return true;
     }
 
@@ -816,8 +891,10 @@
             if (!merged[id]) merged[id] = participant;
           });
           state.participants = merged;
+          if (!state.booking && doc.booking) state.booking = doc.booking;
           saveBoard();
           saveParts();
+          saveBooking();
           renderAll();
         }
         if (!silent) setBoardStatus(Object.keys(state.dirtyParticipants).length ? 'Saving…' : 'Cloud synced');
@@ -839,7 +916,8 @@
     async function syncToCloud() {
       if (!state.boardId || !state.board) return;
       const dirtySnapshot = { ...state.dirtyParticipants };
-      if (!Object.keys(dirtySnapshot).length) return;
+      const hadBookingDirty = !!state.dirtyBooking;
+      if (!Object.keys(dirtySnapshot).length && !hadBookingDirty) return;
       if (state.syncInFlight) {
         state.syncQueued = true;
         return;
@@ -857,23 +935,27 @@
         const payload = {
           board: clone(state.board),
           participants: mergedParticipants,
+          booking: state.booking ? clone(state.booking) : null,
           updatedAt: Date.now()
         };
         await Cloud.write(state.boardId, payload);
         state.participants = mergedParticipants;
+        if (state.booking) state.booking = clone(state.booking);
         saveBoard();
         saveParts();
         renderAll();
         Object.keys(dirtySnapshot).forEach(id => {
           if (state.dirtyParticipants[id] === dirtySnapshot[id]) delete state.dirtyParticipants[id];
         });
+        if (hadBookingDirty) state.dirtyBooking = false;
+        saveBooking();
         setBoardStatus('Cloud synced');
       } catch (err) {
         state.lastRemoteError = err;
         setBoardStatus('Cloud paused');
       } finally {
         state.syncInFlight = false;
-        if (state.syncQueued || Object.keys(state.dirtyParticipants).length) {
+        if (state.syncQueued || Object.keys(state.dirtyParticipants).length || state.dirtyBooking) {
           state.syncQueued = false;
           scheduleCloudSync(CLOUD_SYNC_RETRY_MS);
         }
@@ -912,6 +994,38 @@
       if (r >= 0.45) return 3;
       if (r >= 0.2) return 2;
       return 1;
+    }
+
+    // Combined (union) availability: every window where at least one
+    // participant is free, merged into contiguous ranges per day. This is
+    // what a school sees when booking the team.
+    function combinedWindows() {
+      const c = countMap();
+      const byDate = {};
+      Object.keys(c).forEach(s => {
+        if (!c[s]) return;
+        const [date, hh] = s.split('T');
+        (byDate[date] = byDate[date] || []).push(parseInt(hh, 10));
+      });
+      const out = [];
+      Object.keys(byDate).sort().forEach(date => {
+        const hours = Array.from(new Set(byDate[date])).sort((a, b) => a - b);
+        const ranges = [];
+        let runStart = hours[0], prev = hours[0];
+        for (let i = 1; i < hours.length; i++) {
+          if (hours[i] === prev + 1) { prev = hours[i]; }
+          else { ranges.push(makeRange(date, runStart, prev)); runStart = hours[i]; prev = hours[i]; }
+        }
+        ranges.push(makeRange(date, runStart, prev));
+        out.push({ date, ranges });
+      });
+      return out;
+    }
+    function makeRange(date, startH, lastH) {
+      const names = new Set();
+      for (let h = startH; h <= lastH; h++)
+        whoAtSlot(`${date}T${String(h).padStart(2,'0')}`).forEach(n => names.add(n));
+      return { startH, endH: lastH + 1, names: Array.from(names) };
     }
 
     /* ── Grid rendering ─────────────────────────────── */
@@ -954,8 +1068,11 @@
           const slot = `${d}T${String(h).padStart(2,'0')}`;
           const n = c[slot] || 0;
           const isMine = mine.has(slot);
+          const isBooked = state.booking && state.booking.slot === slot;
+          const level = state.mode === 'combined' ? (n > 0 ? 4 : 0) : heatLevel(n, max);
+          const showMine = isMine && state.mode !== 'combined';
           const td = document.createElement('td');
-          td.className = `slot-cell heat-${heatLevel(n, max)}${isMine ? ' mine' : ''}`;
+          td.className = `slot-cell heat-${level}${showMine ? ' mine' : ''}${isBooked ? ' booked' : ''}`;
           td.dataset.slot = slot;
           td.style.width = `${Math.max(52, Math.floor(520 / gridDays.length))}px`;
           td.style.height = '34px';
@@ -985,7 +1102,10 @@
         const slot = td.dataset.slot;
         if (!slot) return;
         const n = c[slot] || 0, isMine = mine.has(slot);
-        td.className = `slot-cell heat-${heatLevel(n, max)}${isMine ? ' mine' : ''}`;
+        const isBooked = state.booking && state.booking.slot === slot;
+        const level = state.mode === 'combined' ? (n > 0 ? 4 : 0) : heatLevel(n, max);
+        const showMine = isMine && state.mode !== 'combined';
+        td.className = `slot-cell heat-${level}${showMine ? ' mine' : ''}${isBooked ? ' booked' : ''}`;
         if (state.mode === 'view' && n > 0) {
           td.style.fontSize = '.7rem';
           td.style.fontWeight = '700';
@@ -1113,6 +1233,7 @@
        markParticipantDirty(pid);
       patchGrid();
       renderBest();
+      renderBookable();
       renderParticipants();
     }
 
@@ -1135,7 +1256,10 @@
         const h = parseInt(hour, 10);
         const pct = total ? Math.round(n / total * 100) : 100;
         const barW = Math.round(n / max * 100);
-        return `<div class="best-slot">
+        const isBooked = state.booking && state.booking.slot === slot;
+        const actions = state.booking ? (isBooked ? ' <span style="font-size:.65rem;color:#248a3d">✓ booked</span>' : '') :
+          `<button class="book-btn" onclick="event.stopPropagation();App.bookSlot('${slot}')">Book</button>`;
+        return `<div class="best-slot" ${!state.booking ? `onclick="App.bookSlot('${slot}')"` : ''} style="${!state.booking?'cursor:pointer':''}">
           <div class="rank">#${i+1}</div>
           <div class="info">
             <div class="date">${fmtDate(date)}</div>
@@ -1145,8 +1269,55 @@
             <div class="bar" style="width:${barW}%"></div>
             <div class="pct">${pct}%</div>
           </div>
+          ${actions}
         </div>`;
       }).join('');
+    }
+
+    function renderBookable() {
+      if (!state.board) return;
+      const days = combinedWindows();
+      const list = $('bookable-list');
+      const totalRanges = days.reduce((sum, d) => sum + d.ranges.length, 0);
+      if (!totalRanges) {
+        list.innerHTML = '<div class="empty"><div class="empty-icon">🗓</div>No combined availability yet — ask the team to mark their times.</div>';
+        $('bookable-count').textContent = '—';
+        return;
+      }
+      $('bookable-count').textContent = `${totalRanges} window${totalRanges === 1 ? '' : 's'}`;
+      list.innerHTML = days.map(d => `
+        <div class="book-day">
+          <div class="book-date">${fmtDate(d.date)}</div>
+          ${d.ranges.map(r => `
+            <div class="book-range">
+              <span class="book-time">${fmtHour(r.startH)} – ${fmtHour(r.endH)}</span>
+              ${r.names.length ? `<span class="book-who" title="${esc(r.names.join(', '))}">${esc(r.names.join(', '))}</span>` : ''}
+            </div>
+          `).join('')}
+        </div>
+      `).join('');
+    }
+
+    function renderBooking() {
+      const card = $('booking-card');
+      const body = $('booking-body');
+      if (!state.booking || !state.board) {
+        if (card) card.style.display = 'none';
+        return;
+      }
+      if (card) card.style.display = '';
+      const b = state.booking;
+      const [date, hour] = b.slot.split('T');
+      const h = parseInt(hour, 10);
+      const timeStr = `${fmtDate(date)} ${fmtHour(h)}–${fmtHour(h+1)}`;
+      body.innerHTML = `
+        <div class="book-meta"><strong>${timeStr}</strong></div>
+        <div>Ref: <span class="book-ref" id="booking-ref">${b.id}</span>
+          <button class="book-btn" onclick="App.copyBookingRef()">Copy</button>
+        </div>
+        <div style="margin-top:.2rem;color:#166534">Use this ID when paying Space4Climate.</div>
+        <button class="btn btn-xs btn-danger" style="margin-top:.35rem" onclick="App.clearBooking()">Clear booking</button>
+      `;
     }
 
     function renderParticipants() {
@@ -1161,8 +1332,8 @@
         const isMe = p.id === state.myId;
         const col = avatarColor(p.name);
         return `<div class="participant-item">
-          <div class="participant-avatar" style="background:${col}20;border-color:${col}60;color:${col}">${initials(p.name)}</div>
-          <div class="participant-name${isMe ? ' you' : ''}">${p.name}${isMe ? ' (you)' : ''}</div>
+          <div class="participant-avatar" style="background:${col}20;border-color:${col}60;color:${col}">${esc(initials(p.name))}</div>
+          <div class="participant-name${isMe ? ' you' : ''}">${esc(p.name)}${isMe ? ' (you)' : ''}</div>
           <div class="participant-slots">${(p.slots || []).length} slots</div>
           ${isMe ? `<button class="participant-del btn-xs" onclick="App.clearMySlots()" title="Clear my availability">✕ Clear</button>` : ''}
         </div>`;
@@ -1179,13 +1350,16 @@
         <span>🕐 ${fmtHour(startHour)} – ${fmtHour(endHour)}</span>
         <span>📍 ${Intl.DateTimeFormat().resolvedOptions().timeZone}</span>
       `;
-      $('board-id-display').textContent = `Board ID: ${state.boardId}`;
+      const bid = `Board ID: ${state.boardId}`;
+      $('board-id-display').innerHTML = `<div>${bid}</div>${state.booking ? `<div style="margin-top:1px;color:#166534">Booking ref: <strong>${state.booking.id}</strong></div>` : ''}`;
     }
 
     function renderAll() {
       renderBoardHeader();
       buildGrid();
       renderBest();
+      renderBookable();
+      renderBooking();
       renderParticipants();
     }
 
@@ -1202,9 +1376,11 @@
       clearTimeout(state.syncTimer);
       state.board = null;
       state.participants = {};
+      state.booking = null;
       state.myId = LS.get(MY_ID_KEY(id));
       state.boardId = id;
       state.dirtyParticipants = {};
+      state.dirtyBooking = false;
       state.syncQueued = false;
       state.lastRemoteError = null;
       setBoardStatus('Connecting…');
@@ -1236,7 +1412,13 @@
       state.mode = mode;
       $('mode-mark').classList.toggle('active', mode === 'mark');
       $('mode-view').classList.toggle('active', mode === 'view');
-      $('bv-grid-hint').textContent = mode === 'mark' ? 'Click or drag to mark your availability' : 'Showing group availability heatmap';
+      $('mode-combined').classList.toggle('active', mode === 'combined');
+      const hints = {
+        mark: 'Click or drag to mark your availability',
+        view: 'Showing group availability heatmap',
+        combined: 'Combined team availability — green cells are bookable by a school'
+      };
+      $('bv-grid-hint').textContent = hints[mode] || hints.mark;
       $('grid-outer').style.cursor = mode === 'mark' ? 'crosshair' : 'default';
       patchGrid();
     }
@@ -1251,8 +1433,43 @@
         state.participants[state.myId].slots = [];
         saveParts();
         markParticipantDirty(state.myId);
-        patchGrid(); renderBest(); renderParticipants();
+        patchGrid(); renderBest(); renderBookable(); renderParticipants();
         toast('Your slots cleared.');
+      },
+      bookSlot(slot) {
+        if (!state.board || !slot) return;
+        const [d, h] = slot.split('T');
+        const when = `${fmtDate(d)} ${fmtHour(parseInt(h,10))}–${fmtHour(parseInt(h,10)+1)}`;
+        if (!confirm(`Book this time for the session?\n${when}\n\nThis will create a payment reference ID.`)) return;
+        const pid = state.myId || ensureMyId();
+        const booker = (state.participants[pid] && state.participants[pid].name) || $('bv-name').value.trim() || 'Organizer';
+        const bookingId = generateBookingId();
+        state.booking = { slot, id: bookingId, bookedAt: Date.now(), name: booker };
+        saveBooking();
+        markBookingDirty();
+        renderAll();
+        // force immediate attempt to push
+        setTimeout(syncToCloud, 10);
+        toast(`Booked! Ref: ${bookingId} — share this ID for payment`);
+      },
+      clearBooking() {
+        if (!state.booking) return;
+        if (!confirm('Clear the confirmed booking?')) return;
+        state.booking = null;
+        state.dirtyBooking = true;
+        saveBooking();
+        scheduleCloudSync(0);
+        renderAll();
+        toast('Booking cleared.');
+      },
+      copyBookingRef() {
+        const ref = state.booking && state.booking.id;
+        if (!ref) return;
+        const doCopy = () => toast('Booking ref copied: ' + ref);
+        navigator.clipboard.writeText(ref).then(doCopy).catch(() => {
+          try { const t = document.createElement('textarea'); t.value = ref; document.body.appendChild(t); t.select(); document.execCommand('copy'); document.body.removeChild(t); doCopy(); }
+          catch { toast('Ref: ' + ref + ' (copy manually)'); }
+        });
       },
       openModal(id) { $(id).classList.add('open'); },
       closeModal(id) { $(id).classList.remove('open'); },
@@ -1284,7 +1501,7 @@
       state.participants[data.id] = { id: data.id, name: data.name, slots: data.slots, mergedAt: Date.now() };
       saveParts();
       markParticipantDirty(data.id);
-      patchGrid(); renderBest(); renderParticipants();
+      patchGrid(); renderBest(); renderBookable(); renderParticipants();
       toast(`Merged ${data.name}'s availability (${data.slots.length} slots).`);
       if (onSuccess) onSuccess();
     }
