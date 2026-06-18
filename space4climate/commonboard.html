@@ -779,7 +779,11 @@
     const MY_NAME_KEY = 'orbit_myname';
     const MY_EMAIL_KEY = 'orbit_myemail';
     const BOOKING_KEY = id => `orbit_booking_${id}`;
-    const CLOUD_BASE = window.S4C_ORBIT_CLOUD_BASE || 'https://jsonblob.com/api/jsonBlob';
+    // JSONBlob's October 2025 infrastructure upgrade made the legacy
+    // jsonblob.com/api/jsonBlob host flaky for browsers (intermittent CORS
+    // failures on board creation). The owner now publishes api.jsonblob.com
+    // as the canonical host with stable CORS exposed headers.
+    const CLOUD_BASE = window.S4C_ORBIT_CLOUD_BASE || 'https://api.jsonblob.com';
     const CLOUD_SYNC_DEBOUNCE = 700;
     const CLOUD_POLL_MS = 5000;
     const CLOUD_SYNC_RETRY_MS = 1200;
@@ -794,17 +798,18 @@
           body: JSON.stringify(doc)
         });
         if (!res.ok) throw new Error(`create failed (${res.status})`);
-        // JSONBlob exposes the new blob id in either an X-Jsonblob header or as
-        // the final path segment of the Location header. CORS sometimes hides
-        // one of these, so try every option before giving up.
-        const idHeader = res.headers.get('X-Jsonblob')
-          || res.headers.get('x-jsonblob')
-          || res.headers.get('X-JsonBlob');
+        // JSONBlob exposes the new blob id in either a header (X-JsonBlob-Id
+        // on the new api.jsonblob.com host, X-jsonblob on the legacy host) or
+        // as the final path segment of the Location header. fetch's
+        // headers.get is case-insensitive so one lookup per name is enough.
+        const idHeader = res.headers.get('X-JsonBlob-Id') || res.headers.get('X-Jsonblob');
         if (idHeader && idHeader.trim()) return idHeader.trim();
-        const location = res.headers.get('Location') || res.headers.get('location') || '';
+        const location = res.headers.get('Location') || '';
         if (location) {
-          // Match any /jsonblob/<id> segment (case-insensitive), then fall back
-          // to the last path segment of the URL.
+          // New host returns "/<id>"; legacy host returns "/api/jsonBlob/<id>"
+          // or an absolute URL ending in the id. Match a /jsonblob/<id>
+          // segment first (case-insensitive), then fall back to the last
+          // non-empty path segment.
           const match = location.match(/\/jsonblob\/([^/?#]+)/i)
             || location.match(/\/([^/?#]+)\/?(?:[?#]|$)/);
           if (match && match[1]) return match[1];
