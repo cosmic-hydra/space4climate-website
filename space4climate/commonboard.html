@@ -790,14 +790,26 @@
       async create(doc) {
         const res = await fetch(CLOUD_BASE, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
           body: JSON.stringify(doc)
         });
         if (!res.ok) throw new Error(`create failed (${res.status})`);
+        // JSONBlob exposes the new blob id in either an X-Jsonblob header or as
+        // the final path segment of the Location header. CORS sometimes hides
+        // one of these, so try every option before giving up.
+        const idHeader = res.headers.get('X-Jsonblob')
+          || res.headers.get('x-jsonblob')
+          || res.headers.get('X-JsonBlob');
+        if (idHeader && idHeader.trim()) return idHeader.trim();
         const location = res.headers.get('Location') || res.headers.get('location') || '';
-        const match = location.match(/\/jsonBlob\/([^/?#]+)$/);
-        if (!match) throw new Error('missing board location');
-        return match[1];
+        if (location) {
+          // Match any /jsonblob/<id> segment (case-insensitive), then fall back
+          // to the last path segment of the URL.
+          const match = location.match(/\/jsonblob\/([^/?#]+)/i)
+            || location.match(/\/([^/?#]+)(?:[/?#]|$)\s*$/);
+          if (match && match[1]) return match[1];
+        }
+        throw new Error('missing board location');
       },
       async read(id) {
         const res = await fetch(this.url(id), {
