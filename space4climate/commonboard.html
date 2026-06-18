@@ -806,7 +806,7 @@
           // Match any /jsonblob/<id> segment (case-insensitive), then fall back
           // to the last path segment of the URL.
           const match = location.match(/\/jsonblob\/([^/?#]+)/i)
-            || location.match(/\/([^/?#]+)(?:[/?#]|$)\s*$/);
+            || location.match(/\/([^/?#]+)\/?(?:[?#]|$)/);
           if (match && match[1]) return match[1];
         }
         throw new Error('missing board location');
