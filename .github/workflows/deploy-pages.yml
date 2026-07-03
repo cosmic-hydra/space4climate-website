@@ -19,7 +19,7 @@ jobs:
   deploy:
     environment:
       name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+      url: ${{ steps.deployment.outputs.page_url || steps.deployment_retry.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -59,6 +59,16 @@ jobs:
         id: deployment
         uses: actions/deploy-pages@v4
         if: steps.pages-site.outputs.enabled == 'true'
+        continue-on-error: true
+
+      - name: Retry deploy to GitHub Pages
+        id: deployment_retry
+        uses: actions/deploy-pages@v4
+        if: steps.pages-site.outputs.enabled == 'true' && steps.deployment.outcome == 'failure'
+
+      - name: Fail if deployment could not be completed
+        if: steps.pages-site.outputs.enabled == 'true' && steps.deployment.outcome == 'failure' && steps.deployment_retry.outcome == 'failure'
+        run: exit 1
 
       - name: Deployment skipped
         if: steps.pages-site.outputs.enabled != 'true'
