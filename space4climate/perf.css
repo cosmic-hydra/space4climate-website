@@ -365,6 +365,17 @@ video {
   visibility: visible !important;
   opacity: 1 !important;
   pointer-events: auto !important;
+  background: #080808 !important;
+}
+
+.nav_dropdown_wrap.active .nav_dropdown_contain,
+.nav_dropdown_wrap.active .nav_dropdown_mask,
+.nav_dropdown_wrap.active .nav_dropdown_layout,
+.nav_dropdown_wrap:focus-within .nav_dropdown_contain,
+.nav_dropdown_wrap:hover .nav_dropdown_contain {
+  opacity: 1 !important;
+  visibility: visible !important;
+  transform: none !important;
 }
 
 /* ---------- Mobile menu ---------- */
@@ -496,6 +507,15 @@ video {
     visibility: visible !important;
     opacity: 1 !important;
     pointer-events: auto !important;
+    background: #080808 !important;
+  }
+
+  .nav_dropdown_wrap:hover .nav_dropdown_contain,
+  .nav_dropdown_wrap:hover .nav_dropdown_mask,
+  .nav_dropdown_wrap:hover .nav_dropdown_layout {
+    opacity: 1 !important;
+    visibility: visible !important;
+    transform: none !important;
   }
 }
 
@@ -637,6 +657,16 @@ video {
   color: #111 !important;
   border-radius: 999px !important;
   padding: 0.35rem 0.4rem 0.35rem 1.35rem !important;
+}
+
+.hero-overlay .button-outline > div:first-child,
+.button-outline.margin-top-small > div:first-child {
+  background: none !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  border-radius: 0 !important;
+  color: #111 !important;
 }
 
 .hero-overlay .button-outline .button-arrow-wrapper-2,

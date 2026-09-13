@@ -270,11 +270,46 @@
     });
     document.querySelectorAll("a.card.programs img, .card.programs img").forEach(function (img) {
       var src = img.getAttribute("src") || "";
-      if (src.indexOf(" ") !== -1) {
+      if (src.indexOf("S4C workshops") !== -1 || src.indexOf("S4C%20workshops") !== -1) {
+        src = "https://cdn.prod.website-files.com/65cebd17c70b035a9f4dea65/69b9740bc12922254be8b963_MissionZeroTechnologies_Building-Materials.jpg";
+        img.setAttribute("src", src);
+      } else if (src.indexOf(" ") !== -1) {
         img.setAttribute("src", src.replace(/ /g, "%20"));
       }
       img.removeAttribute("srcset");
       img.removeAttribute("sizes");
+    });
+  }
+
+  function enhanceDropdowns() {
+    if (window.matchMedia && window.matchMedia("(max-width: 991px)").matches) return;
+    document.querySelectorAll(".nav_dropdown_wrap").forEach(function (wrap) {
+      if (wrap.getAttribute("data-s4c-dd") === "1") return;
+      wrap.setAttribute("data-s4c-dd", "1");
+      wrap.addEventListener("mouseenter", function () {
+        document.querySelectorAll(".nav_dropdown_wrap").forEach(function (other) {
+          if (other !== wrap) other.classList.remove("active");
+        });
+        wrap.classList.add("active");
+        wrap.querySelectorAll(".nav_dropdown_contain, .nav_dropdown_mask, .nav_dropdown_layout").forEach(function (el) {
+          el.style.setProperty("opacity", "1", "important");
+        });
+      });
+      wrap.addEventListener("mouseleave", function () {
+        wrap.classList.remove("active");
+      });
+      var toggle = wrap.querySelector(".nav_dropdown_toggle_wrap, button, a");
+      if (toggle) {
+        toggle.addEventListener("click", function (event) {
+          if (window.matchMedia && window.matchMedia("(max-width: 991px)").matches) return;
+          event.preventDefault();
+          var open = wrap.classList.contains("active");
+          document.querySelectorAll(".nav_dropdown_wrap").forEach(function (other) {
+            other.classList.remove("active");
+          });
+          if (!open) wrap.classList.add("active");
+        });
+      }
     });
   }
 
@@ -377,6 +412,7 @@
     killScrollTriggers();
     parkContactForm();
     flattenProgramCards();
+    enhanceDropdowns();
     ensureLoginNav();
     ensureMobileMenu();
     labelFooterLogo();
