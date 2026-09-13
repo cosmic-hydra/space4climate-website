@@ -141,15 +141,73 @@ img.u-cover-absolute,
   max-width: none;
 }
 
-.card.programs img,
+/* Programs cards: flatten the Finsweet slider into a readable grid */
+.slider-wrapper:has(.card.programs) {
+  overflow: visible !important;
+  width: 100% !important;
+}
+
+.slider-wrapper:has(.card.programs) .collection-list.w-dyn-items,
+.slider-wrapper:has(.card.programs) .w-dyn-items,
+.slider-wrapper:has(.card.programs) .swiper-wrapper {
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1.75rem;
+  width: 100% !important;
+  transform: none !important;
+  overflow: visible !important;
+}
+
+.slider-wrapper:has(.card.programs) .w-dyn-item,
+.slider-wrapper:has(.card.programs) .swiper-slide {
+  width: auto !important;
+  max-width: none !important;
+  transform: none !important;
+  margin: 0 !important;
+}
+
+a.card.programs,
+.card.programs {
+  display: flex !important;
+  flex-direction: column;
+  min-width: 0;
+  height: auto !important;
+  min-height: 0 !important;
+  position: relative !important;
+  overflow: hidden;
+  background: #fff;
+  border-radius: 1.15rem;
+  box-shadow: 0 12px 32px rgba(8, 8, 8, 0.08);
+}
+
 a.card.programs img,
-.collection-list img,
-.slider-item img.core-service-img {
-  width: 100%;
-  aspect-ratio: 16 / 10;
-  object-fit: cover;
-  background: #111;
-  border-radius: inherit;
+.card.programs img,
+a.card.programs .core-service-img {
+  position: relative !important;
+  inset: auto !important;
+  width: 100% !important;
+  height: 14rem !important;
+  object-fit: cover !important;
+  display: block !important;
+  background: #1a1a1a;
+  max-width: none;
+}
+
+a.card.programs .card-content,
+a.card.programs .card-content.home {
+  position: relative !important;
+  inset: auto !important;
+  padding: 1.2rem 1.25rem 1.4rem;
+  background: #fff;
+  color: #111;
+}
+
+@media (max-width: 900px) {
+  .slider-wrapper:has(.card.programs) .collection-list.w-dyn-items,
+  .slider-wrapper:has(.card.programs) .w-dyn-items,
+  .slider-wrapper:has(.card.programs) .swiper-wrapper {
+    grid-template-columns: 1fr;
+  }
 }
 
 iframe,
@@ -167,8 +225,13 @@ video {
 }
 
 .nav_bg {
-  background: var(--s4c-black) !important;
-  opacity: 1 !important;
+  background: #000;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+.nav_wrap:has(.open) .nav_bg {
+  opacity: 0.55 !important;
 }
 
 .nav_component,
@@ -198,14 +261,40 @@ video {
 .nav_dropdown_content .nav_dropdown_label,
 .nav_dropdown_content .nav_dropdown_back_text,
 .nav_dropdown_content .nav_dropdown_item_heading,
-.nav_dropdown_content .nav_dropdown_item_btn_text,
-.nav_dropdown_content .nav_dropdown_item_tag_text {
+.nav_dropdown_content .nav_dropdown_item_btn_text {
+  color: #f4f4f1 !important;
+}
+
+.nav_dropdown_item_tag_text {
   color: #111 !important;
 }
 
+.nav_contain.u-container,
 .nav_contain {
-  min-height: var(--s4c-nav-h);
+  display: flex !important;
   align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  width: min(1200px, calc(100% - 2rem)) !important;
+  max-width: 100%;
+  margin-inline: auto;
+  min-height: var(--s4c-nav-h);
+  grid-template-columns: none !important;
+}
+
+.nav_logo_wrap {
+  flex: 0 0 auto;
+}
+
+.nav_menu_wrap {
+  flex: 1 1 auto;
+}
+
+.nav_btn_wrap {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 .nav_logo_wrap img {
@@ -268,6 +357,14 @@ video {
 
 .nav_dropdown_content {
   z-index: 1100;
+}
+
+.nav_dropdown_wrap.active .nav_dropdown_content,
+.nav_dropdown_wrap:focus-within .nav_dropdown_content {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
 }
 
 /* ---------- Mobile menu ---------- */
@@ -366,6 +463,40 @@ video {
   .nav_btn_toggle_wrap {
     display: none;
   }
+
+  .nav_menu_wrap {
+    position: static !important;
+    transform: none !important;
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+    background: transparent !important;
+    pointer-events: auto !important;
+  }
+
+  .nav_menu_mask,
+  .nav_menu_layout {
+    display: flex !important;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 1.15rem;
+    padding: 0;
+    height: auto !important;
+    min-height: 0;
+  }
+
+  .nav_menu_layout .s4c-login-nav-btn,
+  .nav_menu_btn_tablet {
+    display: none !important;
+  }
+
+  .nav_dropdown_wrap:hover .nav_dropdown_content {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+  }
 }
 
 /* ---------- Footer ---------- */
@@ -392,10 +523,23 @@ video {
   align-items: center !important;
 }
 
+.footer_header_logo1_wrap {
+  display: inline-flex !important;
+  align-items: center;
+  gap: 0.6rem;
+}
+
 .footer_header_logo1_wrap img {
   height: 2.75rem !important;
   width: auto !important;
   max-width: none;
+}
+
+.s4c-footer-wordmark {
+  font-weight: 600;
+  font-size: 1.15rem;
+  color: #fff;
+  white-space: nowrap;
 }
 
 .footer_header_logo2_wrap {
@@ -473,14 +617,54 @@ video {
   }
 }
 
-/* Slide-in contact panel must not consume page flow */
+/* Keep the slide-in contact panel off-canvas (do not pin right:0 — that covers every page) */
 .contact-form-wrapper {
   position: fixed !important;
   top: 0;
-  right: 0;
-  z-index: 2000;
-  max-width: min(40rem, 100vw);
+  right: -100vw !important;
+  width: min(40rem, 100vw);
   height: 100%;
+  z-index: 40;
+  pointer-events: none;
+}
+
+.hero-overlay .button-outline,
+.button-outline.margin-top-small {
+  display: inline-flex !important;
+  align-items: center;
+  gap: 0.75rem;
+  background: #fff !important;
+  color: #111 !important;
+  border-radius: 999px !important;
+  padding: 0.35rem 0.4rem 0.35rem 1.35rem !important;
+}
+
+.hero-overlay .button-outline .button-arrow-wrapper-2,
+.button-outline .button-arrow-wrapper-2 {
+  width: 2.55rem;
+  height: 2.55rem;
+  border-radius: 999px;
+  background: var(--s4c-lime);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cta_visual-wrapper {
+  position: relative;
+  width: 100%;
+  min-height: 16rem;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border-radius: 1rem;
+}
+
+.cta_visual-wrapper iframe {
+  position: absolute;
+  inset: 0;
+  width: 100% !important;
+  height: 100% !important;
+  max-height: none;
 }
 
 /* Login page: keep hero readable under sticky nav */

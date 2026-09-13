@@ -22,7 +22,7 @@
     if (document.querySelector('link[href*="perf.css"]')) return;
     var link = document.createElement("link");
     link.rel = "stylesheet";
-    link.href = assetPrefix() + "perf.css?v=6";
+    link.href = assetPrefix() + "perf.css?v=7";
     document.head.appendChild(link);
   }
 
@@ -260,7 +260,39 @@
     return link;
   }
 
+  function flattenProgramCards() {
+    document.querySelectorAll(".slider-wrapper").forEach(function (wrap) {
+      if (!wrap.querySelector(".card.programs")) return;
+      wrap.querySelectorAll(".collection-list, .w-dyn-items, .w-dyn-item, .swiper, .swiper-wrapper, .swiper-slide").forEach(function (el) {
+        el.style.setProperty("transform", "none", "important");
+        el.style.setProperty("width", el.classList.contains("w-dyn-item") || el.classList.contains("swiper-slide") ? "auto" : "100%", "important");
+      });
+    });
+    document.querySelectorAll("a.card.programs img, .card.programs img").forEach(function (img) {
+      var src = img.getAttribute("src") || "";
+      if (src.indexOf(" ") !== -1) {
+        img.setAttribute("src", src.replace(/ /g, "%20"));
+      }
+      img.removeAttribute("srcset");
+      img.removeAttribute("sizes");
+    });
+  }
+
+  function parkContactForm() {
+    var form = document.querySelector(".contact-form-wrapper");
+    if (!form) return;
+    form.style.position = "fixed";
+    form.style.top = "0";
+    if (!form.style.right || form.style.right === "0px") {
+      form.style.right = "-800px";
+    }
+    document.querySelectorAll(".slide-form-trigger").forEach(function (el) {
+      el.style.pointerEvents = "none";
+    });
+  }
+
   function ensureLoginNav() {
+    if (/login\.html$/i.test(window.location.pathname)) return;
     if (!document.querySelector(".s4c-login-nav-btn, a[href*='login.html']")) {
       var wrap = document.querySelector(".nav_btn_dekstop");
       if (wrap) {
@@ -295,6 +327,15 @@
       },
       true
     );
+  }
+
+  function labelFooterLogo() {
+    var wrap = document.querySelector(".footer_header_logo1_wrap");
+    if (!wrap || wrap.querySelector(".s4c-footer-wordmark")) return;
+    var mark = document.createElement("span");
+    mark.className = "s4c-footer-wordmark";
+    mark.textContent = "Space4Climate";
+    wrap.appendChild(mark);
   }
 
   function stampCopyright() {
@@ -334,8 +375,11 @@
     preventSplitTextReload();
     stopIx2ScrollEngine();
     killScrollTriggers();
+    parkContactForm();
+    flattenProgramCards();
     ensureLoginNav();
     ensureMobileMenu();
+    labelFooterLogo();
     stampCopyright();
 
     var passes = 0;
@@ -343,6 +387,7 @@
       disarmScrollAnimations();
       killScrollTriggers();
       flattenScrollHijack();
+      flattenProgramCards();
       passes += 1;
       if (passes >= 15) clearInterval(timer);
     }, 200);
