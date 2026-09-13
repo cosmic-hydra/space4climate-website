@@ -22,19 +22,32 @@
     if (document.querySelector('link[href*="perf.css"]')) return;
     var link = document.createElement("link");
     link.rel = "stylesheet";
-    link.href = assetPrefix() + "perf.css";
+    link.href = assetPrefix() + "perf.css?v=6";
     document.head.appendChild(link);
+  }
+
+  function NoopSplit() {
+    return { revert: function () {}, chars: [], words: [], lines: [] };
+  }
+  NoopSplit._s4c = true;
+
+  function lockSplitText() {
+    try {
+      Object.defineProperty(window, "SplitText", {
+        configurable: true,
+        get: function () {
+          return NoopSplit;
+        },
+        set: function () {}
+      });
+    } catch (err) {
+      window.SplitText = NoopSplit;
+    }
   }
 
   function disarmScrollAnimations() {
     try {
-      if (window.SplitText && !window.SplitText._s4c) {
-        function NoopSplit() {
-          return { revert: function () {}, chars: [], words: [], lines: [] };
-        }
-        NoopSplit._s4c = true;
-        window.SplitText = NoopSplit;
-      }
+      lockSplitText();
 
       if (window.gsap && typeof window.gsap.timeline === "function" && !window.gsap.timeline._s4c) {
         var origTimeline = window.gsap.timeline;
@@ -229,6 +242,68 @@
     });
   }
 
+  function assetRoot() {
+    var prefix = assetPrefix();
+    if (prefix && prefix !== "/") return prefix;
+    var path = (window.location && window.location.pathname) || "/";
+    if (/\/(lab-notes|legal|news|projects|programs|case-studies)\//.test(path)) {
+      return "../";
+    }
+    return "";
+  }
+
+  function makeLoginLink(className) {
+    var link = document.createElement("a");
+    link.href = assetRoot() + "login.html";
+    link.className = className;
+    link.innerHTML = '<div class="nav_btn_text">Log in</div>';
+    return link;
+  }
+
+  function ensureLoginNav() {
+    if (!document.querySelector(".s4c-login-nav-btn, a[href*='login.html']")) {
+      var wrap = document.querySelector(".nav_btn_dekstop");
+      if (wrap) {
+        var link = makeLoginLink("s4c-login-nav-btn w-inline-block");
+        var contact = wrap.querySelector("a[href*='contact']");
+        if (contact) wrap.insertBefore(link, contact);
+        else wrap.appendChild(link);
+      }
+    }
+    var mobile = document.querySelector(".nav_menu_layout");
+    if (mobile && !mobile.querySelector(".s4c-login-nav-btn, a[href*='login.html']")) {
+      var mobileLink = makeLoginLink("s4c-login-nav-btn w-inline-block");
+      mobileLink.style.margin = "0.75rem 0";
+      mobile.appendChild(mobileLink);
+    }
+  }
+
+  function ensureMobileMenu() {
+    var toggle = document.getElementById("nav-menu-toggle");
+    var nav = document.querySelector(".nav_component");
+    if (!toggle || !nav || toggle.getAttribute("data-s4c-menu") === "1") return;
+    toggle.setAttribute("data-s4c-menu", "1");
+    toggle.addEventListener(
+      "click",
+      function (event) {
+        if (window.navigationState) return;
+        event.preventDefault();
+        var open = !nav.classList.contains("open");
+        nav.classList.toggle("open", open);
+        document.body.classList.toggle("u-overflow-hidden", open);
+        toggle.setAttribute("aria-expanded", open ? "true" : "false");
+      },
+      true
+    );
+  }
+
+  function stampCopyright() {
+    var year = String(new Date().getFullYear());
+    document.querySelectorAll(".copyright-year").forEach(function (el) {
+      el.textContent = year;
+    });
+  }
+
   function preventSplitTextReload() {
     var ignoreReload = false;
     var originalReload = window.location.reload.bind(window.location);
@@ -250,6 +325,7 @@
 
   function run() {
     ensurePerfStyles();
+    lockSplitText();
     disarmScrollAnimations();
     enhanceEmbeds();
     flattenScrollHijack();
@@ -258,6 +334,9 @@
     preventSplitTextReload();
     stopIx2ScrollEngine();
     killScrollTriggers();
+    ensureLoginNav();
+    ensureMobileMenu();
+    stampCopyright();
 
     var passes = 0;
     var timer = setInterval(function () {
@@ -270,6 +349,7 @@
   }
 
   ensurePerfStyles();
+  lockSplitText();
   disarmScrollAnimations();
 
   if (document.readyState === "loading") {
