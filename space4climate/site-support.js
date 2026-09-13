@@ -22,19 +22,32 @@
     if (document.querySelector('link[href*="perf.css"]')) return;
     var link = document.createElement("link");
     link.rel = "stylesheet";
-    link.href = assetPrefix() + "perf.css";
+    link.href = assetPrefix() + "perf.css?v=7";
     document.head.appendChild(link);
+  }
+
+  function NoopSplit() {
+    return { revert: function () {}, chars: [], words: [], lines: [] };
+  }
+  NoopSplit._s4c = true;
+
+  function lockSplitText() {
+    try {
+      Object.defineProperty(window, "SplitText", {
+        configurable: true,
+        get: function () {
+          return NoopSplit;
+        },
+        set: function () {}
+      });
+    } catch (err) {
+      window.SplitText = NoopSplit;
+    }
   }
 
   function disarmScrollAnimations() {
     try {
-      if (window.SplitText && !window.SplitText._s4c) {
-        function NoopSplit() {
-          return { revert: function () {}, chars: [], words: [], lines: [] };
-        }
-        NoopSplit._s4c = true;
-        window.SplitText = NoopSplit;
-      }
+      lockSplitText();
 
       if (window.gsap && typeof window.gsap.timeline === "function" && !window.gsap.timeline._s4c) {
         var origTimeline = window.gsap.timeline;
@@ -229,6 +242,144 @@
     });
   }
 
+  function assetRoot() {
+    var prefix = assetPrefix();
+    if (prefix && prefix !== "/") return prefix;
+    var path = (window.location && window.location.pathname) || "/";
+    if (/\/(lab-notes|legal|news|projects|programs|case-studies)\//.test(path)) {
+      return "../";
+    }
+    return "";
+  }
+
+  function makeLoginLink(className) {
+    var link = document.createElement("a");
+    link.href = assetRoot() + "login.html";
+    link.className = className;
+    link.innerHTML = '<div class="nav_btn_text">Log in</div>';
+    return link;
+  }
+
+  function flattenProgramCards() {
+    document.querySelectorAll(".slider-wrapper").forEach(function (wrap) {
+      if (!wrap.querySelector(".card.programs")) return;
+      wrap.querySelectorAll(".collection-list, .w-dyn-items, .w-dyn-item, .swiper, .swiper-wrapper, .swiper-slide").forEach(function (el) {
+        el.style.setProperty("transform", "none", "important");
+        el.style.setProperty("width", el.classList.contains("w-dyn-item") || el.classList.contains("swiper-slide") ? "auto" : "100%", "important");
+      });
+    });
+    document.querySelectorAll("a.card.programs img, .card.programs img").forEach(function (img) {
+      var src = img.getAttribute("src") || "";
+      if (src.indexOf("S4C workshops") !== -1 || src.indexOf("S4C%20workshops") !== -1) {
+        src = "https://cdn.prod.website-files.com/65cebd17c70b035a9f4dea65/69b9740bc12922254be8b963_MissionZeroTechnologies_Building-Materials.jpg";
+        img.setAttribute("src", src);
+      } else if (src.indexOf(" ") !== -1) {
+        img.setAttribute("src", src.replace(/ /g, "%20"));
+      }
+      img.removeAttribute("srcset");
+      img.removeAttribute("sizes");
+    });
+  }
+
+  function enhanceDropdowns() {
+    if (window.matchMedia && window.matchMedia("(max-width: 991px)").matches) return;
+    document.querySelectorAll(".nav_dropdown_wrap").forEach(function (wrap) {
+      if (wrap.getAttribute("data-s4c-dd") === "1") return;
+      wrap.setAttribute("data-s4c-dd", "1");
+      wrap.addEventListener("mouseenter", function () {
+        document.querySelectorAll(".nav_dropdown_wrap").forEach(function (other) {
+          if (other !== wrap) other.classList.remove("active");
+        });
+        wrap.classList.add("active");
+        wrap.querySelectorAll(".nav_dropdown_contain, .nav_dropdown_mask, .nav_dropdown_layout").forEach(function (el) {
+          el.style.setProperty("opacity", "1", "important");
+        });
+      });
+      wrap.addEventListener("mouseleave", function () {
+        wrap.classList.remove("active");
+      });
+      var toggle = wrap.querySelector(".nav_dropdown_toggle_wrap, button, a");
+      if (toggle) {
+        toggle.addEventListener("click", function (event) {
+          if (window.matchMedia && window.matchMedia("(max-width: 991px)").matches) return;
+          event.preventDefault();
+          var open = wrap.classList.contains("active");
+          document.querySelectorAll(".nav_dropdown_wrap").forEach(function (other) {
+            other.classList.remove("active");
+          });
+          if (!open) wrap.classList.add("active");
+        });
+      }
+    });
+  }
+
+  function parkContactForm() {
+    var form = document.querySelector(".contact-form-wrapper");
+    if (!form) return;
+    form.style.position = "fixed";
+    form.style.top = "0";
+    if (!form.style.right || form.style.right === "0px") {
+      form.style.right = "-800px";
+    }
+    document.querySelectorAll(".slide-form-trigger").forEach(function (el) {
+      el.style.pointerEvents = "none";
+    });
+  }
+
+  function ensureLoginNav() {
+    if (/login\.html$/i.test(window.location.pathname)) return;
+    if (!document.querySelector(".s4c-login-nav-btn, a[href*='login.html']")) {
+      var wrap = document.querySelector(".nav_btn_dekstop");
+      if (wrap) {
+        var link = makeLoginLink("s4c-login-nav-btn w-inline-block");
+        var contact = wrap.querySelector("a[href*='contact']");
+        if (contact) wrap.insertBefore(link, contact);
+        else wrap.appendChild(link);
+      }
+    }
+    var mobile = document.querySelector(".nav_menu_layout");
+    if (mobile && !mobile.querySelector(".s4c-login-nav-btn, a[href*='login.html']")) {
+      var mobileLink = makeLoginLink("s4c-login-nav-btn w-inline-block");
+      mobileLink.style.margin = "0.75rem 0";
+      mobile.appendChild(mobileLink);
+    }
+  }
+
+  function ensureMobileMenu() {
+    var toggle = document.getElementById("nav-menu-toggle");
+    var nav = document.querySelector(".nav_component");
+    if (!toggle || !nav || toggle.getAttribute("data-s4c-menu") === "1") return;
+    toggle.setAttribute("data-s4c-menu", "1");
+    toggle.addEventListener(
+      "click",
+      function (event) {
+        if (window.navigationState) return;
+        event.preventDefault();
+        var open = !nav.classList.contains("open");
+        nav.classList.toggle("open", open);
+        document.body.classList.toggle("u-overflow-hidden", open);
+        toggle.setAttribute("aria-expanded", open ? "true" : "false");
+      },
+      true
+    );
+  }
+
+  function labelFooterLogo() {
+    var wrap = document.querySelector(".footer_header_logo1_wrap");
+    if (!wrap || wrap.querySelector(".s4c-footer-wordmark")) return;
+    var mark = document.createElement("span");
+    mark.className = "s4c-footer-wordmark";
+    mark.textContent = "Space4Climate";
+    wrap.appendChild(mark);
+  }
+
+  function stampCopyright() {
+    var year = String(new Date().getFullYear());
+    document.querySelectorAll(".copyright-year").forEach(function (el) {
+      el.textContent = year;
+    });
+  }
+
   function preventSplitTextReload() {
     var ignoreReload = false;
     var originalReload = window.location.reload.bind(window.location);
@@ -250,6 +401,7 @@
 
   function run() {
     ensurePerfStyles();
+    lockSplitText();
     disarmScrollAnimations();
     enhanceEmbeds();
     flattenScrollHijack();
@@ -258,18 +410,27 @@
     preventSplitTextReload();
     stopIx2ScrollEngine();
     killScrollTriggers();
+    parkContactForm();
+    flattenProgramCards();
+    enhanceDropdowns();
+    ensureLoginNav();
+    ensureMobileMenu();
+    labelFooterLogo();
+    stampCopyright();
 
     var passes = 0;
     var timer = setInterval(function () {
       disarmScrollAnimations();
       killScrollTriggers();
       flattenScrollHijack();
+      flattenProgramCards();
       passes += 1;
       if (passes >= 15) clearInterval(timer);
     }, 200);
   }
 
   ensurePerfStyles();
+  lockSplitText();
   disarmScrollAnimations();
 
   if (document.readyState === "loading") {
