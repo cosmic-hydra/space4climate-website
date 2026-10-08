@@ -19,7 +19,7 @@
   (e=>{e.pageFunctions=e.pageFunctions||{executed:{},functions:{},dependencies:{},requirements:{},addFunction:function(e,t,n=[],i=null){this.functions[e]||(this.functions[e]=t,this.dependencies[e]=n,this.requirements[e]=i)},executeFunctions:function(){if(!this.added){this.added=!0;let i=e=>{if(!this.executed[e]){var t=this.dependencies[e]||[],n=this.requirements[e];if(Array.isArray(t)&&0<t.length&&t.forEach(e=>{this.executed[e]||i(e)}),"font-loaded"===n&&"loaded"!==document.fonts.status)document.fonts.ready.then(()=>{i(e)});else try{this.functions[e](),this.executed[e]=!0}catch(e){}}};for(var e in this.functions)i(e)}}}})(window);
   </script>
   <link rel="stylesheet" href="perf.css?v=8">
-  <link rel="stylesheet" href="orbit.css?v=11">
+  <link rel="stylesheet" href="orbit.css?v=18">
   <style>
     :root { --nav--height: 4.5rem; }
     html { background: #000; }
@@ -1480,220 +1480,186 @@ text-wrap: inherit;
       </div>
     </section>
 
-    <section class="section home-intro">
-      <div class="container-medium home-vid">
-        <div class="w-layout-grid _2-col-grid home-vid">
-          <div class="grid-block relative">
-            <div style="width:100%;height:100%;overflow:hidden;min-height:28rem" data-video-id="5618" class="div-5">
-              <img src="images/solar-eclipse.jpg" alt="A solar eclipse against a starry sky" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block;border-radius:inherit"/>
+    <section class="cb-section" id="orbit-launch">
+      <div class="cb-contain cb-launch">
+        <div class="cb-launch-intro">
+          <div class="s4c-tag">CommonBoard</div>
+          <h2 class="s4c-h2">Launch a board</h2>
+          <p class="cb-lead">Pick the days and the hours you could run a session, then share one link. Facilitators and teachers mark when they are free, and the best times rise to the top.</p>
+          <ol class="cb-steps">
+            <li><strong>Launch</strong> a board for your session.</li>
+            <li><strong>Share</strong> the link with facilitators and teachers.</li>
+            <li><strong>Everyone marks</strong> the hours they can do.</li>
+            <li><strong>Book</strong> the best time and get a reference.</li>
+          </ol>
+          <a class="cb-text-link" href="commonboard-instructions.html">Read the full guide</a>
+        </div>
+
+        <form class="cb-panel cb-create" id="create-form" novalidate>
+          <div class="cb-field">
+            <label for="create-name">Board name</label>
+            <input id="create-name" maxlength="120" placeholder="e.g. Space4Climate workshop with class 7b" autocomplete="off" required>
+          </div>
+          <div class="cb-row">
+            <div class="cb-field">
+              <label for="create-start">First day</label>
+              <input id="create-start" type="date" required>
+            </div>
+            <div class="cb-field">
+              <label for="create-end">Last day</label>
+              <input id="create-end" type="date" required>
             </div>
           </div>
-          <div class="grid-block">
-            <h2 class="max-width-small">Name a workshop. Share one live link.</h2>
-            <p>Facilitators and teachers mark when they are free. Then book the overlap. No accounts.</p>
-            <a href="commonboard-instructions.html" class="button-outline margin-top-small w-inline-block">
-              <div>How it works</div>
-              <div class="button-arrow-wrapper-2 light"><img src="https://cdn.prod.website-files.com/65b810933000b6b25fd78458/65c40274b6ed92166e3c2b4e_arrow.svg" alt="" class="image"></div>
-            </a>
+          <div class="cb-row">
+            <div class="cb-field">
+              <label for="create-sh">Each day from</label>
+              <select id="create-sh"></select>
+            </div>
+            <div class="cb-field">
+              <label for="create-eh">until</label>
+              <select id="create-eh"></select>
+            </div>
           </div>
-        </div>
+          <div class="cb-row">
+            <div class="cb-field">
+              <label for="create-len">Session length</label>
+              <select id="create-len"></select>
+            </div>
+            <div class="cb-field">
+              <label for="create-tz">Time zone</label>
+              <select id="create-tz"></select>
+            </div>
+          </div>
+          <fieldset class="cb-field cb-fieldset">
+            <legend>Add yourself <span>(optional)</span></legend>
+            <input id="create-me-name" maxlength="40" placeholder="Your name" autocomplete="name" aria-label="Your name">
+            <div class="cb-roles" role="radiogroup" aria-label="Your role">
+              <label><input type="radio" name="create-role" value="facilitator"><span>Facilitator</span></label>
+              <label><input type="radio" name="create-role" value="teacher"><span>Teacher</span></label>
+              <label><input type="radio" name="create-role" value="other" checked><span>Other</span></label>
+            </div>
+          </fieldset>
+          <p class="cb-error" id="create-err" role="alert"></p>
+          <button class="s4c-btn" id="create-btn" type="submit"><span>Launch board</span><span class="s4c-btn_icon"><svg viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M0 7.88384L7.72679e-08 6.11616L10.6061 6.11616L5.74495 1.25505L7 0L14 7L7 14L5.74495 12.7449L10.6061 7.88384H0Z" fill="currentColor"/></svg></span></button>
+          <p class="cb-note">No accounts needed. You'll get a link to share, plus a private organiser link for editing the board.</p>
+        </form>
       </div>
     </section>
 
-    <section class="case-study-section cta" id="orbit-launch">
-      <div class="container">
-        <div class="w-layout-grid _2-col-grid-copy">
-          <div class="div-block-86">
-            <div class="letter-animation">
-              <div class="margin-bottom-medium">
-                <h2 class="heading-large">Launch a board</h2>
-              </div>
-              <p class="max-width-small no-max-width-landscape">Name the session, pick the days, and share the live link.</p>
-            </div>
-            <div class="orbit-home-form">
-              <div class="field">
-                <label for="create-name">Board name</label>
-                <input id="create-name" maxlength="80" required placeholder="Bonn workshop, week of 21 Sept">
-                <div class="field-error" id="create-name-err"></div>
-              </div>
-              <div class="field-row">
-                <div class="field">
-                  <label for="create-start">Start date</label>
-                  <input id="create-start" type="date" required>
-                </div>
-                <div class="field">
-                  <label for="create-end">End date</label>
-                  <input id="create-end" type="date" required>
-                </div>
-              </div>
-              <div class="field-row">
-                <div class="field">
-                  <label for="create-sh">Start time</label>
-                  <select id="create-sh"></select>
-                </div>
-                <div class="field">
-                  <label for="create-eh">End time</label>
-                  <select id="create-eh"></select>
-                </div>
-              </div>
-              <p class="field-hint" id="create-tz-hint"></p>
-              <div class="button-group">
-                <button class="button-primary w-inline-block" id="create-btn" type="button">
-                  <div>Launch board</div>
-                  <div class="button-arrow-wrapper"><img src="https://cdn.prod.website-files.com/65b810933000b6b25fd78458/65c40274b6ed92166e3c2b4e_arrow.svg" alt="" class="image light"></div>
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
+    <section class="cb-section is-tight" id="orbit-recent" hidden>
+      <div class="cb-contain">
+        <h3 class="cb-subhead">Your boards</h3>
+        <div class="cb-recent" id="recent-list"></div>
       </div>
     </section>
 
-    <section class="cta2_wrap img-bg-dark-white-text-16">
-      <section data-wf--solutions-cta-2--color-variant="img-bg-dark-white-text" class="cta2_wrap">
-        <div class="cta2_contain u-container">
-          <div class="cta2_content">
-            <div class="cta2_bg_col"><div class="cta2_img_wrap"><div class="cta2_img_overlay"></div></div></div>
-            <div class="cta2_header_wrap w-variant-f1e045ef-7d72-1c35-4bce-527ad5410e1a">
-              <div class="cta2_header">
-                <div data-wf--tag--variant="transparent-bg-text-white" class="tag_wrap w-variant-a4052d64-aeb3-5eeb-4a67-cb7db2786bc0">
-                  <div class="tag_circle w-variant-a4052d64-aeb3-5eeb-4a67-cb7db2786bc0"></div>
-                  <div class="tag_text">Join a board</div>
-                </div>
-                <h2 class="cta2_heading u-text-style-h2">Have a board link?</h2>
-                <p class="cta2_subheading u-text-style-medium">Paste the live link or board ID. We&rsquo;ll open it on this device.</p>
-              </div>
-              <div data-anim-gsap="text-slide-up-1" class="cta2_btn_wrap">
-                <div class="orbit-join-row">
-                  <input id="join-input" placeholder="Paste link or board ID" aria-label="Board link">
-                  <button class="button-light is-small w-variant-fc35cab1-a44c-fc8c-09fe-02b8f322adf5" id="join-btn" type="button">
-                    <div>Open</div>
-                    <div class="button-arrow-wrapper is-smaller">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="100%" viewBox="0 0 14 14" fill="none" class="button_icon_svg"><path d="M0 7.88384L7.72679e-08 6.11616L10.6061 6.11616L5.74495 1.25505L7 0L14 7L7 14L5.74495 12.7449L10.6061 7.88384H0Z" fill="currentColor"></path></svg>
-                    </div>
-                  </button>
-                </div>
-                <details class="advanced">
-                  <summary>Have a backup code?</summary>
-                  <p class="text-sm mt-1">If someone was offline, paste their exported response to merge it into this copy of the board.</p>
-                  <div class="field mt-05">
-                    <label for="merge-quick-input">Response code</label>
-                    <input id="merge-quick-input" placeholder="Paste response code">
-                  </div>
-                  <button class="button-outline" id="merge-quick-btn" type="button">Import response</button>
-                </details>
-              </div>
-            </div>
-          </div>
+    <section class="cb-section is-beige" id="orbit-join">
+      <div class="cb-contain cb-join">
+        <div>
+          <div class="s4c-tag">Join a board</div>
+          <h2 class="s4c-h2">Got a board link?</h2>
+          <p class="cb-lead">Open the link you were sent, or paste it here.</p>
         </div>
-      </section>
+        <form class="cb-join-form" id="join-form">
+          <input id="join-input" placeholder="Paste the board link or ID" aria-label="Board link or ID" autocomplete="off">
+          <button class="s4c-btn is-dark" type="submit"><span>Open board</span><span class="s4c-btn_icon"><svg viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M0 7.88384L7.72679e-08 6.11616L10.6061 6.11616L5.74495 1.25505L7 0L14 7L7 14L5.74495 12.7449L10.6061 7.88384H0Z" fill="currentColor"/></svg></span></button>
+        </form>
+      </div>
     </section>
   </div>
 
   <div id="view-board" class="view">
-    <div class="board-wrap">
-      <div class="board-top">
-        <div class="board-info">
-          <div class="board-title-row">
-            <h1 class="heading-large board-title" id="bv-title">—</h1>
-            <div class="board-status" id="bv-status">Live</div>
-          </div>
-          <div class="board-meta" id="bv-meta"></div>
-        </div>
-        <div class="board-actions">
-          <button class="button-outline" id="bv-share-btn" type="button">
-            <div>Share board</div>
-            <div class="button-arrow-wrapper-2 light"><img src="https://cdn.prod.website-files.com/65b810933000b6b25fd78458/65c40274b6ed92166e3c2b4e_arrow.svg" alt="" class="image"></div>
-          </button>
-          <button class="button-light" id="nav-new-btn" type="button" style="display:none" onclick="App.showLanding()">
-            <div>New board</div>
-          </button>
-          <details class="more-menu">
-            <summary>More</summary>
-            <div class="more-menu-list">
-              <button type="button" id="bv-export-btn">Export my response</button>
-              <button type="button" id="bv-merge-btn">Merge a response</button>
+    <div class="cb-board">
+      <div class="cb-empty" id="bv-empty" hidden></div>
+
+      <div id="bv-content">
+        <header class="cb-board-head">
+          <div class="cb-board-titles">
+            <a class="cb-back" href="commonboard.html" id="bv-back">All boards</a>
+            <div class="cb-title-row">
+              <h1 class="cb-title" id="bv-title">Loading…</h1>
+              <span class="cb-status" id="bv-status" role="status" aria-live="polite">Connecting…</span>
             </div>
-          </details>
+            <div class="cb-meta" id="bv-meta"></div>
+          </div>
+          <div class="cb-head-actions">
+            <button class="s4c-btn" id="bv-share-btn" type="button"><span>Invite people</span><span class="s4c-btn_icon"><svg viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M0 7.88384L7.72679e-08 6.11616L10.6061 6.11616L5.74495 1.25505L7 0L14 7L7 14L5.74495 12.7449L10.6061 7.88384H0Z" fill="currentColor"/></svg></span></button>
+            <button class="cb-ghost-btn" id="bv-edit-btn" type="button" hidden>Edit board</button>
+          </div>
+        </header>
+
+        <div class="cb-banner" id="bv-banner" hidden></div>
+
+        <div class="cb-tzbar" id="bv-tz" hidden>
+          <p id="bv-tz-text"></p>
+          <button class="cb-ghost-btn is-small" id="bv-tz-toggle" type="button" aria-pressed="false">Show my time</button>
         </div>
-      </div>
 
-      <div class="name-row" id="name-row">
-        <label class="label" for="bv-name">Your name</label>
-        <input id="bv-name" maxlength="40" placeholder="Required before you can mark hours">
-        <button class="button-primary btn-sm" id="bv-name-save" type="button">Save name</button>
-        <span class="text-xs" id="bv-name-hint"></span>
-      </div>
+        <section class="cb-joincard" id="bv-join" hidden>
+          <div class="cb-joincard-text">
+            <h2>Add your availability</h2>
+            <p>Tell the group who you are, then mark the hours you can do.</p>
+          </div>
+          <form class="cb-me-form" id="me-form">
+            <input id="me-name" maxlength="40" placeholder="Your name" autocomplete="name" aria-label="Your name">
+            <div class="cb-roles" role="radiogroup" aria-label="Your role">
+              <label><input type="radio" name="me-role" value="facilitator"><span>Facilitator</span></label>
+              <label><input type="radio" name="me-role" value="teacher"><span>Teacher</span></label>
+              <label><input type="radio" name="me-role" value="other" checked><span>Other</span></label>
+            </div>
+            <button class="s4c-btn" type="submit"><span>Start marking</span><span class="s4c-btn_icon"><svg viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M0 7.88384L7.72679e-08 6.11616L10.6061 6.11616L5.74495 1.25505L7 0L14 7L7 14L5.74495 12.7449L10.6061 7.88384H0Z" fill="currentColor"/></svg></span></button>
+          </form>
+        </section>
 
-      <div class="board-main">
-        <div class="grid-card">
-          <div class="grid-card-head">
-            <h3 id="bv-grid-label">Availability</h3>
-            <div class="grid-card-tools">
-              <span class="text-xs" id="bv-grid-hint">Click or drag hours you can do</span>
-              <div class="grid-mode">
-                <button class="grid-mode-btn active" id="mode-mark" onclick="App.setGridMode('mark')">Mark</button>
-                <button class="grid-mode-btn" id="mode-view" onclick="App.setGridMode('view')">Overview</button>
-                <button class="grid-mode-btn" id="mode-combined" onclick="App.setGridMode('combined')">Bookable</button>
+        <section class="cb-mebar" id="bv-me" hidden>
+          <span class="cb-avatar" id="me-avatar"></span>
+          <div class="cb-mebar-text">
+            <strong id="me-label"></strong>
+            <span id="me-sub"></span>
+          </div>
+          <button class="cb-ghost-btn is-small" id="me-edit" type="button">Edit</button>
+        </section>
+
+        <div class="cb-layout">
+          <section class="cb-gridcard" aria-label="Availability">
+            <div class="cb-gridhead">
+              <div class="cb-tabs" role="tablist" aria-label="Availability view">
+                <button type="button" role="tab" id="tab-mine" aria-selected="true">Your hours</button>
+                <button type="button" role="tab" id="tab-group" aria-selected="false">Everyone</button>
               </div>
+              <p class="cb-hint" id="grid-hint"></p>
             </div>
-          </div>
-          <div class="grid-outer" id="grid-outer">
-            <table class="grid-table" id="grid-table"></table>
-          </div>
-          <div class="legend" id="grid-legend">
-            <span class="legend-swatch" style="background:var(--c0)"></span><span>0 available</span>
-            <span class="legend-sep"></span>
-            <span class="legend-swatch" style="background:var(--c2)"></span><span>some</span>
-            <span class="legend-swatch" style="background:var(--c4)"></span><span>most</span>
-            <span class="legend-swatch" style="background:var(--c5)"></span><span>all</span>
-            <span class="legend-sep"></span>
-            <span class="legend-mine"></span><span>your selection</span>
-          </div>
-        </div>
+            <div class="cb-gridscroll" id="grid-scroll">
+              <div class="cb-grid" id="grid" role="group" aria-label="Hours, by day and time"></div>
+            </div>
+            <div class="cb-gridfoot">
+              <div class="cb-legend" id="grid-legend"></div>
+              <button class="cb-ghost-btn is-small" id="clear-mine" type="button" hidden>Clear my hours</button>
+            </div>
+          </section>
 
-        <div class="sidebar">
-          <div class="side-card">
-            <div class="side-head">
-              <h4>Bookable windows</h4>
-              <span class="text-xs" id="bookable-count">—</span>
-            </div>
-            <div class="side-body" id="bookable-list">
-              <div class="empty">Ask the team to mark hours. Overlaps show up here.</div>
-            </div>
-            <div class="book-foot">Hours where at least one person is free — ready for a school to book.</div>
-          </div>
-          <div class="side-card">
-            <div class="side-head">
-              <h4>Best times</h4>
-              <span class="text-xs" id="best-count">—</span>
-            </div>
-            <div class="side-body" id="best-list">
-              <div class="empty">Mark hours to rank the overlaps.</div>
-            </div>
-          </div>
-          <div class="side-card" id="booking-card" style="display:none">
-            <div class="side-head"><h4>Booked</h4></div>
-            <div class="side-body" id="booking-body"></div>
-          </div>
-          <div class="side-card">
-            <div class="side-head">
-              <h4>Participants</h4>
-              <span class="text-xs" id="parts-count">0 people</span>
-            </div>
-            <div class="side-body" id="parts-list">
-              <div class="empty">Save your name to join this board.</div>
-            </div>
-          </div>
-          <div class="side-card">
-            <div class="side-head"><h4>Board info</h4></div>
-            <div class="side-body">
-              <div id="board-id-display"></div>
-              <div class="help-note mt-05">
-                <strong>Shared board.</strong> Booking a time creates a short <strong>reference</strong> (S4C-XXXXXX) teachers can quote when paying the registration fee.
+          <aside class="cb-side">
+            <section class="cb-card cb-booked" id="booking-card" hidden></section>
+
+            <section class="cb-card" id="best-card">
+              <div class="cb-card-head">
+                <h3>Best times</h3>
+                <label class="cb-len"><span>Session</span><select id="len-select" aria-label="Session length"></select></label>
               </div>
-            </div>
-          </div>
+              <p class="cb-card-note" id="best-note" hidden></p>
+              <div id="best-list"></div>
+              <button class="cb-ghost-btn is-small cb-other-time" id="book-other" type="button">Book a different time</button>
+            </section>
+
+            <section class="cb-card">
+              <div class="cb-card-head">
+                <h3>People</h3>
+                <span class="cb-count" id="people-count"></span>
+              </div>
+              <div id="people-list"></div>
+              <button class="cb-ghost-btn is-small" id="invite-more" type="button">Invite more people</button>
+            </section>
+          </aside>
         </div>
       </div>
     </div>
@@ -1762,1517 +1728,109 @@ text-wrap: inherit;
 </div>
 </div>
 
-  <!-- ── Tooltip ── -->
-  <div id="tooltip">
-    <div class="tt-time" id="tt-time"></div>
-    <div class="tt-count" id="tt-count"></div>
-    <div class="tt-names" id="tt-names"></div>
+  <!-- CommonBoard overlays -->
+  <div class="cb-tooltip" id="tooltip" hidden>
+    <div class="cb-tt-time" id="tt-time"></div>
+    <div class="cb-tt-count" id="tt-count"></div>
+    <div class="cb-tt-names" id="tt-names"></div>
   </div>
 
-  <!-- ── Share Modal ── -->
-  <div class="modal-overlay" id="modal-share">
-    <div class="modal-box">
+  <div class="modal-overlay" id="modal-share" aria-hidden="true">
+    <div class="modal-box cb-modal" role="dialog" aria-modal="true" aria-labelledby="share-title">
       <div class="modal-head">
-        <h3>Share this board</h3>
-        <button class="modal-close" onclick="App.closeModal('modal-share')" aria-label="Close">✕</button>
+        <h3 id="share-title">Invite people</h3>
+        <button class="modal-close" type="button" data-close aria-label="Close">✕</button>
       </div>
-      <p class="text-sm" style="margin-bottom:.85rem">Send the link. Anyone who opens it can mark their hours on the same live board.</p>
-      <div class="link-box">
-        <input id="share-link-input" readonly>
-        <button class="btn btn-primary btn-sm" id="share-copy-btn" onclick="App.copyShareLink()">Copy</button>
+      <p class="cb-modal-text">Send this link to facilitators and teachers. Anyone who opens it can add their name and mark their hours on this board.</p>
+      <div class="cb-copyrow">
+        <input id="share-link" readonly aria-label="Board link">
+        <button class="s4c-btn is-small" type="button" id="share-copy"><span>Copy</span></button>
       </div>
-      <div class="help-note">
-        <strong>Public link:</strong> anyone with this URL can view or edit the board. Do not use it for private or sensitive schedules.
+      <div class="cb-share-apps">
+        <button class="cb-ghost-btn is-small" type="button" id="share-native" hidden>Share…</button>
+        <a class="cb-ghost-btn is-small" id="share-whatsapp" target="_blank" rel="noopener">WhatsApp</a>
+        <a class="cb-ghost-btn is-small" id="share-email">Email</a>
+      </div>
+      <div class="cb-admin-box" id="share-admin" hidden>
+        <h4>Your private organiser link</h4>
+        <p>Open this link on another device to edit the board, remove people or cancel a booking from there. Keep it to yourself.</p>
+        <div class="cb-copyrow">
+          <input id="share-admin-link" readonly aria-label="Private organiser link">
+          <button class="cb-ghost-btn is-small" type="button" id="share-admin-copy">Copy</button>
+        </div>
       </div>
     </div>
   </div>
 
-  <!-- ── Export Modal ── -->
-  <div class="modal-overlay" id="modal-export">
-    <div class="modal-box">
+  <div class="modal-overlay" id="modal-book" aria-hidden="true">
+    <form class="modal-box cb-modal" id="book-form" role="dialog" aria-modal="true" aria-labelledby="book-title">
       <div class="modal-head">
-        <h3>Export your response</h3>
-        <button class="modal-close" onclick="App.closeModal('modal-export')" aria-label="Close">✕</button>
+        <h3 id="book-title">Book this session</h3>
+        <button class="modal-close" type="button" data-close aria-label="Close">✕</button>
       </div>
-      <p class="text-sm" style="margin-bottom:.85rem;color:var(--text2)">Copy this code as a manual backup. A teammate can still import it with "Merge response" if they were offline or if the shared board needs to be rebuilt.</p>
-      <textarea id="export-code" readonly style="height:100px"></textarea>
-      <div style="display:flex;gap:.5rem;margin-top:.75rem">
-        <button class="btn btn-primary btn-sm" onclick="App.copyExportCode()">Copy code</button>
-        <button class="btn btn-outline btn-sm" onclick="App.closeModal('modal-export')">Close</button>
+      <div class="cb-row is-three">
+        <div class="cb-field"><label for="book-date">Day</label><select id="book-date"></select></div>
+        <div class="cb-field"><label for="book-start">Start</label><select id="book-start"></select></div>
+        <div class="cb-field"><label for="book-len">Length</label><select id="book-len"></select></div>
       </div>
-    </div>
+      <div class="cb-book-summary" id="book-summary"></div>
+      <div class="cb-field">
+        <label for="book-name">Booked by</label>
+        <input id="book-name" maxlength="40" placeholder="Your name" autocomplete="name">
+      </div>
+      <p class="cb-note">Booking locks this time for the whole board and creates a reference (S4C-…) to quote when paying the registration fee. The organiser or you can cancel it later.</p>
+      <button class="s4c-btn" id="book-confirm" type="submit"><span>Confirm booking</span><span class="s4c-btn_icon"><svg viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M0 7.88384L7.72679e-08 6.11616L10.6061 6.11616L5.74495 1.25505L7 0L14 7L7 14L5.74495 12.7449L10.6061 7.88384H0Z" fill="currentColor"/></svg></span></button>
+    </form>
   </div>
 
-  <!-- ── Merge Modal ── -->
-  <div class="modal-overlay" id="modal-merge">
-    <div class="modal-box">
+  <div class="modal-overlay" id="modal-edit" aria-hidden="true">
+    <form class="modal-box cb-modal" id="edit-form" role="dialog" aria-modal="true" aria-labelledby="edit-title-h">
       <div class="modal-head">
-        <h3>Merge a teammate's response</h3>
-        <button class="modal-close" onclick="App.closeModal('modal-merge')" aria-label="Close">✕</button>
+        <h3 id="edit-title-h">Edit board</h3>
+        <button class="modal-close" type="button" data-close aria-label="Close">✕</button>
       </div>
-      <p class="text-sm" style="margin-bottom:.85rem;color:var(--text2)">Paste a teammate's exported backup code to add their availability to this board manually.</p>
-      <div class="field">
-        <label>Response code</label>
-        <textarea id="merge-code-input" placeholder="Paste code here…"></textarea>
+      <div class="cb-field"><label for="edit-title">Board name</label><input id="edit-title" maxlength="120" required></div>
+      <div class="cb-row">
+        <div class="cb-field"><label for="edit-start">First day</label><input id="edit-start" type="date" required></div>
+        <div class="cb-field"><label for="edit-end">Last day</label><input id="edit-end" type="date" required></div>
       </div>
-      <div style="display:flex;gap:.5rem;margin-top:.25rem">
-        <button class="btn btn-primary btn-sm" id="merge-confirm-btn" onclick="App.mergeCode()">Merge</button>
-        <button class="btn btn-outline btn-sm" onclick="App.closeModal('modal-merge')">Cancel</button>
+      <div class="cb-row is-three">
+        <div class="cb-field"><label for="edit-sh">Each day from</label><select id="edit-sh"></select></div>
+        <div class="cb-field"><label for="edit-eh">until</label><select id="edit-eh"></select></div>
+        <div class="cb-field"><label for="edit-len">Session</label><select id="edit-len"></select></div>
       </div>
-    </div>
+      <p class="cb-note" id="edit-tz-note"></p>
+      <p class="cb-error" id="edit-err" role="alert"></p>
+      <button class="s4c-btn" type="submit"><span>Save changes</span><span class="s4c-btn_icon"><svg viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M0 7.88384L7.72679e-08 6.11616L10.6061 6.11616L5.74495 1.25505L7 0L14 7L7 14L5.74495 12.7449L10.6061 7.88384H0Z" fill="currentColor"/></svg></span></button>
+    </form>
   </div>
 
-  <!-- ── Toast ── -->
+  <div class="modal-overlay" id="modal-me" aria-hidden="true">
+    <form class="modal-box cb-modal" id="me-edit-form" role="dialog" aria-modal="true" aria-labelledby="me-edit-h">
+      <div class="modal-head">
+        <h3 id="me-edit-h">Your details</h3>
+        <button class="modal-close" type="button" data-close aria-label="Close">✕</button>
+      </div>
+      <div class="cb-field"><label for="me-edit-name">Name</label><input id="me-edit-name" maxlength="40" autocomplete="name" required></div>
+      <div class="cb-field">
+        <span class="cb-label">Role</span>
+        <div class="cb-roles" role="radiogroup" aria-label="Your role">
+          <label><input type="radio" name="me-edit-role" value="facilitator"><span>Facilitator</span></label>
+          <label><input type="radio" name="me-edit-role" value="teacher"><span>Teacher</span></label>
+          <label><input type="radio" name="me-edit-role" value="other"><span>Other</span></label>
+        </div>
+      </div>
+      <div class="cb-modal-actions">
+        <button class="s4c-btn" type="submit"><span>Save</span><span class="s4c-btn_icon"><svg viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M0 7.88384L7.72679e-08 6.11616L10.6061 6.11616L5.74495 1.25505L7 0L14 7L7 14L5.74495 12.7449L10.6061 7.88384H0Z" fill="currentColor"/></svg></span></button>
+        <button class="cb-ghost-btn is-danger" type="button" id="me-leave">Remove me from this board</button>
+      </div>
+    </form>
+  </div>
+
   <div id="toast" role="status" aria-live="polite"></div>
 
+<script src="orbit-app.js?v=6" defer></script>
 
-
-<script>
-  (() => {
-    /* ── Star field ─────────────────────────────────── */
-    // Background starfield removed for the Apple-style light theme.
-
-    /* ── Utilities ──────────────────────────────────── */
-    const $ = id => document.getElementById(id);
-    const toast = (msg, type='ok') => {
-      const el = $('toast');
-      el.textContent = msg;
-      el.className = `show toast-${type}`;
-      clearTimeout(toast._t);
-      toast._t = setTimeout(() => { el.className = ''; el.textContent = ''; }, 2800);
-    };
-    const pad2 = n => String(n).padStart(2, '0');
-    const isoLocal = (y, m, d) => `${y}-${pad2(m)}-${pad2(d)}`;
-    const uid = () => 'ob_' + (crypto.randomUUID ? crypto.randomUUID().replace(/-/g, '').slice(0, 12) : Date.now().toString(36) + Math.random().toString(36).slice(2, 8));
-    const today = () => { const d = new Date(); return isoLocal(d.getFullYear(), d.getMonth() + 1, d.getDate()); };
-    const addDays = (iso, n) => {
-      const [y, m, d] = iso.split('-').map(Number);
-      const dt = new Date(y, m - 1, d + n);
-      return isoLocal(dt.getFullYear(), dt.getMonth() + 1, dt.getDate());
-    };
-    const fmtDate = iso => new Date(iso + 'T00:00:00').toLocaleDateString(undefined, {weekday:'short', month:'short', day:'numeric'});
-    const fmtDateShort = iso => new Date(iso + 'T00:00:00').toLocaleDateString(undefined, {month:'short', day:'numeric'});
-    const fmtHour = h => `${String(h).padStart(2,'0')}:00`;
-    const dateRange = (start, end, max=21) => {
-      const out = [];
-      const [ys, ms, ds] = start.split('-').map(Number);
-      const [ye, me, de] = end.split('-').map(Number);
-      const a = new Date(ys, ms - 1, ds), b = new Date(ye, me - 1, de);
-      while (a <= b && out.length < max) {
-        out.push(isoLocal(a.getFullYear(), a.getMonth() + 1, a.getDate()));
-        a.setDate(a.getDate() + 1);
-      }
-      return out;
-    };
-    const encode = obj => { try { return btoa(unescape(encodeURIComponent(JSON.stringify(obj)))); } catch { return ''; } };
-    const decode = str => { try { return JSON.parse(decodeURIComponent(escape(atob(str)))); } catch { return null; } };
-    const SLOT_KEY_RE = /^\d{4}-\d{2}-\d{2}T\d{2}$/;
-    const AVATAR_COLORS = ['#ebfd40','#8fa000','#c7d36a','#6b8000','#d4e05c','#9aaa20','#c9dc4a','#7a8c10'];
-    const avatarColor = name => AVATAR_COLORS[(name.charCodeAt(0) || 0) % AVATAR_COLORS.length];
-    const initials = name => name.trim().split(/\s+/).slice(0,2).map(w => w[0]).join('').toUpperCase() || '?';
-    const clone = obj => JSON.parse(JSON.stringify(obj));
-    const formatError = err => err && err.message ? err.message : 'unknown error';
-    const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
-    const generateBookingId = () => {
-      // Short, copyable reference like S4C-7K9P2Q for teachers to quote when paying
-      const base = (Date.now().toString(36) + Math.random().toString(36)).replace(/[^a-z0-9]/gi, '').toUpperCase().slice(0, 6);
-      return 'S4C-' + (base || 'BK' + Math.floor(Math.random()*900000+100000));
-    };
-
-    /* QR code generator (self-contained, byte mode, ECC level M, versions 1-10).
-       Implements ISO/IEC 18004; no external dependencies so tickets work offline. */
-    const QR = (() => {
-      const EXP = new Array(256), LOG = new Array(256);
-      (() => { let x = 1; for (let i = 0; i < 255; i++) { EXP[i] = x; LOG[x] = i; x <<= 1; if (x & 0x100) x ^= 0x11d; } })();
-      const gmul = (a, b) => (a === 0 || b === 0) ? 0 : EXP[(LOG[a] + LOG[b]) % 255];
-      const ECC_M = { 1:[10,[[1,16]]], 2:[16,[[1,28]]], 3:[26,[[1,44]]], 4:[18,[[2,32]]], 5:[24,[[2,43]]],
-        6:[16,[[4,27]]], 7:[18,[[4,31]]], 8:[22,[[2,38],[2,39]]], 9:[22,[[3,36],[2,37]]], 10:[26,[[4,43],[1,44]]] };
-      const TOTAL = { 1:16,2:28,3:44,4:64,5:86,6:108,7:124,8:154,9:182,10:216 };
-      const ALIGN = { 1:[],2:[6,18],3:[6,22],4:[6,26],5:[6,30],6:[6,34],7:[6,22,38],8:[6,24,42],9:[6,26,46],10:[6,28,50] };
-      const MASKS = [
-        (r,c)=>((r+c)&1)===0, (r,c)=>(r&1)===0, (r,c)=>c%3===0, (r,c)=>(r+c)%3===0,
-        (r,c)=>(((r/2|0)+(c/3|0))&1)===0, (r,c)=>((r*c)%2 + (r*c)%3)===0,
-        (r,c)=>(((r*c)%2 + (r*c)%3)&1)===0, (r,c)=>((((r+c)%2) + (r*c)%3)&1)===0
-      ];
-      function genPoly(n){ let g=[1]; for(let i=0;i<n;i++){ const ng=new Array(g.length+1).fill(0); for(let j=0;j<g.length;j++){ ng[j]^=g[j]; ng[j+1]^=gmul(g[j],EXP[i]); } g=ng; } return g; }
-      function ecCw(data,n){ const g=genPoly(n), res=data.concat(new Array(n).fill(0)); for(let i=0;i<data.length;i++){ const co=res[i]; if(co) for(let j=0;j<g.length;j++) res[i+j]^=gmul(g[j],co); } return res.slice(data.length); }
-      function toBytes(str){ if(typeof TextEncoder!=='undefined') return Array.from(new TextEncoder().encode(str)); const e=unescape(encodeURIComponent(str)),o=[]; for(let i=0;i<e.length;i++)o.push(e.charCodeAt(i)&0xff); return o; }
-      function chooseVersion(len){ for(let v=1;v<=10;v++){ const cb=v>=10?16:8; if(4+cb+8*len<=TOTAL[v]*8) return v; } return null; }
-      function encodeData(bytes,version){ const cap=TOTAL[version]*8, bits=[]; const push=(val,len)=>{ for(let i=len-1;i>=0;i--) bits.push((val>>i)&1); };
-        push(0b0100,4); push(bytes.length,version>=10?16:8); bytes.forEach(b=>push(b,8));
-        push(0,Math.min(4,cap-bits.length)); while(bits.length%8) bits.push(0);
-        let pad=0xEC; while(bits.length<cap){ push(pad,8); pad=pad===0xEC?0x11:0xEC; }
-        const cw=[]; for(let i=0;i<bits.length;i+=8){ let v=0; for(let j=0;j<8;j++) v=(v<<1)|bits[i+j]; cw.push(v); } return cw; }
-      function interleave(dataCw,version){ const [ecPer,groups]=ECC_M[version], blocks=[]; let idx=0;
-        groups.forEach(([num,per])=>{ for(let b=0;b<num;b++){ const d=dataCw.slice(idx,idx+per); idx+=per; blocks.push({d,e:ecCw(d,ecPer)}); } });
-        const out=[], maxD=Math.max(...blocks.map(b=>b.d.length));
-        for(let i=0;i<maxD;i++) blocks.forEach(b=>{ if(i<b.d.length) out.push(b.d[i]); });
-        for(let i=0;i<ecPer;i++) blocks.forEach(b=>out.push(b.e[i])); return out; }
-      function fmtBits(mask){ let data=(0<<3)|mask, rem=data; for(let i=0;i<10;i++) rem=(rem<<1)^((rem>>>9)*0x537); return ((data<<10)|rem)^0x5412; }
-      function verBits(version){ let rem=version; for(let i=0;i<12;i++) rem=(rem<<1)^((rem>>>11)*0x1f25); return (version<<12)|rem; }
-      function buildBase(version){ const size=17+4*version;
-        const m=Array.from({length:size},()=>new Array(size).fill(0)), fn=Array.from({length:size},()=>new Array(size).fill(false));
-        const set=(r,c,v)=>{ m[r][c]=v?1:0; fn[r][c]=true; };
-        const finder=(r,c)=>{ for(let dr=-1;dr<=7;dr++) for(let dc=-1;dc<=7;dc++){ const rr=r+dr,cc=c+dc; if(rr<0||rr>=size||cc<0||cc>=size) continue;
-          const ring=(dr>=0&&dr<=6&&(dc===0||dc===6))||(dc>=0&&dc<=6&&(dr===0||dr===6)), ctr=dr>=2&&dr<=4&&dc>=2&&dc<=4; set(rr,cc,ring||ctr?1:0); } };
-        finder(0,0); finder(0,size-7); finder(size-7,0);
-        for(let i=8;i<size-8;i++){ if(!fn[6][i]) set(6,i,i%2===0?1:0); if(!fn[i][6]) set(i,6,i%2===0?1:0); }
-        const pos=ALIGN[version], first=pos[0], last=pos[pos.length-1];
-        pos.forEach(r=>pos.forEach(c=>{ if((r===first&&c===first)||(r===first&&c===last)||(r===last&&c===first)) return;
-          for(let dr=-2;dr<=2;dr++) for(let dc=-2;dc<=2;dc++) set(r+dr,c+dc,(Math.max(Math.abs(dr),Math.abs(dc))%2===0)?1:0); }));
-        set(size-8,8,1);
-        for(let i=0;i<=8;i++){ if(!fn[8][i]) fn[8][i]=true; if(!fn[i][8]) fn[i][8]=true; }
-        for(let i=0;i<8;i++){ fn[8][size-1-i]=true; fn[size-1-i][8]=true; }
-        if(version>=7) for(let i=0;i<6;i++) for(let j=0;j<3;j++){ fn[size-11+j][i]=true; fn[i][size-11+j]=true; }
-        return { m, fn, size }; }
-      function placeData(base,codewords){ const {m,fn,size}=base, bits=[]; codewords.forEach(cw=>{ for(let i=7;i>=0;i--) bits.push((cw>>i)&1); });
-        let bi=0, up=true; for(let col=size-1;col>0;col-=2){ if(col===6) col--;
-          for(let i=0;i<size;i++){ const row=up?size-1-i:i; for(let c=0;c<2;c++){ const cc=col-c; if(!fn[row][cc]){ m[row][cc]=bi<bits.length?bits[bi]:0; bi++; } } } up=!up; } }
-      function applyMask(m,fn,size,mask){ const out=m.map(r=>r.slice()); for(let r=0;r<size;r++) for(let c=0;c<size;c++) if(!fn[r][c]&&MASKS[mask](r,c)) out[r][c]^=1; return out; }
-      function drawFmtVer(m,size,mask,version){ const fb=fmtBits(mask), gb=i=>(fb>>(14-i))&1;
-        for(let i=0;i<=5;i++) m[8][i]=gb(i); m[8][7]=gb(6); m[8][8]=gb(7); m[7][8]=gb(8);
-        for(let i=9;i<15;i++) m[14-i][8]=gb(i);
-        for(let i=0;i<8;i++) m[size-1-i][8]=gb(i); for(let i=8;i<15;i++) m[8][size-15+i]=gb(i); m[size-8][8]=1;
-        if(version>=7){ const vb=verBits(version), vg=i=>(vb>>i)&1; for(let i=0;i<18;i++){ const a=size-11+i%3, b=(i/3)|0; m[a][b]=vg(i); m[b][a]=vg(i); } } }
-      function penalty(m,size){ let p=0;
-        for(let r=0;r<size;r++){ let col=m[r][0],len=1; for(let c=1;c<size;c++){ if(m[r][c]===col)len++; else{ if(len>=5)p+=3+len-5; col=m[r][c];len=1; } } if(len>=5)p+=3+len-5; }
-        for(let c=0;c<size;c++){ let col=m[0][c],len=1; for(let r=1;r<size;r++){ if(m[r][c]===col)len++; else{ if(len>=5)p+=3+len-5; col=m[r][c];len=1; } } if(len>=5)p+=3+len-5; }
-        for(let r=0;r<size-1;r++) for(let c=0;c<size-1;c++){ const v=m[r][c]; if(v===m[r][c+1]&&v===m[r+1][c]&&v===m[r+1][c+1]) p+=3; }
-        const p1=[1,0,1,1,1,0,1,0,0,0,0], p2=[0,0,0,0,1,0,1,1,1,0,1];
-        const chk=g=>{ let a=true,b=true; for(let k=0;k<11;k++){ const v=g(k); if(v!==p1[k])a=false; if(v!==p2[k])b=false; } return a||b; };
-        for(let r=0;r<size;r++) for(let c=0;c<=size-11;c++) if(chk(k=>m[r][c+k])) p+=40;
-        for(let c=0;c<size;c++) for(let r=0;r<=size-11;r++) if(chk(k=>m[r+k][c])) p+=40;
-        let dark=0; for(let r=0;r<size;r++) for(let c=0;c<size;c++) if(m[r][c]) dark++;
-        p+=Math.floor(Math.abs(dark*100/(size*size)-50)/5)*10; return p; }
-      function build(text){ const bytes=toBytes(text), version=chooseVersion(bytes.length);
-        if(!version) throw new Error('data too long for QR');
-        const codewords=interleave(encodeData(bytes,version),version), base=buildBase(version); placeData(base,codewords);
-        let best=null, bestP=Infinity;
-        for(let mask=0;mask<8;mask++){ const cand=applyMask(base.m,base.fn,base.size,mask); drawFmtVer(cand,base.size,mask,version); const p=penalty(cand,base.size); if(p<bestP){ bestP=p; best=cand; } }
-        return best; }
-      function toCanvas(text,{scale=6,margin=4,dark='#0b1020',light='#ffffff'}={}){ const m=build(text), size=m.length, dim=(size+margin*2)*scale;
-        const cv=document.createElement('canvas'); cv.width=cv.height=dim; const x=cv.getContext('2d');
-        x.fillStyle=light; x.fillRect(0,0,dim,dim); x.fillStyle=dark;
-        for(let r=0;r<size;r++) for(let c=0;c<size;c++) if(m[r][c]) x.fillRect((c+margin)*scale,(r+margin)*scale,scale,scale); return cv; }
-      return { build, toCanvas, toDataURL:(t,o)=>toCanvas(t,o).toDataURL('image/png') };
-    })();
-
-    /* ── Storage ────────────────────────────────────── */
-    const LS = {
-      get: k => { try { return JSON.parse(localStorage.getItem(k)); } catch { return null; } },
-      set: (k, v) => localStorage.setItem(k, JSON.stringify(v)),
-      del: k => localStorage.removeItem(k)
-    };
-    const BOARD_KEY = id => `orbit_board_${id}`;
-    const PARTS_KEY = id => `orbit_parts_${id}`;
-    const MY_ID_KEY = id => `orbit_myid_${id}`;
-    const MY_NAME_KEY = 'orbit_myname';
-    const MY_EMAIL_KEY = 'orbit_myemail';
-    const BOOKING_KEY = id => `orbit_booking_${id}`;
-    // Same-origin /api/orbit (Vercel in production, local Python server in dev).
-    // JSONBlob is no longer called from the browser — Cloudflare blocks it.
-    const CLOUD_BASE = window.S4C_ORBIT_CLOUD_BASE || '/api/orbit';
-    const CLOUD_SYNC_DEBOUNCE = 700;
-    const CLOUD_POLL_MS = 4000;
-    const CLOUD_SYNC_RETRY_MS = 1200;
-    const VISIBILITY_REFRESH_MS = 1500;
-
-    async function parseApiJson(res) {
-      const ctype = (res.headers.get('content-type') || '').toLowerCase();
-      if (!ctype.includes('json')) throw new Error('API unavailable');
-      return res.json();
-    }
-
-    const Cloud = {
-      url(id) { return `${CLOUD_BASE}?id=${encodeURIComponent(id)}`; },
-      async ping() {
-        try {
-          const res = await fetch(CLOUD_BASE, { headers: { Accept: 'application/json' }, cache: 'no-store' });
-          const ctype = (res.headers.get('content-type') || '').toLowerCase();
-          return res.ok && ctype.includes('json');
-        } catch {
-          return false;
-        }
-      },
-      async create(doc) {
-        const res = await fetch(CLOUD_BASE, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-          body: JSON.stringify(doc)
-        });
-        const data = await parseApiJson(res);
-        if (!res.ok) throw new Error((data && data.error) || `create failed (${res.status})`);
-        if (!data || !data.id) throw new Error('missing board id');
-        return data.id;
-      },
-      async read(id) {
-        const res = await fetch(this.url(id), {
-          headers: { Accept: 'application/json' },
-          cache: 'no-store'
-        });
-        if (res.status === 404) return null;
-        const data = await parseApiJson(res);
-        if (!res.ok) throw new Error((data && data.error) || `read failed (${res.status})`);
-        try {
-          return normaliseDocument(data, id);
-        } catch {
-          throw new Error('cloud data is malformed');
-        }
-      },
-      async write(id, doc) {
-        const res = await fetch(this.url(id), {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-          body: JSON.stringify(doc)
-        });
-        let data = null;
-        try { data = await parseApiJson(res); } catch {}
-        if (!res.ok) throw new Error((data && data.error) || `write failed (${res.status})`);
-      }
-    };
-
-    function normaliseBoard(raw, fallbackId='') {
-      if (!raw || typeof raw !== 'object') return null;
-      const title = typeof raw.title === 'string' && raw.title.trim() ? raw.title.trim().slice(0, 120) : null;
-      const startDate = typeof raw.startDate === 'string' ? raw.startDate : null;
-      const endDate = typeof raw.endDate === 'string' ? raw.endDate : null;
-      const startHour = Number.isInteger(raw.startHour) ? raw.startHour : parseInt(raw.startHour, 10);
-      const endHour = Number.isInteger(raw.endHour) ? raw.endHour : parseInt(raw.endHour, 10);
-      if (!title || !startDate || !endDate || !Number.isInteger(startHour) || !Number.isInteger(endHour)) return null;
-      if (startDate > endDate || startHour < 0 || endHour > 24 || startHour >= endHour) return null;
-      if (dateRange(startDate, endDate).length > 21) return null;
-      const rawId = typeof raw.id === 'string' && raw.id.trim() ? raw.id.trim() : '';
-      const id = !rawId || rawId === 'pending' ? fallbackId : rawId;
-      return {
-        id,
-        title,
-        startDate,
-        endDate,
-        startHour,
-        endHour,
-        timezone: typeof raw.timezone === 'string' ? raw.timezone : Intl.DateTimeFormat().resolvedOptions().timeZone,
-        createdAt: Number(raw.createdAt) || Date.now()
-      };
-    }
-
-    function normaliseBooking(raw) {
-      if (!raw || typeof raw !== 'object') return null;
-      const slot = typeof raw.slot === 'string' && SLOT_KEY_RE.test(raw.slot) ? raw.slot : null;
-      let id = typeof raw.id === 'string' && raw.id.trim() ? raw.id.trim().slice(0, 32) : null;
-      if (!slot || !id) return null;
-      return {
-        slot,
-        id,
-        bookedAt: Number(raw.bookedAt) || Date.now(),
-        name: typeof raw.name === 'string' ? raw.name.trim().slice(0, 40) : ''
-      };
-    }
-
-    function normaliseParticipant(raw, fallbackId='') {
-      if (!raw || typeof raw !== 'object') return null;
-      const id = typeof raw.id === 'string' && raw.id.trim() ? raw.id.trim() : fallbackId;
-      const name = typeof raw.name === 'string' ? raw.name.trim().slice(0, 40) : '';
-      if (!id || !name) return null;
-      const slots = Array.isArray(raw.slots)
-        ? Array.from(new Set(raw.slots.filter(slot => typeof slot === 'string' && SLOT_KEY_RE.test(slot)))).sort()
-        : [];
-      return { id, name, slots, mergedAt: Number(raw.mergedAt) || undefined };
-    }
-
-    function normaliseParticipants(raw) {
-      const out = {};
-      if (!raw || typeof raw !== 'object') return out;
-      Object.entries(raw).forEach(([id, value]) => {
-        const participant = normaliseParticipant(value, id);
-        if (participant) out[participant.id] = participant;
-      });
-      return out;
-    }
-
-    function normaliseDocument(raw, fallbackId='') {
-      const board = normaliseBoard(raw && raw.board ? raw.board : raw, fallbackId);
-      if (!board) return null;
-      return {
-        board,
-        participants: normaliseParticipants(raw && raw.participants),
-        booking: normaliseBooking(raw && raw.booking),
-        updatedAt: Number(raw && raw.updatedAt) || 0
-      };
-    }
-
-    /* ── App state ──────────────────────────────────── */
-    const state = {
-      boardId: null,
-      board: null,
-      participants: {},
-      booking: null,
-      myId: null,
-      mode: 'mark',
-      dragging: false,
-      dragAdding: null,
-      touched: new Set(),
-      dirtyParticipants: {},
-      dirtyBooking: false,
-      dirtyCounter: 0,
-      syncTimer: null,
-      syncInFlight: false,
-      syncQueued: false,
-      pollTimer: null,
-      lastCloudRefresh: 0,
-      lastRemoteError: null,
-      channel: null
-    };
-
-    /* ── Board CRUD ─────────────────────────────────── */
-    function saveBoard() {
-      if (!state.boardId || !state.board) return;
-      LS.set(BOARD_KEY(state.boardId), state.board);
-    }
-    function saveParts() {
-      if (!state.boardId) return;
-      LS.set(PARTS_KEY(state.boardId), state.participants);
-    }
-    function saveBooking() {
-      if (!state.boardId) return;
-      LS.set(BOOKING_KEY(state.boardId), state.booking);
-    }
-    function loadBoardData(id) {
-      state.board = normaliseBoard(LS.get(BOARD_KEY(id)), id);
-      state.participants = normaliseParticipants(LS.get(PARTS_KEY(id)));
-      state.booking = normaliseBooking(LS.get(BOOKING_KEY(id)));
-      state.myId = LS.get(MY_ID_KEY(id));
-      return !!state.board;
-    }
-    function ensureMyId() {
-      if (state.myId) return state.myId;
-      const pid = uid();
-      state.myId = pid;
-      LS.set(MY_ID_KEY(state.boardId), pid);
-      return pid;
-    }
-
-    function setBoardStatus(text, kind='') {
-      const el = $('bv-status');
-      el.textContent = text;
-      el.classList.toggle('is-warn', kind === 'warn');
-      el.classList.toggle('is-err', kind === 'err');
-    }
-
-    function bindChannel(id) {
-      if (state.channel) { try { state.channel.close(); } catch {} }
-      state.channel = null;
-      if (!('BroadcastChannel' in window) || !id) return;
-      state.channel = new BroadcastChannel('s4c-orbit-' + id);
-      state.channel.onmessage = ev => {
-        if (!ev.data || ev.data.type !== 'doc' || ev.data.id !== state.boardId) return;
-        if (state.dragging || Object.keys(state.dirtyParticipants).length) return;
-        applyRemoteDoc(id, ev.data.doc);
-        renderAll();
-      };
-    }
-
-    function publishLocal() {
-      if (!state.channel || !state.board) return;
-      try {
-        state.channel.postMessage({
-          type: 'doc',
-          id: state.boardId,
-          doc: { board: state.board, participants: state.participants, booking: state.booking, updatedAt: Date.now() }
-        });
-      } catch {}
-    }
-
-    function markParticipantDirty(id) {
-      if (!id) return;
-      state.dirtyParticipants[id] = ++state.dirtyCounter;
-      scheduleCloudSync();
-    }
-
-    function markBookingDirty() {
-      state.dirtyBooking = true;
-      scheduleCloudSync();
-    }
-
-    function clearCloudPolling() {
-      if (state.pollTimer) {
-        clearInterval(state.pollTimer);
-        state.pollTimer = null;
-      }
-    }
-
-    function startCloudPolling() {
-      clearCloudPolling();
-      state.pollTimer = setInterval(() => {
-        if (document.hidden || state.syncInFlight || state.dragging) return;
-        refreshFromCloud(true);
-      }, CLOUD_POLL_MS);
-    }
-
-    function applyRemoteDoc(id, doc) {
-      if (!doc || !doc.board) return false;
-      state.boardId = id;
-      state.board = doc.board;
-      state.participants = doc.participants || {};
-      state.booking = doc.booking || null;
-      saveBoard();
-      saveParts();
-      saveBooking();
-      return true;
-    }
-
-    async function refreshFromCloud(silent=false) {
-      if (!state.boardId) return false;
-      try {
-        const doc = await Cloud.read(state.boardId);
-        state.lastRemoteError = null;
-        if (!doc) return false;
-        state.lastCloudRefresh = Date.now();
-        if (!state.board || state.board.id !== doc.board.id) {
-          applyRemoteDoc(state.boardId, doc);
-          renderAll();
-        } else {
-          const before = JSON.stringify({ p: state.participants, b: state.booking });
-          state.board = doc.board;
-          const merged = {};
-          Object.entries(doc.participants || {}).forEach(([id, participant]) => {
-            merged[id] = state.dirtyParticipants[id] ? (state.participants[id] || participant) : participant;
-          });
-          Object.entries(state.participants || {}).forEach(([id, participant]) => {
-            if (!merged[id]) merged[id] = participant;
-          });
-          state.participants = merged;
-          if (!state.dirtyBooking) {
-            state.booking = doc.booking || null;
-          } else if (!state.booking && doc.booking) {
-            state.booking = doc.booking;
-            state.dirtyBooking = false;
-          }
-          saveBoard();
-          saveParts();
-          saveBooking();
-          if (before !== JSON.stringify({ p: state.participants, b: state.booking })) renderAll();
-        }
-        if (!silent) setBoardStatus(Object.keys(state.dirtyParticipants).length ? 'Saving…' : 'Live');
-        return true;
-      } catch (err) {
-        state.lastRemoteError = err;
-        if (!silent) setBoardStatus('Sync paused', 'warn');
-        return false;
-      }
-    }
-
-    function scheduleCloudSync(delay=CLOUD_SYNC_DEBOUNCE) {
-      if (!state.boardId || !state.board) return;
-      clearTimeout(state.syncTimer);
-      state.syncTimer = setTimeout(syncToCloud, delay);
-      setBoardStatus('Saving…');
-    }
-
-    async function syncToCloud() {
-      if (!state.boardId || !state.board) return;
-      const dirtySnapshot = { ...state.dirtyParticipants };
-      const hadBookingDirty = !!state.dirtyBooking;
-      if (!Object.keys(dirtySnapshot).length && !hadBookingDirty) return;
-      if (state.syncInFlight) {
-        state.syncQueued = true;
-        return;
-      }
-      state.syncInFlight = true;
-      setBoardStatus('Saving…');
-      try {
-        const remoteDoc = await Cloud.read(state.boardId);
-        if (remoteDoc === null) throw new Error('board missing in cloud');
-        const mergedParticipants = normaliseParticipants(remoteDoc && remoteDoc.participants);
-        Object.keys(dirtySnapshot).forEach(id => {
-          const participant = normaliseParticipant(state.participants[id], id);
-          if (participant) mergedParticipants[id] = participant;
-        });
-        const payload = {
-          board: clone(state.board),
-          participants: mergedParticipants,
-          booking: state.booking ? clone(state.booking) : null,
-          updatedAt: Date.now()
-        };
-        await Cloud.write(state.boardId, payload);
-        state.participants = mergedParticipants;
-        if (state.booking) state.booking = clone(state.booking);
-        saveBoard();
-        saveParts();
-        renderAll();
-        Object.keys(dirtySnapshot).forEach(id => {
-          if (state.dirtyParticipants[id] === dirtySnapshot[id]) delete state.dirtyParticipants[id];
-        });
-        if (hadBookingDirty) state.dirtyBooking = false;
-        saveBooking();
-        setBoardStatus('Live');
-      } catch (err) {
-        state.lastRemoteError = err;
-        setBoardStatus('Sync paused', 'warn');
-      } finally {
-        state.syncInFlight = false;
-        if (state.syncQueued || Object.keys(state.dirtyParticipants).length || state.dirtyBooking) {
-          state.syncQueued = false;
-          scheduleCloudSync(CLOUD_SYNC_RETRY_MS);
-        }
-      }
-    }
-
-    /* ── Computed helpers ───────────────────────────── */
-    function allSlotKeys(board) {
-      const days = dateRange(board.startDate, board.endDate);
-      const keys = [];
-      for (let h = board.startHour; h < board.endHour; h++)
-        for (const d of days) keys.push(`${d}T${String(h).padStart(2,'0')}`);
-      return keys;
-    }
-    function countMap() {
-      const c = {};
-      Object.values(state.participants).forEach(p => (p.slots || []).forEach(s => c[s] = (c[s] || 0) + 1));
-      return c;
-    }
-    function whoAtSlot(slot) {
-      return Object.values(state.participants).filter(p => (p.slots || []).includes(slot)).map(p => p.name);
-    }
-    function mySlots() {
-      const me = state.participants[state.myId];
-      return me ? new Set(me.slots || []) : new Set();
-    }
-    function participantCount() {
-      return Object.keys(state.participants).length;
-    }
-    function heatLevel(count, max) {
-      if (!count) return 0;
-      if (max <= 1) return 5;
-      const r = count / max;
-      if (r >= 0.95) return 5;
-      if (r >= 0.7) return 4;
-      if (r >= 0.45) return 3;
-      if (r >= 0.2) return 2;
-      return 1;
-    }
-
-    // Combined (union) availability: every window where at least one
-    // participant is free, merged into contiguous ranges per day. This is
-    // what a school sees when booking the team.
-    function combinedWindows() {
-      const c = countMap();
-      const byDate = {};
-      Object.keys(c).forEach(s => {
-        if (!c[s]) return;
-        const [date, hh] = s.split('T');
-        (byDate[date] = byDate[date] || []).push(parseInt(hh, 10));
-      });
-      const out = [];
-      Object.keys(byDate).sort().forEach(date => {
-        const hours = Array.from(new Set(byDate[date])).sort((a, b) => a - b);
-        const ranges = [];
-        let runStart = hours[0], prev = hours[0];
-        for (let i = 1; i < hours.length; i++) {
-          if (hours[i] === prev + 1) { prev = hours[i]; }
-          else { ranges.push(makeRange(date, runStart, prev)); runStart = hours[i]; prev = hours[i]; }
-        }
-        ranges.push(makeRange(date, runStart, prev));
-        out.push({ date, ranges });
-      });
-      return out;
-    }
-    function makeRange(date, startH, lastH) {
-      const names = new Set();
-      for (let h = startH; h <= lastH; h++)
-        whoAtSlot(`${date}T${String(h).padStart(2,'0')}`).forEach(n => names.add(n));
-      return { startH, endH: lastH + 1, names: Array.from(names) };
-    }
-
-    /* ── Grid rendering ─────────────────────────────── */
-    let gridDays = [], gridStartH = 0, gridEndH = 0;
-
-    function buildGrid() {
-      if (!state.board) return;
-      const { startDate, endDate, startHour, endHour } = state.board;
-      gridDays = dateRange(startDate, endDate);
-      gridStartH = startHour; gridEndH = endHour;
-      const table = $('grid-table');
-      table.innerHTML = '';
-      const c = countMap(), mine = mySlots();
-      const max = Math.max(0, ...Object.values(c));
-
-      // Header
-      const thead = document.createElement('thead');
-      const headRow = document.createElement('tr');
-      const thTime = document.createElement('th');
-      thTime.className = 'time-head';
-      thTime.textContent = '';
-      headRow.appendChild(thTime);
-      gridDays.forEach(d => {
-        const th = document.createElement('th');
-        th.innerHTML = `<div class="day-wd">${new Date(d+'T00:00:00').toLocaleDateString(undefined,{weekday:'short'})}</div><div class="day-md">${fmtDateShort(d)}</div>`;
-        headRow.appendChild(th);
-      });
-      thead.appendChild(headRow);
-      table.appendChild(thead);
-
-      // Body
-      const tbody = document.createElement('tbody');
-      for (let h = gridStartH; h < gridEndH; h++) {
-        const tr = document.createElement('tr');
-        const tdTime = document.createElement('td');
-        tdTime.className = 'time-cell';
-        tdTime.textContent = fmtHour(h);
-        tr.appendChild(tdTime);
-        gridDays.forEach(d => {
-          const slot = `${d}T${String(h).padStart(2,'0')}`;
-          const n = c[slot] || 0;
-          const isMine = mine.has(slot);
-          const isBooked = state.booking && state.booking.slot === slot;
-          const level = state.mode === 'combined' ? (n > 0 ? 4 : 0) : heatLevel(n, max);
-          const showMine = isMine && state.mode !== 'combined';
-          const td = document.createElement('td');
-          td.className = `slot-cell heat-${level}${showMine ? ' mine' : ''}${isBooked ? ' booked' : ''}`;
-          td.dataset.slot = slot;
-          td.tabIndex = 0;
-          td.setAttribute('role', 'button');
-          td.setAttribute('aria-label', `${fmtDate(d)} ${fmtHour(h)}`);
-          td.style.width = `${Math.max(52, Math.floor(520 / gridDays.length))}px`;
-          td.style.height = '44px';
-          if (state.mode === 'view' && n > 0) {
-            td.style.fontSize = '.7rem';
-            td.style.fontWeight = '700';
-            td.style.color = n >= max * 0.5 ? '#111111' : 'var(--text)';
-            td.textContent = n;
-          }
-          td.addEventListener('keydown', ev => {
-            if (ev.key !== 'Enter' && ev.key !== ' ') return;
-            ev.preventDefault();
-            if (state.mode !== 'mark' || !checkName()) return;
-            state.dragAdding = !mySlots().has(slot);
-            toggleSlot(slot);
-            state.dragAdding = null;
-          });
-          td.addEventListener('mouseenter', ev => {
-            const c2 = countMap(), mine2 = mySlots();
-            showTooltip(ev, slot, c2[slot] || 0, mine2.has(slot));
-          });
-          td.addEventListener('mouseleave', hideTooltip);
-          tr.appendChild(td);
-        });
-        tbody.appendChild(tr);
-      }
-      table.appendChild(tbody);
-    }
-
-    function patchGrid() {
-      if (!state.board) return;
-      const c = countMap(), mine = mySlots();
-      const max = Math.max(0, ...Object.values(c));
-      document.querySelectorAll('.slot-cell').forEach(td => {
-        const slot = td.dataset.slot;
-        if (!slot) return;
-        const n = c[slot] || 0, isMine = mine.has(slot);
-        const isBooked = state.booking && state.booking.slot === slot;
-        const level = state.mode === 'combined' ? (n > 0 ? 4 : 0) : heatLevel(n, max);
-        const showMine = isMine && state.mode !== 'combined';
-        td.className = `slot-cell heat-${level}${showMine ? ' mine' : ''}${isBooked ? ' booked' : ''}`;
-        if (state.mode === 'view' && n > 0) {
-          td.style.fontSize = '.7rem';
-          td.style.fontWeight = '700';
-            td.style.color = n >= max * 0.5 ? '#111111' : 'var(--text)';
-          td.textContent = n;
-        } else {
-          td.style.fontSize = '';
-          td.style.fontWeight = '';
-          td.style.color = '';
-          td.textContent = '';
-        }
-      });
-    }
-
-    /* ── Tooltip ────────────────────────────────────── */
-    const tt = $('tooltip');
-    function showTooltip(ev, slot, count, isMine) {
-      const [date, hour] = slot.split('T');
-      const who = whoAtSlot(slot);
-      $('tt-time').textContent = `${fmtDate(date)} ${fmtHour(parseInt(hour, 10))}–${fmtHour(parseInt(hour, 10)+1)}`;
-      $('tt-count').textContent = count ? `${count} available` : 'Nobody yet';
-      $('tt-names').textContent = who.length ? who.join(', ') : '';
-      tt.style.display = 'block';
-      posTooltip(ev);
-    }
-    function posTooltip(ev) {
-      const pad = 12;
-      let x = ev.clientX + pad, y = ev.clientY + pad;
-      if (x + 200 > window.innerWidth) x = ev.clientX - 200 - pad;
-      if (y + 100 > window.innerHeight) y = ev.clientY - 100 - pad;
-      tt.style.left = x + 'px';
-      tt.style.top = y + 'px';
-    }
-    function hideTooltip() { tt.style.display = 'none'; }
-    document.addEventListener('mousemove', ev => { if (tt.style.display !== 'none') posTooltip(ev); });
-
-    /* ── Drag / click interaction ───────────────────── */
-    const gridOuter = $('grid-outer');
-    gridOuter.addEventListener('mousedown', ev => {
-      const td = ev.target.closest('.slot-cell');
-      if (!td || state.mode !== 'mark') return;
-      if (!checkName()) return;
-      ev.preventDefault();
-      state.dragging = true;
-      state.touched.clear();
-      const slot = td.dataset.slot;
-      const isMine = mySlots().has(slot);
-      state.dragAdding = !isMine;
-      toggleSlot(slot);
-      state.touched.add(slot);
-    });
-    document.addEventListener('mouseup', () => {
-      state.dragging = false;
-      state.dragAdding = null;
-      state.touched.clear();
-      if (state.boardId && !Object.keys(state.dirtyParticipants).length) refreshFromCloud(true);
-    });
-    gridOuter.addEventListener('mouseover', ev => {
-      if (!state.dragging) return;
-      const td = ev.target.closest('.slot-cell');
-      if (!td) return;
-      const slot = td.dataset.slot;
-      if (state.touched.has(slot)) return;
-      state.touched.add(slot);
-      const isMine = mySlots().has(slot);
-      if (state.dragAdding !== isMine) toggleSlot(slot);
-    });
-    // Touch support
-    gridOuter.addEventListener('touchstart', ev => {
-      const td = ev.target.closest('.slot-cell');
-      if (!td || state.mode !== 'mark') return;
-      if (!checkName()) return;
-      ev.preventDefault();
-      state.dragging = true;
-      state.touched.clear();
-      const slot = td.dataset.slot;
-      state.dragAdding = !mySlots().has(slot);
-      toggleSlot(slot);
-      state.touched.add(slot);
-    }, {passive:false});
-    gridOuter.addEventListener('touchmove', ev => {
-      if (!state.dragging) return;
-      ev.preventDefault();
-      const touch = ev.touches[0];
-      const el = document.elementFromPoint(touch.clientX, touch.clientY);
-      const td = el && el.closest('.slot-cell');
-      if (!td) return;
-      const slot = td.dataset.slot;
-      if (state.touched.has(slot)) return;
-      state.touched.add(slot);
-      const isMine = mySlots().has(slot);
-      if (state.dragAdding !== isMine) toggleSlot(slot);
-    }, {passive:false});
-    gridOuter.addEventListener('touchend', () => {
-      state.dragging = false;
-      if (state.boardId && !Object.keys(state.dirtyParticipants).length) refreshFromCloud(true);
-    });
-
-    function checkName() {
-      const nameInput = $('bv-name');
-      const name = nameInput.value.trim();
-      if (!name) {
-        nameInput.focus();
-        nameInput.style.borderColor = 'var(--danger)';
-        setTimeout(() => nameInput.style.borderColor = '', 1500);
-        toast('Enter your name first!', 'err');
-        return false;
-      }
-      return true;
-    }
-
-    function toggleSlot(slot) {
-      const pid = ensureMyId();
-      const name = $('bv-name').value.trim();
-      if (!name) return;
-      let p = state.participants[pid] || { id: pid, name, slots: [] };
-      p.name = name;
-      const set = new Set(p.slots || []);
-      if (state.dragAdding !== null) {
-        state.dragAdding ? set.add(slot) : set.delete(slot);
-      } else {
-        set.has(slot) ? set.delete(slot) : set.add(slot);
-      }
-      p.slots = Array.from(set).sort();
-      state.participants[pid] = p;
-      saveParts();
-      markParticipantDirty(pid);
-      publishLocal();
-      patchGrid();
-      renderBest();
-      renderBookable();
-      renderParticipants();
-    }
-
-    /* ── Sidebar renders ────────────────────────────── */
-    function renderBest() {
-      if (!state.board) return;
-      const c = countMap();
-      const total = participantCount();
-      const entries = Object.entries(c).sort((a, b) => b[1] - a[1]).slice(0, 8);
-      const list = $('best-list');
-      if (!entries.length) {
-        list.innerHTML = '<div class="empty">Mark hours to rank the overlaps.</div>';
-        $('best-count').textContent = '—';
-        return;
-      }
-      const max = entries[0][1];
-      $('best-count').textContent = `${max} of ${total || 1} available`;
-      list.innerHTML = entries.map(([slot, n], i) => {
-        const [date, hour] = slot.split('T');
-        const h = parseInt(hour, 10);
-        const pct = total ? Math.round(n / total * 100) : 100;
-        const barW = Math.round(n / max * 100);
-        const isBooked = state.booking && state.booking.slot === slot;
-        const actions = state.booking ? (isBooked ? ' <span style="font-size:.65rem;color:var(--accent)">Booked</span>' : '') :
-          `<button class="book-btn" onclick="event.stopPropagation();App.bookSlot('${slot}')">Book</button>`;
-        return `<div class="best-slot" ${!state.booking ? `onclick="App.bookSlot('${slot}')"` : ''} style="${!state.booking?'cursor:pointer':''}">
-          <div class="rank">#${i+1}</div>
-          <div class="info">
-            <div class="date">${fmtDate(date)}</div>
-            <div class="time">${fmtHour(h)} – ${fmtHour(h+1)}</div>
-          </div>
-          <div class="bar-wrap">
-            <div class="bar" style="width:${barW}%"></div>
-            <div class="pct">${pct}%</div>
-          </div>
-          ${actions}
-        </div>`;
-      }).join('');
-    }
-
-    function renderBookable() {
-      if (!state.board) return;
-      const days = combinedWindows();
-      const list = $('bookable-list');
-      const totalRanges = days.reduce((sum, d) => sum + d.ranges.length, 0);
-      if (!totalRanges) {
-        list.innerHTML = '<div class="empty">Ask the team to mark hours. Overlaps show up here.</div>';
-        $('bookable-count').textContent = '—';
-        return;
-      }
-      $('bookable-count').textContent = `${totalRanges} window${totalRanges === 1 ? '' : 's'}`;
-      list.innerHTML = days.map(d => `
-        <div class="book-day">
-          <div class="book-date">${fmtDate(d.date)}</div>
-          ${d.ranges.map(r => `
-            <div class="book-range">
-              <span class="book-time">${fmtHour(r.startH)} – ${fmtHour(r.endH)}</span>
-              ${r.names.length ? `<span class="book-who" title="${esc(r.names.join(', '))}">${esc(r.names.join(', '))}</span>` : ''}
-            </div>
-          `).join('')}
-        </div>
-      `).join('');
-    }
-
-    /* ── Booking ticket helpers ─────────────────────── */
-    function bookingUrl() {
-      try { const u = new URL(window.location.href); u.searchParams.set('b', state.boardId); if (state.booking) u.searchParams.set('ref', state.booking.id); return u.toString(); }
-      catch { return window.location.href; }
-    }
-    function buildBookingPayload(b, bd, date, h) {
-      const title = String(bd.title || 'Session').replace(/\s+/g, ' ').trim().slice(0, 48);
-      const host = String(b.name || '').replace(/\s+/g, ' ').trim().slice(0, 28);
-      const lines = [
-        'SPACE4CLIMATE BOOKING',
-        'Ref: ' + b.id,
-        'Event: ' + title,
-        'Date: ' + fmtDate(date),
-        'Time: ' + fmtHour(h) + '-' + fmtHour(h + 1)
-      ];
-      if (host) lines.push('Host: ' + host);
-      if (bd.timezone) lines.push('TZ: ' + bd.timezone);
-      lines.push(bookingUrl());
-      return lines.join('\n');
-    }
-    function bookingQrDataUrl(b, bd, date, h) {
-      // Try the full event-details payload; fall back to a compact one if it won't fit.
-      const payloads = [buildBookingPayload(b, bd, date, h), 'Space4Climate booking ' + b.id + '\n' + bookingUrl()];
-      for (const payload of payloads) {
-        try { return { dataUrl: QR.toDataURL(payload, { scale: 6, margin: 4 }), payload }; } catch (e) {}
-      }
-      return null;
-    }
-    function loadImage(src) { return new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = src; }); }
-
-    // Compose a printable booking ticket (details + QR) as one PNG to attach to receipts.
-    async function composeTicket(b, bd, date, h, qrDataUrl) {
-      const W = 360, S = 3, P = 22;
-      const FB = 'Inter,-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif';
-      const FH = 'Inter,-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif';
-      const FM = 'ui-monospace,Menlo,Consolas,monospace';
-      const title = String(bd.title || 'Space4Climate session').replace(/\s+/g, ' ').trim();
-      const rows = [
-        ['Date', fmtDate(date)],
-        ['Time', `${fmtHour(h)} - ${fmtHour(h + 1)}`],
-        b.name ? ['Booked by', String(b.name).trim()] : null,
-        bd.timezone ? ['Time zone', String(bd.timezone)] : null,
-        ['Reference', b.id]
-      ].filter(Boolean);
-      const rowsTop = 112, rowH = 32, qw = 150, qpad = 12, qbox = qw + qpad * 2;
-      const rowsBottom = rowsTop + rows.length * rowH;
-      const perfY = rowsBottom + 16, qY = perfY + 20, capY = qY + qbox + 22, H = capY + 14;
-      const cv = document.createElement('canvas'); cv.width = W * S; cv.height = H * S;
-      const x = cv.getContext('2d'); x.scale(S, S); x.textBaseline = 'alphabetic';
-      const rr = (rx, ry, rw, rh, r) => { x.beginPath(); x.moveTo(rx + r, ry); x.arcTo(rx + rw, ry, rx + rw, ry + rh, r); x.arcTo(rx + rw, ry + rh, rx, ry + rh, r); x.arcTo(rx, ry + rh, rx, ry, r); x.arcTo(rx, ry, rx + rw, ry, r); x.closePath(); };
-      const trunc = (t, maxW) => { t = String(t); if (x.measureText(t).width <= maxW) return t; let s = t; while (s.length > 1 && x.measureText(s + '…').width > maxW) s = s.slice(0, -1); return s + '…'; };
-      // card
-      x.fillStyle = '#111111'; rr(0.5, 0.5, W - 1, H - 1, 20); x.fill();
-      x.strokeStyle = 'rgba(255,255,255,0.16)'; x.lineWidth = 1; rr(0.5, 0.5, W - 1, H - 1, 20); x.stroke();
-      x.fillStyle = '#ebfd40'; x.beginPath(); x.arc(P + 4, 35, 4, 0, 7); x.fill();
-      x.fillStyle = '#f5f5f5'; x.font = `600 14px ${FH}`; x.fillText('Space4Climate', P + 14, 40);
-      // status pill (right)
-      x.font = `600 11px ${FB}`; const pillT = 'Confirmed', pw = x.measureText(pillT).width + 30, pxx = W - P - pw, pyy = 25, ph = 21;
-      x.fillStyle = 'rgba(235,253,64,0.16)'; rr(pxx, pyy, pw, ph, 10.5); x.fill();
-      x.fillStyle = '#ebfd40'; x.beginPath(); x.arc(pxx + 13, pyy + ph / 2, 3, 0, 7); x.fill();
-      x.fillStyle = '#ebfd40'; x.fillText(pillT, pxx + 21, pyy + 14);
-      x.fillStyle = 'rgba(255,255,255,0.5)'; x.font = `600 10px ${FB}`; x.fillText('SESSION BOOKED', P, 72);
-      x.fillStyle = '#f5f5f5'; x.font = `600 21px ${FH}`; x.fillText(trunc(title, W - 2 * P), P, 97);
-      // detail rows
-      rows.forEach((r, i) => {
-        const yy = rowsTop + i * rowH, ty = yy + 21;
-        if (i > 0) { x.strokeStyle = 'rgba(255,255,255,0.12)'; x.lineWidth = 1; x.beginPath(); x.moveTo(P, yy); x.lineTo(W - P, yy); x.stroke(); }
-        x.fillStyle = 'rgba(255,255,255,0.55)'; x.font = `13px ${FB}`; x.textAlign = 'left'; x.fillText(r[0], P, ty);
-        const isRef = r[0] === 'Reference';
-        x.fillStyle = '#f5f5f5'; x.font = isRef ? `600 13px ${FM}` : `500 13px ${FB}`; x.textAlign = 'right';
-        x.fillText(trunc(r[1], W - 2 * P - 96), W - P, ty); x.textAlign = 'left';
-      });
-      x.strokeStyle = 'rgba(255,255,255,0.22)'; x.lineWidth = 1; x.setLineDash([4, 4]); x.beginPath(); x.moveTo(P, perfY); x.lineTo(W - P, perfY); x.stroke(); x.setLineDash([]);
-      x.fillStyle = '#050505'; x.strokeStyle = 'rgba(255,255,255,0.16)';
-      x.beginPath(); x.arc(0, perfY, 9, 0, 7); x.fill(); x.stroke();
-      x.beginPath(); x.arc(W, perfY, 9, 0, 7); x.fill(); x.stroke();
-      const qx = (W - qbox) / 2;
-      x.fillStyle = '#ffffff'; x.strokeStyle = 'rgba(255,255,255,0.16)'; x.lineWidth = 1; rr(qx, qY, qbox, qbox, 14); x.fill(); x.stroke();
-      if (qrDataUrl) { try { const img = await loadImage(qrDataUrl); x.imageSmoothingEnabled = false; x.drawImage(img, qx + qpad, qY + qpad, qw, qw); } catch (e) {} }
-      x.fillStyle = 'rgba(255,255,255,0.5)'; x.font = `11px ${FB}`; x.textAlign = 'center';
-      x.fillText('Scan to verify · space4climate.org', W / 2, capY); x.textAlign = 'left';
-      return cv;
-    }
-
-    function renderBooking() {
-      const card = $('booking-card');
-      const body = $('booking-body');
-      if (!state.booking || !state.board) {
-        if (card) card.style.display = 'none';
-        state._tktKey = null; state._lastQR = null;
-        return;
-      }
-      card.style.display = '';
-      const b = state.booking, bd = state.board;
-      const [date, hourStr] = b.slot.split('T');
-      const h = parseInt(hourStr, 10);
-      const key = [b.id, b.slot, bd.title, b.name, bd.timezone].join('|');
-      const qrImg = $('booking-qr');
-      if (state._tktKey === key && qrImg && qrImg.getAttribute('src')) return; // unchanged — skip rebuild (avoids QR flicker on poll)
-      const title = String(bd.title || 'Space4Climate session').trim();
-      const timeStr = `${fmtHour(h)}–${fmtHour(h + 1)}`;
-      body.innerHTML = `
-        <div class="tkt">
-          <div class="tkt-top">
-            <div class="tkt-brand"><span class="d"></span>Space4Climate</div>
-            <div class="tkt-status">Confirmed</div>
-          </div>
-          <div class="tkt-event">
-            <div class="tkt-eyebrow">Session booked</div>
-            <div class="tkt-title">${esc(title)}</div>
-          </div>
-          <div class="tkt-rows">
-            <div class="tkt-row"><span class="tkt-k">Date</span><span class="tkt-v">${esc(fmtDate(date))}</span></div>
-            <div class="tkt-row"><span class="tkt-k">Time</span><span class="tkt-v">${esc(timeStr)}</span></div>
-            ${b.name ? `<div class="tkt-row"><span class="tkt-k">Booked by</span><span class="tkt-v">${esc(b.name)}</span></div>` : ''}
-            ${bd.timezone ? `<div class="tkt-row"><span class="tkt-k">Time zone</span><span class="tkt-v">${esc(bd.timezone)}</span></div>` : ''}
-            <div class="tkt-row"><span class="tkt-k">Reference</span><span class="tkt-v mono" id="booking-ref">${esc(b.id)}</span></div>
-          </div>
-          <div class="tkt-perf"></div>
-          <div class="tkt-qrwrap">
-            <div class="tkt-qr"><img id="booking-qr" alt="Booking QR code with event details"></div>
-            <div class="tkt-qrcap" id="booking-qrcap">Scan to verify · quote ${esc(b.id)} when paying</div>
-          </div>
-        </div>
-        <div class="tkt-actions">
-          <button class="tkt-btn primary" onclick="App.downloadTicket()">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0l-4-4m4 4l4-4M5 21h14"/></svg>
-            Save ticket
-          </button>
-          <button class="tkt-btn wide" onclick="App.emailTicket()">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="M4 7.5l8 5.5 8-5.5"/></svg>
-            Email to myself
-          </button>
-          <button class="tkt-btn ghost" onclick="App.copyBookingRef()">Copy reference</button>
-          <button class="tkt-btn danger" onclick="App.clearBooking()">Cancel booking</button>
-        </div>
-      `;
-      const qr = bookingQrDataUrl(b, bd, date, h);
-      state._lastQR = qr;
-      const img = $('booking-qr');
-      if (qr && img) img.src = qr.dataUrl;
-      else if (!qr) { const cap = $('booking-qrcap'); if (cap) cap.textContent = 'QR could not be generated for this booking.'; }
-      state._tktKey = key;
-    }
-
-    function renderParticipants() {
-      const list = $('parts-list');
-      const parts = Object.values(state.participants);
-      $('parts-count').textContent = `${parts.length} ${parts.length === 1 ? 'person' : 'people'}`;
-      if (!parts.length) {
-        list.innerHTML = '<div class="empty">Save your name to join this board.</div>';
-        return;
-      }
-      list.innerHTML = parts.map(p => {
-        const isMe = p.id === state.myId;
-        const col = avatarColor(p.name);
-        return `<div class="participant-item">
-          <div class="participant-avatar" style="background:${col}20;border-color:${col}60;color:${col}">${esc(initials(p.name))}</div>
-          <div class="participant-name${isMe ? ' you' : ''}">${esc(p.name)}${isMe ? ' (you)' : ''}</div>
-          <div class="participant-slots">${(p.slots || []).length} slots</div>
-          ${isMe ? `<button class="participant-del btn-xs" onclick="App.clearMySlots()" title="Clear my availability">✕ Clear</button>` : ''}
-        </div>`;
-      }).join('');
-    }
-
-    function renderBoardHeader() {
-      if (!state.board) return;
-      const { title, startDate, endDate, startHour, endHour } = state.board;
-      $('bv-title').textContent = title;
-      const days = dateRange(startDate, endDate);
-      $('bv-meta').innerHTML = `
-        <span>${fmtDate(startDate)}${days.length > 1 ? ` → ${fmtDate(endDate)}` : ''}</span>
-        <span>${fmtHour(startHour)} – ${fmtHour(endHour)}</span>
-        <span>${state.board.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone}</span>
-      `;
-      const bid = `Board ID: ${state.boardId}`;
-      $('board-id-display').innerHTML = `<div>${bid}</div>${state.booking ? `<div style="margin-top:1px;color:var(--accent)">Booking ref: <strong>${state.booking.id}</strong></div>` : ''}`;
-    }
-
-    function setNameRowReady(ready) {
-      const row = $('name-row');
-      if (row) row.classList.toggle('is-ready', !!ready);
-    }
-
-    function renderAll() {
-      renderBoardHeader();
-      buildGrid();
-      renderBest();
-      renderBookable();
-      renderBooking();
-      renderParticipants();
-    }
-
-    /* ── View switching ─────────────────────────────── */
-    function showView(id) {
-      document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-      $(id).classList.add('active');
-      const nb = $('nav-new-btn');
-      if (nb) nb.style.display = id === 'view-board' ? '' : 'none';
-      document.body.classList.toggle('orbit-on-board', id === 'view-board');
-      document.body.classList.toggle('orbit-on-landing', id === 'view-landing');
-      window.scrollTo(0, 0);
-    }
-
-    /* ── Boot board ─────────────────────────────────── */
-    async function openBoard(id) {
-      clearCloudPolling();
-      clearTimeout(state.syncTimer);
-      state.board = null;
-      state.participants = {};
-      state.booking = null;
-      state.myId = LS.get(MY_ID_KEY(id));
-      state.boardId = id;
-      state.dirtyParticipants = {};
-      state.dirtyBooking = false;
-      state.syncQueued = false;
-      state.lastRemoteError = null;
-      setBoardStatus('Connecting…');
-      bindChannel(id);
-      const remoteLoaded = await refreshFromCloud(true);
-      if (!remoteLoaded && !loadBoardData(id)) {
-        setBoardStatus('Board not found', 'err');
-        return false;
-      }
-      state.boardId = id;
-      const savedName = LS.get(MY_NAME_KEY) || '';
-      $('bv-name').value = savedName;
-      if (savedName && state.myId && state.participants[state.myId]) {
-        $('bv-name-hint').textContent = `Welcome back, ${savedName}`;
-        setNameRowReady(true);
-      } else if (!savedName) {
-        $('bv-name-hint').textContent = 'Save your name before marking hours.';
-        setNameRowReady(false);
-      } else {
-        setNameRowReady(false);
-      }
-      const u = new URL(window.location.href);
-      u.searchParams.set('b', id);
-      u.hash = '';
-      history.replaceState({}, '', u.toString());
-      showView('view-board');
-      renderAll();
-      startCloudPolling();
-      setBoardStatus(remoteLoaded ? 'Live' : 'Saved on this device', remoteLoaded ? '' : 'warn');
-      publishLocal();
-      return true;
-    }
-
-    /* ── Grid mode ──────────────────────────────────── */
-    function setGridMode(mode) {
-      state.mode = mode;
-      $('mode-mark').classList.toggle('active', mode === 'mark');
-      $('mode-view').classList.toggle('active', mode === 'view');
-      $('mode-combined').classList.toggle('active', mode === 'combined');
-      const hints = {
-        mark: 'Click or drag hours you can do. Enter your name first.',
-        view: 'Counts show how many people are free in each hour.',
-        combined: 'Lime cells are hours at least one person can do'
-      };
-      $('bv-grid-hint').textContent = hints[mode] || hints.mark;
-      $('grid-outer').style.cursor = mode === 'mark' ? 'crosshair' : 'default';
-      patchGrid();
-    }
-
-    /* ── App public API ─────────────────────────────── */
-    window.App = {
-      setGridMode,
-      showLanding() {
-        clearCloudPolling();
-        if (state.channel) { try { state.channel.close(); } catch {} state.channel = null; }
-        const u = new URL(window.location.href);
-        u.searchParams.delete('b');
-        u.hash = '';
-        history.replaceState({}, '', u.pathname + u.search);
-        showView('view-landing');
-        const launch = document.getElementById('orbit-launch');
-        if (launch) launch.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      },
-      clearMySlots() {
-        if (!state.myId || !state.participants[state.myId]) return;
-        if (!confirm('Clear all your availability slots?')) return;
-        state.participants[state.myId].slots = [];
-        saveParts();
-        markParticipantDirty(state.myId);
-        patchGrid(); renderBest(); renderBookable(); renderParticipants();
-        toast('Your slots cleared.');
-      },
-      bookSlot(slot) {
-        if (!state.board || !slot) return;
-        const [d, h] = slot.split('T');
-        const when = `${fmtDate(d)} ${fmtHour(parseInt(h,10))}–${fmtHour(parseInt(h,10)+1)}`;
-        if (!confirm(`Book this time for the session?\n${when}\n\nThis will create a payment reference ID.`)) return;
-        const pid = state.myId || ensureMyId();
-        const booker = (state.participants[pid] && state.participants[pid].name) || $('bv-name').value.trim() || 'Organizer';
-        const bookingId = generateBookingId();
-        state.booking = { slot, id: bookingId, bookedAt: Date.now(), name: booker };
-        saveBooking();
-        markBookingDirty();
-        renderAll();
-        // force immediate attempt to push
-        setTimeout(syncToCloud, 10);
-        toast(`Booked! Ref: ${bookingId} — share this ID for payment`);
-      },
-      clearBooking() {
-        if (!state.booking) return;
-        if (!confirm('Clear the confirmed booking?')) return;
-        state.booking = null;
-        state.dirtyBooking = true;
-        saveBooking();
-        scheduleCloudSync(0);
-        renderAll();
-        toast('Booking cleared.');
-      },
-      copyBookingRef() {
-        const ref = state.booking && state.booking.id;
-        if (!ref) return;
-        const doCopy = () => toast('Booking ref copied: ' + ref);
-        navigator.clipboard.writeText(ref).then(doCopy).catch(() => {
-          try { const t = document.createElement('textarea'); t.value = ref; document.body.appendChild(t); t.select(); document.execCommand('copy'); document.body.removeChild(t); doCopy(); }
-          catch { toast('Ref: ' + ref + ' (copy manually)'); }
-        });
-      },
-      emailTicket() {
-        if (!state.booking || !state.board) return toast('No booking to email yet.', 'err');
-        const b = state.booking, bd = state.board;
-        const [date, hourStr] = b.slot.split('T');
-        const h = parseInt(hourStr, 10);
-        const prev = LS.get(MY_EMAIL_KEY) || '';
-        const to = (window.prompt('Email this booking confirmation to:', prev) || '').trim();
-        if (!to) return;
-        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(to)) return toast('Enter a valid email address.', 'err');
-        LS.set(MY_EMAIL_KEY, to);
-        const lines = [];
-        lines.push('Your Space4Climate session time has been booked on the board.', '');
-        lines.push('Event:      ' + (bd.title || 'Space4Climate session'));
-        lines.push('Date:       ' + fmtDate(date));
-        lines.push('Time:       ' + fmtHour(h) + ' - ' + fmtHour(h + 1));
-        if (b.name) lines.push('Booked by:  ' + b.name);
-        if (bd.timezone) lines.push('Time zone:  ' + bd.timezone);
-        lines.push('Reference:  ' + b.id, '');
-        lines.push('View or verify this booking:', bookingUrl(), '');
-        lines.push('Please quote the reference above when paying the registration fee.');
-        lines.push('Tip: use "Save ticket" to attach the QR ticket image to this email.');
-        const href = 'mailto:' + encodeURIComponent(to) + '?subject=' + encodeURIComponent('Space4Climate booking · ' + b.id) + '&body=' + encodeURIComponent(lines.join('\n'));
-        window.location.href = href;
-        toast('Opening your email app…');
-      },
-      async downloadTicket() {
-        if (!state.booking || !state.board) return toast('No booking to save yet.', 'err');
-        const b = state.booking, bd = state.board;
-        const [date, hourStr] = b.slot.split('T');
-        const h = parseInt(hourStr, 10);
-        let qr = state._lastQR;
-        if (!qr) qr = bookingQrDataUrl(b, bd, date, h);
-        try {
-          const canvas = await composeTicket(b, bd, date, h, qr && qr.dataUrl);
-          const a = document.createElement('a');
-          a.download = `S4C-ticket-${b.id}.png`;
-          a.href = canvas.toDataURL('image/png');
-          document.body.appendChild(a); a.click(); a.remove();
-          toast('Ticket saved — attach the PNG to your receipt.');
-        } catch (e) {
-          toast('Could not build ticket image: ' + formatError(e), 'err');
-        }
-      },
-      openModal(id) { $(id).classList.add('open'); },
-      closeModal(id) { $(id).classList.remove('open'); },
-      copyShareLink() {
-        const val = $('share-link-input').value;
-        navigator.clipboard.writeText(val).then(() => { toast('Link copied!'); $('share-copy-btn').textContent = 'Copied!'; setTimeout(() => $('share-copy-btn').textContent = 'Copy', 1800); }).catch(() => toast('Copy failed — select the link manually.', 'err'));
-      },
-      copyExportCode() {
-        const val = $('export-code').value;
-        navigator.clipboard.writeText(val).then(() => toast('Code copied!')).catch(() => toast('Copy failed.', 'err'));
-      },
-      mergeCode() {
-        const raw = $('merge-code-input').value.trim();
-        if (!raw) return toast('Paste a code first.', 'err');
-        doMerge(raw, () => { App.closeModal('modal-merge'); $('merge-code-input').value = ''; });
-      }
-    };
-
-    function doMerge(raw, onSuccess) {
-      const data = decode(raw);
-      if (!data || !data.id || !data.name || !Array.isArray(data.slots)) {
-        toast('Invalid response code.', 'err'); return;
-      }
-      if (data.boardId && data.boardId !== state.boardId) {
-        toast('This code is for a different board.', 'err'); return;
-      }
-      // If no board loaded, try to load or error
-      if (!state.board) { toast('Load a board first.', 'err'); return; }
-      state.participants[data.id] = { id: data.id, name: data.name, slots: data.slots, mergedAt: Date.now() };
-      saveParts();
-      markParticipantDirty(data.id);
-      patchGrid(); renderBest(); renderBookable(); renderParticipants();
-      toast(`Merged ${data.name}'s availability (${data.slots.length} slots).`);
-      if (onSuccess) onSuccess();
-    }
-
-    /* ── UI bindings ────────────────────────────────── */
-    // Create board
-    (() => {
-      const t = today();
-      $('create-start').value = t;
-      $('create-start').min = t;
-      $('create-end').value = addDays(t, 6);
-      $('create-end').min = t;
-      for (let h = 0; h < 24; h++) {
-        const a = document.createElement('option');
-        a.value = h; a.textContent = fmtHour(h);
-        $('create-sh').appendChild(a);
-      }
-      for (let h = 1; h <= 24; h++) {
-        const a = document.createElement('option');
-        a.value = h; a.textContent = fmtHour(h % 24 || 24);
-        $('create-eh').appendChild(a);
-      }
-      $('create-sh').value = '9';
-      $('create-eh').value = '17';
-      const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
-      $('create-tz-hint').textContent = `Times are in ${tz}. Date range can be up to 21 days.`;
-    })();
-
-    function parseBoardId(raw) {
-      const value = (raw || '').trim();
-      if (!value) return '';
-      try {
-        const u = new URL(value, window.location.origin);
-        const fromQuery = u.searchParams.get('b');
-        if (fromQuery) return fromQuery;
-        if (u.hash) {
-          const hp = new URLSearchParams(u.hash.replace(/^#/, ''));
-          const fromHash = hp.get('b') || hp.get('board');
-          if (fromHash) return fromHash;
-        }
-        if (/^https?:/i.test(value) || value.includes('commonboard')) return '';
-      } catch {}
-      return value;
-    }
-
-    $('create-name').addEventListener('input', () => {
-      $('create-name').classList.remove('invalid');
-      $('create-name-err').textContent = '';
-    });
-    $('create-name').addEventListener('keydown', ev => { if (ev.key === 'Enter') $('create-btn').click(); });
-    $('join-input').addEventListener('keydown', ev => { if (ev.key === 'Enter') $('join-btn').click(); });
-
-    $('create-btn').addEventListener('click', async () => {
-      const title = $('create-name').value.trim();
-      const startDate = $('create-start').value;
-      const endDate = $('create-end').value;
-      const startHour = parseInt($('create-sh').value, 10);
-      const endHour = parseInt($('create-eh').value, 10);
-      if (!title) {
-        $('create-name').classList.add('invalid');
-        $('create-name-err').textContent = 'Give the board a name.';
-        $('create-name').focus();
-        return toast('Enter a board name.', 'err');
-      }
-      if (!startDate || !endDate) return toast('Set both dates.', 'err');
-      if (startDate > endDate) return toast('Start date must be before end date.', 'err');
-      if (dateRange(startDate, endDate).length > 21) return toast('Keep the range to 21 days or fewer.', 'err');
-      if (startHour >= endHour) return toast('End time must be after start time.', 'err');
-      const draft = { title, startDate, endDate, startHour, endHour, timezone: Intl.DateTimeFormat().resolvedOptions().timeZone, createdAt: Date.now() };
-      const localId = uid();
-      const board = { ...draft, id: localId };
-      LS.set(BOARD_KEY(localId), board);
-      LS.set(PARTS_KEY(localId), {});
-      const btn = $('create-btn');
-      btn.disabled = true;
-      const btnLabel = btn.querySelector(':scope > div');
-      if (btnLabel) btnLabel.textContent = 'Launching…';
-      else btn.textContent = 'Launching…';
-      try {
-        const id = await Cloud.create({ board, participants: {}, updatedAt: Date.now() });
-        if (id !== localId) {
-          LS.set(BOARD_KEY(id), { ...board, id });
-          LS.set(PARTS_KEY(id), {});
-        }
-        await openBoard(id);
-        toast('Board launched. Share the link with your team.');
-      } catch (err) {
-        await openBoard(localId);
-        toast('Board saved on this device. Live sharing needs the Orbit API.');
-        setBoardStatus('Saved on this device', 'warn');
-      } finally {
-        btn.disabled = false;
-        if (btnLabel) btnLabel.textContent = 'Launch board';
-        else btn.textContent = 'Launch board';
-      }
-    });
-
-    $('join-btn').addEventListener('click', async () => {
-      const raw = $('join-input').value.trim();
-      if (!raw) return toast('Paste a link or ID.', 'err');
-      const id = parseBoardId(raw);
-      if (!id) return toast('Paste a full board link or the board ID.', 'err');
-      if (!await openBoard(id)) {
-        const joinError = state.lastRemoteError
-          ? `Could not reach the live board: ${formatError(state.lastRemoteError)}.`
-          : 'Board not found. Check the link or launch a new board.';
-        toast(joinError, 'err');
-      }
-    });
-
-    // Quick merge on landing
-    $('merge-quick-btn').addEventListener('click', async () => {
-      const raw = $('merge-quick-input').value.trim();
-      if (!raw) return toast('Paste a response code.', 'err');
-      const data = decode(raw);
-      if (!data || !data.boardId) return toast('Invalid code or missing board ID.', 'err');
-      if (!await openBoard(data.boardId)) {
-        // Board not here yet — create a stub if encoded in code
-        if (data.board) {
-          LS.set(BOARD_KEY(data.boardId), data.board);
-          LS.set(PARTS_KEY(data.boardId), {});
-          await openBoard(data.boardId);
-        } else {
-          return toast('Board not found. Load the board first, then merge.', 'err');
-        }
-      }
-      doMerge(raw, () => { $('merge-quick-input').value = ''; });
-    });
-
-    // Name save
-    $('bv-name-save').addEventListener('click', () => {
-      const name = $('bv-name').value.trim();
-      if (!name) return toast('Enter your name.', 'err');
-      LS.set(MY_NAME_KEY, name);
-      const current = state.myId && state.participants[state.myId];
-      if (current && current.name && current.name !== name && (current.slots || []).length) {
-        state.myId = uid();
-        LS.set(MY_ID_KEY(state.boardId), state.myId);
-      }
-      const pid = ensureMyId();
-      if (!state.participants[pid]) {
-        state.participants[pid] = { id: pid, name, slots: [] };
-      } else {
-        state.participants[pid].name = name;
-      }
-      saveParts();
-      markParticipantDirty(pid);
-      renderParticipants();
-      $('bv-name-hint').textContent = `Saved as ${name}. Type a different name to add someone else on this device.`;
-      setNameRowReady(true);
-      toast(`Name saved: ${name}`);
-    });
-    $('bv-name').addEventListener('keydown', ev => {
-      if (ev.key === 'Enter') $('bv-name-save').click();
-    });
-
-    function closeMoreMenu() {
-      const m = document.querySelector('.more-menu');
-      if (m) m.open = false;
-    }
-
-    // Share
-    $('bv-share-btn').addEventListener('click', () => {
-      const u = new URL(window.location.origin + window.location.pathname);
-      u.searchParams.set('b', state.boardId);
-      $('share-link-input').value = u.toString();
-      App.openModal('modal-share');
-    });
-
-    // Export
-    $('bv-export-btn').addEventListener('click', () => {
-      closeMoreMenu();
-      if (!state.myId || !state.participants[state.myId]) {
-        return toast('Add your name and mark availability first.', 'err');
-      }
-      const me = state.participants[state.myId];
-      const payload = { id: me.id, name: me.name, slots: me.slots, boardId: state.boardId, board: state.board };
-      $('export-code').value = encode(payload);
-      App.openModal('modal-export');
-    });
-
-    // Merge
-    $('bv-merge-btn').addEventListener('click', () => {
-      closeMoreMenu();
-      App.openModal('modal-merge');
-    });
-
-    // Close modals on overlay click
-    document.querySelectorAll('.modal-overlay').forEach(el => {
-      el.addEventListener('click', ev => { if (ev.target === el) el.classList.remove('open'); });
-    });
-    // ESC closes modals
-    document.addEventListener('keydown', ev => {
-      if (ev.key === 'Escape') document.querySelectorAll('.modal-overlay.open').forEach(el => el.classList.remove('open'));
-    });
-
-    /* ── Init from URL ──────────────────────────────── */
-    document.addEventListener('visibilitychange', async () => {
-      if (!document.hidden && state.boardId && Date.now() - state.lastCloudRefresh > VISIBILITY_REFRESH_MS) await refreshFromCloud(false);
-    });
-
-    (async () => {
-      const id = parseBoardId(window.location.href);
-      if (id) {
-        if (!await openBoard(id)) toast('Board not found — launch a new one.', 'err');
-      }
-    })();
-
-  })();
-  </script>
 <script>pageFunctions.executeFunctions();</script>
 <script src="site-support.js?v=7"></script>
 </body>

@@ -19,7 +19,7 @@
   (e=>{e.pageFunctions=e.pageFunctions||{executed:{},functions:{},dependencies:{},requirements:{},addFunction:function(e,t,n=[],i=null){this.functions[e]||(this.functions[e]=t,this.dependencies[e]=n,this.requirements[e]=i)},executeFunctions:function(){if(!this.added){this.added=!0;let i=e=>{if(!this.executed[e]){var t=this.dependencies[e]||[],n=this.requirements[e];if(Array.isArray(t)&&0<t.length&&t.forEach(e=>{this.executed[e]||i(e)}),"font-loaded"===n&&"loaded"!==document.fonts.status)document.fonts.ready.then(()=>{i(e)});else try{this.functions[e](),this.executed[e]=!0}catch(e){}}};for(var e in this.functions)i(e)}}}})(window);
   </script>
   <link rel="stylesheet" href="perf.css?v=8">
-  <link rel="stylesheet" href="orbit.css?v=11">
+  <link rel="stylesheet" href="orbit.css?v=18">
   <style>:root { --nav--height: 4.5rem; } html { background: #000; }</style>
 <link rel="stylesheet" href="s4c.css?v=4"/></head>
 <body>
@@ -1461,201 +1461,78 @@ text-wrap: inherit;
 </script></div></div>
 
 <main id="main" class="page_main">
-  <section class="section-video-hero" data-video-id="5281">
+  <section class="section-video-hero">
     <img src="images/earth-sunrise.jpg" alt="Sunrise over the curve of the Earth, seen from space" class="s4c-hero-media"/>
     <div class="hero-overlay home">
       <div class="centered-container home-hero">
-        <h1 class="home-hero-title">How the scheduler works</h1>
-        <p class="paragraph-large home-hero">Launch a board, share the link, mark when you are free, then book the overlap.</p>
-        <a href="commonboard.html" class="button-outline margin-top-small w-inline-block">
-          <div>Launch a board</div>
-          <div class="button-arrow-wrapper-2 light"><img src="https://cdn.prod.website-files.com/65b810933000b6b25fd78458/65c40274b6ed92166e3c2b4e_arrow.svg" loading="eager" alt="" class="image"></div>
-        </a>
-      </div>
-      <img src="https://cdn.prod.website-files.com/65b810933000b6b25fd78458/65e903534bf3b569d9b27ada_darkmaskspaced.svg" loading="eager" alt="" class="home-hero-mask-img">
-    </div>
-  </section>
-  <section class="section home-intro">
-    <div class="container-medium home-vid">
-      <div class="w-layout-grid _2-col-grid home-vid">
-        <div class="grid-block relative">
-          <div style="width:100%;height:100%;overflow:hidden;min-height:28rem" class="div-5">
-            <img src="images/solar-eclipse.jpg" alt="A solar eclipse against a starry sky" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block;border-radius:inherit"/>
-          </div>
-        </div>
-        <div class="grid-block">
-          <h2 class="max-width-small">Five steps. One overlapping hour.</h2>
-          <p>Launch a board, share the link, mark when you are free, then book. No accounts.</p>
-          <a href="commonboard.html" class="button-outline margin-top-small w-inline-block">
-            <div>Launch a board</div>
-            <div class="button-arrow-wrapper-2 light"><img src="https://cdn.prod.website-files.com/65b810933000b6b25fd78458/65c40274b6ed92166e3c2b4e_arrow.svg" alt="" class="image"></div>
-          </a>
+        <h1 class="home-hero-title">How CommonBoard works</h1>
+        <p class="paragraph-large home-hero">Launch a board, share one link, let everyone mark their hours, then book the best time.</p>
+        <div class="s4c-btns" style="justify-content:center">
+          <a href="commonboard.html#orbit-launch" class="s4c-btn is-light"><span>Launch a board</span><span class="s4c-btn_icon"><svg viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M0 7.88384L7.72679e-08 6.11616L10.6061 6.11616L5.74495 1.25505L7 0L14 7L7 14L5.74495 12.7449L10.6061 7.88384H0Z" fill="currentColor"/></svg></span></a>
         </div>
       </div>
     </div>
   </section>
 
-  <div class="orbit-guide" style="padding-top:4.5rem">
-    <!-- Quick start -->
-    <section>
-      <h2>Quick start <span class="tag">5 steps</span></h2>
-      <div class="steps">
-        <div class="step">
-          <div class="step-num">01</div>
-          <div class="step-body">
-            <h3>Launch a board</h3>
-            <p>On the <a href="commonboard.html">Orbit Scheduler homepage</a>, fill in the <strong>Board name</strong>, choose a <strong>start and end date</strong> (up to 21 days), and set the <strong>time window</strong>. Click <strong>Launch board</strong>. The board is created live and given a shareable link.</p>
-          </div>
-        </div>
-        <div class="step">
-          <div class="step-num">02</div>
-          <div class="step-body">
-            <h3>Enter your name</h3>
-            <p>At the top of the board, type your name and click <strong>Save name</strong>. Hours you mark are then linked to you on the heatmap.</p>
-          </div>
-        </div>
-        <div class="step">
-          <div class="step-num">03</div>
-          <div class="step-body">
-            <h3>Mark your availability</h3>
-            <p>Columns are dates, rows are hours. In <strong>Mark</strong> mode, click a cell to toggle it — a lime outline shows your selection. Click and drag to add or remove a whole range. Keyboard users can Tab to a cell and press Enter or Space.</p>
-          </div>
-        </div>
-        <div class="step">
-          <div class="step-num">04</div>
-          <div class="step-body">
-            <h3>Invite your team</h3>
-            <p>Click <strong>Share board</strong> and copy the link. Anyone with the link can open the same live board, type their name, and mark their hours.</p>
-          </div>
-        </div>
-        <div class="step">
-          <div class="step-num">05</div>
-          <div class="step-body">
-            <h3>Live sync and backup</h3>
-            <p>Boards sync through Space4Climate’s Orbit API, so updates show on other devices after a short delay.
-            <br><br>
-            <strong>Usual path:</strong> Open the board link → save your name → mark hours.<br><br>
-            <strong>Backup:</strong> If someone was offline, they can <strong>Export my response</strong>. The organiser can then <strong>Merge response</strong>.</p>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <hr>
-
-    <!-- Reading the grid -->
-    <section>
-      <h2>Reading the heatmap</h2>
-      <p style="font-size:.9rem;color:var(--text2);margin-bottom:1rem">The grid cells are colour-coded by how many participants are available at that time. The brighter the cell, the more people are free.</p>
-      <div class="heat-demo">
-        <div class="heat-swatch" style="background:#2a2a2a"></div><span>0 people</span>
-        <div class="heat-arrow">→</div>
-        <div class="heat-swatch" style="background:#2a3208"></div><span>1</span>
-        <div class="heat-swatch" style="background:#3f4c00"></div><span>some</span>
-        <div class="heat-swatch" style="background:#6b8000"></div><span>~half</span>
-        <div class="heat-swatch" style="background:#b8d400"></div><span>most</span>
-        <div class="heat-swatch" style="background:#ebfd40"></div><span>everyone</span>
-        <div class="heat-arrow" style="margin-left:.5rem">|</div>
-        <div class="heat-swatch" style="background:#6b8000;outline:2px solid #ebfd40;outline-offset:-2px"></div><span>your selection</span>
-      </div>
-      <p style="font-size:.85rem;color:var(--text2);margin-top:.85rem">Hover over any cell to see a tooltip listing exactly who is available at that time. Switch to <strong>Overview mode</strong> (button in the grid header) to show numeric counts on every cell.</p>
-    </section>
-
-    <hr>
-
-    <!-- Features -->
-    <section>
-      <h2>Key features</h2>
-      <div class="feature-grid">
-        <div class="feature-card">
-          <h4>Drag to select</h4>
-          <p>Click and drag across any range of slots to mark or unmark them in one fluid motion. Works on touch screens too.</p>
-        </div>
-        <div class="feature-card">
-          <h4>Live heatmap</h4>
-          <p>The grid updates in real time as each participant adds their name and marks slots. Best times are ranked automatically in the sidebar.</p>
-        </div>
-        <div class="feature-card">
-          <h4>Live shared board</h4>
-          <p>Boards sync through Space4Climate so facilitators and teachers can open the same schedule from any device, with no accounts.</p>
-        </div>
-        <div class="feature-card">
-          <h4>Export &amp; merge backup</h4>
-          <p>Each participant can still export a compact backup code. The organiser can import these codes later if they need to recover or merge offline responses.</p>
-        </div>
-        <div class="feature-card">
-          <h4>Up to 21 days</h4>
-          <p>Schedule across up to three weeks in a single board. Set any time window (e.g. 09:00–18:00) to keep the grid focused.</p>
-        </div>
-        <div class="feature-card">
-          <h4>Timezone display</h4>
-          <p>Your local timezone is shown on the board so everyone knows which timezone the times refer to. Ideal for international Space4Climate teams.</p>
-        </div>
-      </div>
-    </section>
-
-    <hr>
-
-    <!-- FAQ -->
-    <section>
-      <h2>Frequently asked questions</h2>
-      <div class="faq">
-        <div class="faq-item">
-          <div class="faq-q">Can I edit or remove my availability after saving?
-            <svg class="faq-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
-          </div>
-          <div class="faq-a">Yes. Open the board, make sure your name is saved, and simply click (or drag) any slot to toggle it. Your changes are saved instantly. You can also click the <strong>✕ Clear</strong> button next to your name in the Participants panel to remove all your selections at once.</div>
-        </div>
-        <div class="faq-item">
-          <div class="faq-q">What happens if I open the link on a different device or browser?
-            <svg class="faq-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
-          </div>
-          <div class="faq-a">The shared board should load on any device that opens the link, and updates should appear after a short sync delay. If cloud access was interrupted, you can still use <strong>Export my response</strong> on one device and <strong>Merge response</strong> on another as a manual backup path.</div>
-        </div>
-        <div class="faq-item">
-          <div class="faq-q">How do I share a board with someone who's never visited this site?
-            <svg class="faq-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
-          </div>
-          <div class="faq-a">Share the board link (click <strong>Share board → Copy</strong>). When they open it on <em>their</em> device they should see the same board immediately, enter their name, and mark their slots. Because the board is public, only share links for schedules you are comfortable exposing to anyone who receives the URL.</div>
-        </div>
-        <div class="faq-item">
-          <div class="faq-q">Can I have multiple participants on one device (e.g. in a classroom)?
-            <svg class="faq-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
-          </div>
-          <div class="faq-a">Yes — this is the simplest workflow. Pass the device around, have each person type their name and save it, then mark their slots. Each saved name creates a separate participant entry. The heatmap builds up automatically as each person adds their availability.</div>
-        </div>
-        <div class="faq-item">
-          <div class="faq-q">Will my boards still be there next week?
-            <svg class="faq-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
-          </div>
-          <div class="faq-a">The shared board stays available through the board link while Space4Climate is hosting it, and this browser also keeps a local copy. If you need a long-term copy, use <strong>Export my response</strong> or note the booking reference. Clearing browser storage only removes your saved name on that device.</div>
-        </div>
-        <div class="faq-item">
-          <div class="faq-q">Where does the "best times" ranking come from?
-            <svg class="faq-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
-          </div>
-          <div class="faq-a">The sidebar ranks time slots by how many participants marked themselves as available, from highest to lowest. The percentage shown is the share of all current participants who are free at that slot. Slots are listed individually (one hour each), so if you want a 2-hour block you can look for consecutive high-ranked slots.</div>
-        </div>
-        <div class="faq-item">
-          <div class="faq-q">How do I get a booking reference ID for payment?
-            <svg class="faq-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
-          </div>
-          <div class="faq-a">Once the heatmap shows good availability, click a top "Best time" entry and confirm "Book". A short reference like <strong>S4C-7K9P2Q</strong> is instantly created and shown in the sidebar and board info. Share or note this ID so the teacher can quote it when paying the registration fee for the session.</div>
-        </div>
-      </div>
-    </section>
-
-    <!-- CTA -->
-    <div class="cta-card">
-      <h2>Find the hour that works.</h2>
-      <p>Launch a board and share it with facilitators and teachers.</p>
-      <a href="commonboard.html" class="button-outline margin-top-small w-inline-block">
-        <div>Launch a board</div>
-        <div class="button-arrow-wrapper-2 light"><img src="https://cdn.prod.website-files.com/65b810933000b6b25fd78458/65c40274b6ed92166e3c2b4e_arrow.svg" alt="" class="image"></div>
-      </a>
+  <section class="s4c-section">
+    <div class="s4c-contain">
+      <div class="s4c-head"><div class="s4c-tag">Quick start</div><h2 class="s4c-h2">Five steps to a booked session</h2></div>
+      <ol class="cb-guide-steps">
+        <li>
+          <h3>Launch a board</h3>
+          <p>Name the session and choose the days (up to four weeks), the hours each day when it could run, how long a session lasts, and the time zone. Add your own name too if you will take part.</p>
+        </li>
+        <li>
+          <h3>Invite people</h3>
+          <p>Click <strong>Invite people</strong> to copy the link, or send it straight to WhatsApp or email. As the organiser you also get a <strong>private organiser link</strong>: keep it, and you can edit the board from any device.</p>
+        </li>
+        <li>
+          <h3>Everyone marks their hours</h3>
+          <p>Each person adds their name and role (facilitator, teacher or other) and marks when they are free. On a computer, drag across a block of hours; on a phone, tap them. Tap a day or a time to fill the whole row.</p>
+        </li>
+        <li>
+          <h3>Pick the best time</h3>
+          <p><strong>Best times</strong> lists every window of the chosen session length where people are free, best first. Windows with both a facilitator and a teacher come first. Switch to <strong>Everyone</strong> for a heatmap, and point at or tap an hour to see exactly who is free.</p>
+        </li>
+        <li>
+          <h3>Book it</h3>
+          <p>Click <strong>Book</strong>, check the details and confirm. The board is then locked to that time, and you get a reference such as <strong>S4C-7K9P2Q</strong> to quote when paying the registration fee, plus a calendar file, a printable ticket and an email summary.</p>
+        </li>
+      </ol>
     </div>
+  </section>
 
-  </div>
+  <section class="s4c-section is-beige">
+    <div class="s4c-contain">
+      <div class="s4c-head"><div class="s4c-tag">Built for real scheduling</div><h2 class="s4c-h2">What makes it easy</h2></div>
+      <div class="s4c-grid is-3">
+        <div class="s4c-card is-text"><div class="s4c-card_body"><h3 class="s4c-h3">Live and saved</h3><p>Changes save automatically and show up for everyone on the board within a few seconds, on any device.</p></div></div>
+        <div class="s4c-card is-text"><div class="s4c-card_body"><h3 class="s4c-h3">Any time zone</h3><p>Every board runs on one clear time zone. If you are somewhere else, CommonBoard tells you the difference and can show the hours in your own time.</p></div></div>
+        <div class="s4c-card is-text"><div class="s4c-card_body"><h3 class="s4c-h3">Facilitators and teachers</h3><p>People say what their role is, so the best times are the ones where a facilitator and a teacher can both make it.</p></div></div>
+        <div class="s4c-card is-text"><div class="s4c-card_body"><h3 class="s4c-h3">One booking per board</h3><p>Bookings are first come, first served, so two people can never book different times on the same board.</p></div></div>
+        <div class="s4c-card is-text"><div class="s4c-card_body"><h3 class="s4c-h3">Organiser controls</h3><p>The organiser can change the dates and hours, remove someone who joined by mistake, and cancel a booking.</p></div></div>
+        <div class="s4c-card is-text"><div class="s4c-card_body"><h3 class="s4c-h3">No accounts</h3><p>Your browser remembers your name and your boards on this device. Find them again under <strong>Your boards</strong> on the CommonBoard page.</p></div></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="s4c-section">
+    <div class="s4c-contain is-narrow">
+      <div class="s4c-head"><div class="s4c-tag">Questions</div><h2 class="s4c-h2">Frequently asked questions</h2></div>
+      <div class="cb-faq">
+        <details><summary>Do I need an account?</summary><p>No. Open the link, add your name and mark your hours. Your browser remembers who you are on that device.</p></details>
+        <details><summary>Can I change my hours later?</summary><p>Yes. Open the same link again (or find the board under <strong>Your boards</strong>) and click or tap hours to change them. Use <strong>Edit</strong> next to your name to change your name or role, or to remove yourself.</p></details>
+        <details><summary>I opened the link on another device and my name isn’t there.</summary><p>CommonBoard remembers you per device, without accounts. On a new device, add your name again and mark your hours; the organiser can remove the old entry if you no longer need it.</p></details>
+        <details><summary>What if two people try to book at the same time?</summary><p>Only the first booking counts. The other person sees the confirmed booking straight away.</p></details>
+        <details><summary>How do I cancel a booking?</summary><p>The person who booked (on the device they booked from) or the organiser can click <strong>Cancel booking</strong> on the ticket. The board is then free to book again.</p></details>
+        <details><summary>Who can see the board?</summary><p>Anyone with the link can see the names and hours on it, so don’t add anything private. Only the organiser can change the board itself.</p></details>
+        <details><summary>What if my connection drops?</summary><p>Your changes stay on your device and are saved as soon as you are back online. The status next to the board title tells you when everything is saved.</p></details>
+        <details><summary>How long are boards kept?</summary><p>Boards are deleted automatically about four months after their last day.</p></details>
+      </div>
+    </div>
+  </section>
+
+  <section class="cta2_wrap img-bg-dark-white-text-16"><section class="cta2_wrap"><div class="cta2_contain u-container"><div class="cta2_content"><div class="cta2_bg_col"><div class="cta2_img_wrap"><div class="cta2_img_overlay"></div></div></div><div class="cta2_header_wrap w-variant-f1e045ef-7d72-1c35-4bce-527ad5410e1a"><div class="cta2_header"><div class="tag_wrap w-variant-a4052d64-aeb3-5eeb-4a67-cb7db2786bc0"><div class="tag_circle w-variant-a4052d64-aeb3-5eeb-4a67-cb7db2786bc0"></div><div class="tag_text">CommonBoard</div></div><h2 class="cta2_heading u-text-style-h2">Find the hour that works</h2><p class="cta2_subheading u-text-style-medium">Launch a board and share it with facilitators and teachers.</p></div><div class="cta2_btn_wrap"><a href="commonboard.html#orbit-launch" class="s4c-btn is-dark"><span>Launch a board</span><span class="s4c-btn_icon"><svg viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M0 7.88384L7.72679e-08 6.11616L10.6061 6.11616L5.74495 1.25505L7 0L14 7L7 14L5.74495 12.7449L10.6061 7.88384H0Z" fill="currentColor"/></svg></span></a></div></div><a href="commonboard.html#orbit-launch" class="cta2_clickable w-inline-block" aria-label="Launch a board"></a></div></div></section></section>
 </main>
 <div id="orbit-site-footer">
 <footer class="footer_wrap"><div class="u-embed-css w-embed"><style>
@@ -1718,16 +1595,6 @@ text-wrap: inherit;
 </script></div></footer>
 </div>
 </div>
-  <script>
-    document.querySelectorAll('.faq-q').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const item = btn.closest('.faq-item');
-        const wasOpen = item.classList.contains('open');
-        document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('open'));
-        if (!wasOpen) item.classList.add('open');
-      });
-    });
-  </script>
   <script>pageFunctions.executeFunctions();</script>
   <script src="site-support.js?v=7"></script>
 </body>
