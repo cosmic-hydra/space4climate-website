@@ -3,6 +3,13 @@
   "framework": null,
   "buildCommand": "",
   "outputDirectory": "space4climate",
+  "redirects": [
+    {
+      "source": "/(.*)",
+      "destination": "https://www.space4climate.info/",
+      "permanent": false
+    }
+  ],
   "headers": [
     {
       "source": "/(.*)",
