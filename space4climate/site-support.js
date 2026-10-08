@@ -275,7 +275,36 @@
     };
   }
 
+  // Contact forms compose an email in the visitor's mail app; nothing is sent to a server.
+  function wireMailtoForms() {
+    document.querySelectorAll("form[data-s4c-mailto]").forEach(function (form) {
+      var select = form.querySelector('select[name="topic"]');
+      var topic = new URLSearchParams(window.location.search).get("topic");
+      if (topic && select && select.querySelector('option[value="' + topic + '"]')) {
+        select.value = topic;
+      }
+
+      form.addEventListener("submit", function (event) {
+        event.preventDefault();
+        var field = function (name) {
+          var el = form.elements[name];
+          return el ? el.value.trim() : "";
+        };
+        var name = [field("first-name"), field("last-name")].filter(Boolean).join(" ");
+        var subject = (select ? select.options[select.selectedIndex].text : "Enquiry") + (name ? " – " + name : "");
+        var lines = [field("message"), "", "—", "Name: " + name, "Email: " + field("email")];
+        if (field("organisation")) lines.push("School or organisation: " + field("organisation"));
+
+        window.location.href =
+          "mailto:" + form.getAttribute("data-s4c-mailto") +
+          "?subject=" + encodeURIComponent(subject) +
+          "&body=" + encodeURIComponent(lines.join("\n"));
+      });
+    });
+  }
+
   function run() {
+    wireMailtoForms();
     ensurePerfStyles();
     disarmScrollAnimations();
     repairBrokenMediaUrls();

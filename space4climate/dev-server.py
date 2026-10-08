@@ -18,6 +18,26 @@ SLOT_KEY_RE = re.compile(r"^\d{4}-\d{2}-\d{2}T\d{2}$")
 DATA_DIR.mkdir(exist_ok=True)
 
 
+VERCEL_JSON = ROOT.parent / "vercel.json"
+
+
+def load_redirects():
+    """Same-site redirects from vercel.json, so old URLs behave locally as they do on Vercel."""
+    try:
+        config = json.loads(VERCEL_JSON.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return []
+    rules = []
+    for rule in config.get("redirects", []):
+        destination = rule.get("destination", "")
+        if destination.startswith(("http://", "https://")):
+            continue  # off-site redirects only apply on Vercel
+        pattern = re.sub(r":\w+\*", "(.*)", rule.get("source", ""))
+        pattern = re.sub(r"\.(?!\*)", r"\\.", pattern)
+        rules.append((re.compile("^" + pattern + "$"), destination))
+    return rules
+
+
 def new_id() -> str:
     return "ob_" + secrets.token_urlsafe(8).replace("-", "").replace("_", "")[:12]
 
@@ -100,6 +120,12 @@ class Handler(SimpleHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, directory=str(ROOT), **kwargs)
 
+    def end_headers(self):
+        # Never let the browser serve stale pages while previewing edits
+        if not self.path.startswith("/api/orbit"):
+            self.send_header("Cache-Control", "no-store")
+        super().end_headers()
+
     def log_message(self, format, *args):
         sys.stderr.write("%s - %s\n" % (self.address_string(), format % args))
 
@@ -117,6 +143,15 @@ class Handler(SimpleHTTPRequestHandler):
         parsed = urllib.parse.urlparse(self.path)
         if parsed.path.rstrip("/") == "/api/orbit":
             return self.handle_orbit("GET", parsed)
+        path = urllib.parse.unquote(parsed.path)
+        for pattern, destination in load_redirects():
+            if pattern.match(path):
+                # 307 locally so browsers don't cache redirects while developing
+                self.send_response(307)
+                self.send_header("Location", destination)
+                self.send_header("Content-Length", "0")
+                self.end_headers()
+                return
         return super().do_GET()
 
     def do_POST(self):

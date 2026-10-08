@@ -4,11 +4,25 @@
   "buildCommand": "",
   "outputDirectory": "space4climate",
   "redirects": [
-    {
-      "source": "/(.*)",
-      "destination": "https://www.space4climate.info/",
-      "permanent": false
-    }
+    { "source": "/technology.html", "destination": "/what-we-offer.html", "permanent": true },
+    { "source": "/careers.html", "destination": "/about.html#join", "permanent": true },
+    { "source": "/programs.html", "destination": "/what-we-offer.html", "permanent": true },
+    { "source": "/programs/:path*", "destination": "/what-we-offer.html", "permanent": true },
+    { "source": "/projects.html", "destination": "/what-we-offer.html", "permanent": true },
+    { "source": "/projects/:path*", "destination": "/what-we-offer.html", "permanent": true },
+    { "source": "/case-studies.html", "destination": "/what-we-offer.html", "permanent": true },
+    { "source": "/case-studies/:path*", "destination": "/what-we-offer.html", "permanent": true },
+    { "source": "/carbon-sequestration.html", "destination": "/what-we-offer.html", "permanent": true },
+    { "source": "/sustainable-building-materials.html", "destination": "/what-we-offer.html", "permanent": true },
+    { "source": "/direct-air-capture.html", "destination": "/what-we-offer.html", "permanent": true },
+    { "source": "/education-fuelled(.*)", "destination": "/what-we-offer.html", "permanent": true },
+    { "source": "/news/:path*", "destination": "/mission.html", "permanent": true },
+    { "source": "/lab-notes/our-story.html", "destination": "/mission.html", "permanent": true },
+    { "source": "/lab-notes.html", "destination": "/", "permanent": true },
+    { "source": "/lab-notes/:path*", "destination": "/", "permanent": true },
+    { "source": "/press.html", "destination": "/", "permanent": true },
+    { "source": "/legal/:path*", "destination": "/contact.html", "permanent": true },
+    { "source": "/login.html", "destination": "/", "permanent": true }
   ],
   "headers": [
     {
@@ -18,9 +32,15 @@
       ]
     },
     {
-      "source": "/(perf.css|site-support.js|orbit.css)",
+      "source": "/(perf.css|s4c.css|site-support.js|orbit.css)",
       "headers": [
         { "key": "Cache-Control", "value": "public, max-age=3600, stale-while-revalidate=86400" }
+      ]
+    },
+    {
+      "source": "/images/(.*)",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=86400, stale-while-revalidate=604800" }
       ]
     },
     {
