@@ -7,8 +7,8 @@
   <meta name="description" content="Browse current workshop boards, see combined facilitator availability, copy the timings and add your own available hours.">
   <link rel="canonical" href="https://www.space4climate.org/teacher-portal.html">
   <link rel="icon" href="images/favicon-32.png" type="image/png">
-  <link rel="stylesheet" href="teacher-portal.css?v=1">
-  <script src="teacher-portal.js?v=1" defer></script>
+  <link rel="stylesheet" href="teacher-portal.css?v=2">
+  <script src="teacher-portal.js?v=2" defer></script>
 </head>
 <body>
   <a class="tp-skip" href="#main">Skip to content</a>
@@ -36,10 +36,12 @@
     </form>
     <p class="tp-error" id="filter-error" role="alert" hidden></p>
 
-    <section class="tp-section" aria-labelledby="combined-title">
+    <section class="tp-section" id="availability-section" aria-labelledby="combined-title">
       <div class="tp-section-head"><div><span class="tp-section-number">01 / SEE THE OVERLAP</span><h2 id="combined-title">Combined facilitator availability</h2><p id="combined-note">Availability from all matching, unbooked boards, shown in one time zone.</p></div><button class="tp-btn tp-secondary" type="button" id="copy-combined" disabled>Copy timings <span aria-hidden="true">↗</span></button></div>
-      <div class="tp-combined" id="combined-list" aria-live="polite"><p class="tp-empty">Loading current availability…</p></div>
-      <button class="tp-btn tp-secondary tp-more" type="button" id="combined-more" hidden>Show more times</button>
+      <div class="tp-calendar-legend"><span>Dates → · Times ↓</span><span><i data-level="0"></i>None</span><span><i data-level="2"></i>Fewer</span><span><i data-level="5"></i>More facilitators</span><span>Tap a number for names and boards.</span></div>
+      <div class="tp-combined tp-calendar-scroll" id="combined-list" role="region" aria-label="Facilitator calendar: dates in columns and times in rows" tabindex="0"><p class="tp-empty">Loading current availability…</p></div>
+      <p class="tp-calendar-scroll-hint">Scroll sideways to see more dates. All times use the time zone selected above.</p>
+      <div class="tp-calendar-details" id="calendar-details" aria-live="polite" hidden></div>
       <p class="tp-footnote">Counts refer to facilitator entries on boards. Someone listed on more than one board may appear more than once. A shared hour does not reserve a session.</p>
     </section>
 

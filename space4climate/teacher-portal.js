@@ -75,15 +75,36 @@
   function availabilityText(rows, timezone, heading = 'Facilitator availability') {
     return [heading,`All times: ${timezone}`,...rows.map(row=>`${formatDate(row.start,timezone)} · ${timeRange(row,timezone)}\nAvailable: ${row.entries.map(p=>p.name).join(', ')}\n${[...new Map(row.entries.map(p=>[p.boardId,p])).values()].map(p=>`${p.boardTitle}: ${ORIGIN}/${boardPath(p.boardId)}`).join('\n')}`)].join('\n\n');
   }
+  function buildAvailabilityGrid(rows, {from,to,timezone}) {
+    const dates=days(from,to);
+    if(!rows.length)return {dates,bands:[],maxCount:0};
+    const minute=ms=>{const [h,m]=clock(ms,timezone).split(':').map(Number);return h*60+m;};
+    const bounds=rows.flatMap(row=>[minute(row.start),dateKey(row.start,timezone)!==dateKey(row.end,timezone)?1440:minute(row.end)]);
+    const gcd=(a,b)=>b?gcd(b,a%b):a;
+    const step=bounds.reduce((n,value)=>gcd(n,value),60)||60;
+    const first=Math.floor(Math.min(...bounds)/step)*step,last=Math.ceil(Math.max(...bounds)/step)*step;
+    let maxCount=0;const bands=[];
+    for(let startMinute=first;startMinute<last;startMinute+=step){
+      const endMinute=startMinute+step;
+      const cells=dates.map(date=>{
+        const start=slotInstant(date,startMinute/60,timezone),end=slotInstant(date,endMinute/60,timezone),entries=new Map();
+        if(end>start)rows.filter(row=>row.start<=start&&row.end>=end).forEach(row=>row.entries.forEach(entry=>entries.set(entry.id,entry)));
+        const list=[...entries.values()].sort((a,b)=>a.id.localeCompare(b.id));maxCount=Math.max(maxCount,list.length);
+        return {date,start,end,entries:list};
+      });
+      bands.push({startMinute,endMinute,cells});
+    }
+    return {dates,bands,maxCount};
+  }
   if (typeof module === 'object' && module.exports) {
-    module.exports = {dateKey,slotInstant,validSlots,aggregateAvailability,teacherStorageKeys,availabilityText};
+    module.exports = {dateKey,slotInstant,validSlots,aggregateAvailability,teacherStorageKeys,availabilityText,buildAvailabilityGrid};
     return;
   }
 
   const $ = id => document.getElementById(id);
   const local = {get(key){try{return JSON.parse(localStorage.getItem(key));}catch{return null;}},set(key,value){try{localStorage.setItem(key,JSON.stringify(value));}catch{}},del(key){try{localStorage.removeItem(key);}catch{}}};
   const VIEWER_TZ = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
-  const S = {docs:[],rows:[],visible:[],shown:16,editor:null,loading:false,lastSync:null};
+  const S = {docs:[],rows:[],visible:[],calendar:null,selectedCell:null,editor:null,loading:false,lastSync:null};
   function randomKey(bytes=18) {const data=crypto.getRandomValues(new Uint8Array(bytes));return btoa(String.fromCharCode(...data)).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');}
   function toast(message){$('portal-toast').textContent=message;$('portal-toast').classList.add('show');clearTimeout(toast.timer);toast.timer=setTimeout(()=>$('portal-toast').classList.remove('show'),3500);}
   async function api(method,params,body,key) {
@@ -130,11 +151,31 @@
   }
   function renderCombined(filters) {
     $('combined-note').textContent=`Availability across matching, unbooked boards · ${filters.timezone.replace(/_/g,' ')} time`;
-    $('combined-list').innerHTML=!S.rows.length?'<p class="tp-empty">No facilitator hours match these filters. Try different dates or a different search, or open a board below to share your hours.</p>':S.rows.slice(0,S.shown).map((row,i)=>{
-      const boards=[...new Map(row.entries.map(p=>[p.boardId,p])).values()];
-      return `<div class="tp-availability-row"><div class="tp-availability-date"><strong>${esc(formatDate(row.start,filters.timezone))}</strong><span>${plural(row.entries.length,'facilitator')} available</span></div><div class="tp-time">${esc(timeRange(row,filters.timezone))}</div><div class="tp-available-people"><strong>${esc(row.entries.map(p=>p.name).join(', '))}</strong><div class="tp-board-links">${boards.map(p=>`<a href="${boardPath(p.boardId)}">${esc(p.boardTitle)} ↗</a>`).join('')}</div></div><button type="button" class="tp-btn tp-secondary tp-row-copy" data-copy-row="${i}">Copy ↗</button></div>`;
-    }).join('');
-    $('combined-more').hidden=S.shown>=S.rows.length;
+    const focused=document.activeElement?.dataset.calendarCell;
+    S.calendar=buildAvailabilityGrid(S.rows,filters);
+    if(!S.rows.length){$('combined-list').innerHTML='<p class="tp-empty">No facilitator hours match these filters. Try different dates or a different search, or open a board below to share your hours.</p>';$('calendar-details').hidden=true;return;}
+    const {dates,bands,maxCount}=S.calendar,today=dateKey(Date.now(),filters.timezone);
+    const label=mins=>`${pad(Math.floor(mins/60))}:${pad(mins%60)}`;
+    let firstAvailable=true;
+    $('combined-list').innerHTML=`<table class="tp-calendar" style="min-width:${96+dates.length*104}px"><caption>Facilitator availability · ${esc(filters.timezone.replace(/_/g,' '))} time. Dates are columns; times are rows.</caption><thead><tr><th scope="col" class="tp-calendar-corner">Time ↓ / Date →</th>${dates.map(date=>`<th scope="col" class="${date===today?'is-today':''}"><span>${esc(new Date(isoMs(date)).toLocaleDateString('en-GB',{timeZone:'UTC',weekday:'short'}))}</span><strong>${esc(shortDate(date))}</strong></th>`).join('')}</tr></thead><tbody>${bands.map((band,r)=>`<tr><th scope="row" class="tp-calendar-time"><strong>${label(band.startMinute)}</strong><span>${label(band.endMinute)}</span></th>${band.cells.map((cell,c)=>{
+      const n=cell.entries.length,key=`${cell.date}|${band.startMinute}`,selected=S.selectedCell===key;
+      const level=n?Math.max(1,Math.ceil(n/maxCount*5)):0;
+      const tab=n&&firstAvailable?0:-1;if(n)firstAvailable=false;
+      return `<td data-level="${level}">${n?`<button type="button" class="tp-calendar-cell" data-calendar-cell="${key}" data-calendar-row="${r}" data-calendar-col="${c}" tabindex="${tab}" aria-controls="calendar-details" aria-expanded="${selected}" aria-label="${esc(formatDate(cell.start,filters.timezone))}, ${label(band.startMinute)} to ${label(band.endMinute)}, ${plural(n,'facilitator')} available. Show names and boards."><strong>${n}</strong><span>available</span></button>`:`<span class="tp-calendar-none" aria-label="No facilitators available">—</span>`}</td>`;
+    }).join('')}</tr>`).join('')}</tbody></table>`;
+    if(focused){const button=[...$('combined-list').querySelectorAll('[data-calendar-cell]')].find(el=>el.dataset.calendarCell===focused);if(button){$('combined-list').querySelectorAll('[data-calendar-cell]').forEach(el=>{el.tabIndex=-1;});button.tabIndex=0;button.focus({preventScroll:true});}}
+    renderCellDetails();
+  }
+  function selectedCalendarCell(){
+    if(!S.selectedCell||!S.calendar)return null;
+    const [date,minute]=S.selectedCell.split('|');return S.calendar.bands.find(band=>band.startMinute===+minute)?.cells.find(cell=>cell.date===date)||null;
+  }
+  function renderCellDetails(){
+    const cell=selectedCalendarCell(),el=$('calendar-details');
+    el.hidden=!cell?.entries.length;if(el.hidden)return;
+    const timezone=$('display-tz').value;
+    const next=`<div class="tp-section-head"><div><span class="tp-section-number">SELECTED TIME</span><h3>${esc(formatDate(cell.start,timezone))} · ${esc(timeRange(cell,timezone))}</h3><p>${plural(cell.entries.length,'facilitator')} available · ${esc(timezone.replace(/_/g,' '))}</p></div><button type="button" class="tp-btn tp-secondary" id="copy-selected-time">Copy this time ↗</button></div><div class="tp-calendar-people">${cell.entries.map(p=>`<div><strong>${esc(p.name)}</strong><a href="${boardPath(p.boardId)}">${esc(p.boardTitle)} ↗</a><button type="button" class="tp-btn tp-secondary" data-edit-calendar-board="${esc(p.boardId)}">Add my hours</button></div>`).join('')}</div>`;
+    if(el.innerHTML!==next)el.innerHTML=next;
   }
   function participantSummary(doc,p) {
     const slots=validSlots(doc,p);const count=slots.length;
@@ -228,11 +269,17 @@
     $('display-tz').innerHTML=zones.map(tz=>`<option value="${esc(tz)}">${esc(tz.replace(/_/g,' '))}</option>`).join('');$('display-tz').value=VIEWER_TZ;
     const initialSearch=new URLSearchParams(location.search).get('search');if(initialSearch)$('board-search').value=initialSearch;
     $('filters-form').addEventListener('submit',event=>event.preventDefault());
-    ['board-search','filter-from','filter-to','display-tz','show-empty'].forEach(id=>$(id).addEventListener(id==='board-search'?'input':'change',()=>{S.shown=16;render();}));
+    ['board-search','filter-from','filter-to','display-tz','show-empty'].forEach(id=>$(id).addEventListener(id==='board-search'?'input':'change',()=>{S.selectedCell=null;render();}));
     $('refresh-btn').addEventListener('click',()=>loadBoards());
-    $('combined-more').addEventListener('click',()=>{S.shown+=32;render();});
     $('copy-combined').addEventListener('click',()=>copyDetails(availabilityText(S.rows,$('display-tz').value)));
-    $('combined-list').addEventListener('click',event=>{const button=event.target.closest('[data-copy-row]');if(button)copyDetails(availabilityText([S.rows[+button.dataset.copyRow]],$('display-tz').value));});
+    $('combined-list').addEventListener('click',event=>{const button=event.target.closest('[data-calendar-cell]');if(!button)return;S.selectedCell=button.dataset.calendarCell;$('combined-list').querySelectorAll('[data-calendar-cell]').forEach(el=>{el.setAttribute('aria-expanded',String(el===button));el.tabIndex=el===button?0:-1;});renderCellDetails();});
+    $('combined-list').addEventListener('keydown',event=>{
+      const button=event.target.closest('[data-calendar-cell]');if(!button)return;
+      const directions={ArrowUp:[-1,0],ArrowDown:[1,0],ArrowLeft:[0,-1],ArrowRight:[0,1]};const move=directions[event.key];if(!move)return;
+      event.preventDefault();let row=+button.dataset.calendarRow,col=+button.dataset.calendarCol;
+      while(true){row+=move[0];col+=move[1];if(row<0||col<0||row>=S.calendar.bands.length||col>=S.calendar.dates.length)break;const target=$('combined-list').querySelector(`[data-calendar-row="${row}"][data-calendar-col="${col}"]`);if(target){button.tabIndex=-1;target.tabIndex=0;target.focus();break;}}
+    });
+    $('calendar-details').addEventListener('click',event=>{if(event.target.closest('#copy-selected-time')){const cell=selectedCalendarCell();if(cell)copyDetails(availabilityText([cell],$('display-tz').value));}const edit=event.target.closest('[data-edit-calendar-board]');if(edit)openEditor(edit.dataset.editCalendarBoard);});
     $('board-list').addEventListener('click',event=>{
       const edit=event.target.closest('[data-edit-board]');if(edit){openEditor(edit.dataset.editBoard);return;}
       const copy=event.target.closest('[data-copy-board]');if(copy){const doc=S.docs.find(d=>d.board.id===copy.dataset.copyBoard);const timezone=$('display-tz').value;const b=doc.board;const from=dateKey(slotInstant(b.startDate,b.startHour,b.timezone),timezone),to=dateKey(slotInstant(b.endDate,b.endHour,b.timezone)-1,timezone);const rows=aggregateAvailability([doc],{from,to,timezone,includeBooked:true});copyDetails(rows.length?availabilityText(rows,timezone,b.title):`${b.title}\nNo facilitator hours have been shared yet.\n${ORIGIN}/${boardPath(b.id)}`);}
