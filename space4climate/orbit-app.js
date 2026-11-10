@@ -1,4 +1,4 @@
-/* CommonBoard (Orbit Scheduler): find a workshop time that works for everyone.
+/* CommonBoard (Orbit Scheduler): facilitators share hours, teachers choose a session.
    Front end for /api/orbit (see api/orbit.js). */
 (() => {
   'use strict';
@@ -194,7 +194,8 @@
     bookingKey: null,
     draft: null,          // my unsaved { name, role, slots: Set }
     draftSeq: 0,
-    tab: 'mine',
+    tab: 'group',
+    tabReady: false,
     length: null,
     localTimes: false,
     showAllBest: false,
@@ -233,6 +234,9 @@
     const e = myEntry();
     return e ? { name: e.name, role: e.role } : null;
   }
+  function defaultTab() {
+    return myProfile()?.role === 'facilitator' ? 'mine' : 'group';
+  }
   function mySlots() {
     if (S.draft) return boardSlots(S.draft.slots);
     const e = myEntry();
@@ -251,6 +255,9 @@
     return list;
   }
 
+  // Teacher availability must never inflate the supply of workshop facilitators.
+  const facilitators = () => people().filter((p) => p.role === 'facilitator');
+
   function availabilityMap(ps) {
     const map = new Map();
     ps.forEach((p) => p.slots.forEach((s) => {
@@ -265,29 +272,24 @@
     return names.length <= max ? names.join(', ') : `${names.slice(0, max).join(', ')} and ${names.length - max} more`;
   }
 
-  // Every session window of `length` hours where at least one person is free, best first.
+  // A session needs the same facilitator available for every hour of its length.
   function windows(length) {
     const b = S.doc.board;
-    const ps = people();
+    const ps = facilitators();
     if (!ps.length) return [];
-    const needFac = ps.some((p) => p.role === 'facilitator');
-    const needTea = ps.some((p) => p.role === 'teacher');
     const out = [];
     dateRange(b.startDate, b.endDate).forEach((date) => {
       for (let h = b.startHour; h + length <= b.endHour; h++) {
         const hours = Array.from({ length }, (_, i) => slotKey(date, h + i));
         const free = ps.filter((p) => hours.every((s) => p.slots.has(s)));
         if (!free.length) continue;
-        const fac = free.filter((p) => p.role === 'facilitator').length;
-        const tea = free.filter((p) => p.role === 'teacher').length;
         out.push({
-          date, start: h, length, free, fac, tea, needFac, needTea,
-          missing: ps.filter((p) => !free.includes(p)),
-          covers: (!needFac || fac > 0) && (!needTea || tea > 0)
+          date, start: h, length, free,
+          missing: ps.filter((p) => !free.includes(p))
         });
       }
     });
-    return out.sort((a, z) => (z.covers - a.covers) || (z.free.length - a.free.length) || a.date.localeCompare(z.date) || a.start - z.start);
+    return out.sort((a, z) => (z.free.length - a.free.length) || a.date.localeCompare(z.date) || a.start - z.start);
   }
 
   function bookingWindow() {
@@ -416,7 +418,7 @@
       if (!S.joinPrefilled) {
         const profile = local.get(K.profile) || {};
         $('me-name').value = profile.name || '';
-        setRadio('me-role', profile.role || 'other');
+        setRadio('me-role', profile.role || 'facilitator');
         S.joinPrefilled = true;
       }
       return;
@@ -427,7 +429,9 @@
     avatar.textContent = initials(p.name);
     avatar.dataset.role = p.role;
     $('me-label').textContent = `${p.name} · ${ROLE_LABELS[p.role]}`;
-    $('me-sub').textContent = count ? `You have marked ${plural(count, 'hour')}.` : 'You have not marked any hours yet.';
+    $('me-sub').textContent = p.role === 'facilitator'
+      ? (count ? `You have marked ${plural(count, 'hour')}. Teachers can see these in Facilitator availability.` : 'Step 1: mark the hours you can facilitate. Teachers will see the combined availability.')
+      : 'Step 2: browse Facilitator availability to see the combined hours and choose a session. Adding your own hours is optional.';
   }
 
   /* ── Grid ──────────────────────────────────────── */
@@ -471,13 +475,13 @@
     const { date, hour } = parseSlot(slot);
     const parts = [`${fmtDate(date)}, ${fmtHour(hour)} to ${fmtHour(hour + 1)}`];
     if (S.tab === 'mine') parts.push(isMine ? 'you are free' : 'you are not marked as free');
-    parts.push(total ? `${n} of ${total} people free` : 'nobody has joined yet');
+    parts.push(total ? `${n} of ${plural(total, 'facilitator')} available` : 'no facilitators have joined yet');
     if (isBooked) parts.push('part of the booked session');
     return parts.join(', ');
   }
 
   function patchGrid() {
-    const ps = people();
+    const ps = facilitators();
     const total = ps.length;
     const mine = mySlots();
     const booked = bookedSlots();
@@ -492,7 +496,7 @@
       cell.classList.toggle('is-on', isMine);
       cell.classList.toggle('is-booked', booked.has(slot));
       if (S.tab === 'mine') {
-        const others = n - (isMine ? 1 : 0);
+        const others = n - (isMine && myProfile()?.role === 'facilitator' ? 1 : 0);
         if (others > 0) cell.dataset.others = others;
         else delete cell.dataset.others;
         cell.textContent = '';
@@ -512,7 +516,7 @@
     $('tab-group').setAttribute('aria-selected', String(S.tab === 'group'));
     const coarse = matchMedia('(pointer: coarse)').matches;
     $('grid-hint').textContent = S.tab === 'group'
-      ? `Brighter means more people are free. ${coarse ? 'Tap' : 'Point at'} an hour to see who.`
+      ? `Combined facilitator availability. Each number shows how many facilitators are available. ${coarse ? 'Tap' : 'Point at'} an hour for names. Teachers can browse without adding hours.`
       : !isJoined()
         ? 'Add your name above, then mark the hours you can do.'
         : coarse
@@ -522,8 +526,8 @@
 
   function renderLegend() {
     $('grid-legend').innerHTML = S.tab === 'mine'
-      ? '<span class="cb-key is-on"></span>You are free <span class="cb-key is-others"></span>Others are free <span class="cb-key is-booked"></span>Booked'
-      : '<span class="cb-key" data-level="0"></span>Nobody <span class="cb-key" data-level="2"></span><span class="cb-key" data-level="4"></span>Some <span class="cb-key" data-level="5"></span>Everyone <span class="cb-key is-booked"></span>Booked';
+      ? '<span class="cb-key is-on"></span>You are available <span class="cb-key is-others"></span>Other facilitators available <span class="cb-key is-booked"></span>Booked'
+      : '<span class="cb-key" data-level="0"></span>No facilitators <span class="cb-key" data-level="2"></span><span class="cb-key" data-level="4"></span>Some facilitators <span class="cb-key" data-level="5"></span>All facilitators <span class="cb-key is-booked"></span>Booked';
   }
 
   function previewDrag() {
@@ -580,17 +584,17 @@
   function showCellInfo(cell, sticky) {
     const slot = cell.dataset.slot;
     const { date, hour } = parseSlot(slot);
-    const ps = people();
+    const ps = facilitators();
     const free = S.avail.get(slot) || [];
     const missing = ps.filter((p) => !p.slots.has(slot));
     const tz = S.doc.board.timezone;
     $('tt-time').textContent = S.localTimes
       ? `${fmtDate(date)} · ${viewerRange(date, hour, 1)} your time`
       : `${fmtDate(date)} · ${fmtHour(hour)}–${fmtHour(hour + 1)} ${cityOf(tz)} time`;
-    $('tt-count').textContent = ps.length ? `${free.length} of ${ps.length} free` : 'Nobody has joined yet';
+    $('tt-count').textContent = ps.length ? `${free.length} of ${plural(ps.length, 'facilitator')} available` : 'No facilitators have joined yet';
     $('tt-names').innerHTML =
-      (free.length ? `<div><span>Free:</span> ${esc(free.map((p) => p.name).join(', '))}</div>` : '') +
-      (missing.length ? `<div class="is-missing"><span>Not free:</span> ${esc(missing.map((p) => p.name).join(', '))}</div>` : '');
+      (free.length ? `<div><span>Available:</span> ${esc(free.map((p) => p.name).join(', '))}</div>` : '') +
+      (missing.length ? `<div class="is-missing"><span>Not marked available:</span> ${esc(missing.map((p) => p.name).join(', '))}</div>` : '');
     const tt = $('tooltip');
     tt.hidden = false;
     const r = cell.getBoundingClientRect();
@@ -723,38 +727,30 @@
     sel.value = String(S.length);
   }
 
-  function roleNote(w) {
-    const bits = [];
-    if (w.needFac) bits.push(w.fac ? plural(w.fac, 'facilitator') : 'no facilitator');
-    if (w.needTea) bits.push(w.tea ? plural(w.tea, 'teacher') : 'no teacher');
-    return bits.length ? ` · ${bits.join(', ')}` : '';
-  }
-
   function renderBest() {
     const booked = !!S.doc.booking;
     const note = $('best-note');
     note.hidden = !booked;
     note.textContent = booked ? 'This board is booked. Cancel the booking to choose a different time.' : '';
     $('book-other').hidden = booked;
-    const ps = people();
+    const ps = facilitators();
     const list = windows(S.length);
     const el = $('best-list');
     if (!ps.length) {
-      el.innerHTML = '<p class="cb-empty-note">Nobody has marked any hours yet. Invite facilitators and teachers, and the best times will appear here.</p>';
+      el.innerHTML = '<p class="cb-empty-note">Step 1: invite facilitators to add their availability. Step 2: teachers can see the combined hours here without entering their own availability.</p>';
       return;
     }
     if (!list.length) {
-      el.innerHTML = `<p class="cb-empty-note">No ${plural(S.length, 'hour')} window works for anyone yet. Try a shorter session, or ask people to mark more hours.</p>`;
+      el.innerHTML = `<p class="cb-empty-note">No facilitator has marked a full ${plural(S.length, 'hour')} session yet. Try a shorter session, or ask facilitators to add their hours.</p>`;
       return;
     }
     const shown = S.showAllBest ? list.slice(0, 40) : list.slice(0, BEST_SHOWN);
     el.innerHTML = shown.map((w) => `
-      <div class="cb-win${w.covers ? '' : ' is-partial'}">
+      <div class="cb-win">
         <div class="cb-win-main">
           <div class="cb-win-when"><strong>${esc(fmtDate(w.date))}</strong> <span>${fmtHour(w.start)}–${fmtHour(w.start + w.length)}</span></div>
           ${diffOn(w.date, w.start) ? `<div class="cb-win-local">${esc(viewerRange(w.date, w.start, w.length))} your time</div>` : ''}
-          <div class="cb-win-who">${w.free.length === ps.length ? 'Everyone is free' : `${w.free.length} of ${ps.length} free`}${esc(roleNote(w))}</div>
-          ${w.missing.length && w.free.length !== ps.length ? `<div class="cb-win-missing">Not free: ${esc(listNames(w.missing))}</div>` : ''}
+          <div class="cb-win-who">${plural(w.free.length, 'facilitator')} available · ${esc(listNames(w.free))}</div>
         </div>
         ${booked ? '' : `<button type="button" class="cb-book-btn" data-book="${w.date}|${w.start}|${w.length}">Book</button>`}
       </div>`).join('') +
@@ -831,6 +827,10 @@
 
   function renderBoard(forceGrid) {
     if (!S.doc) return;
+    if (!S.tabReady) {
+      S.tab = defaultTab();
+      S.tabReady = true;
+    }
     $('bv-empty').hidden = true;
     $('bv-content').hidden = false;
     renderHeader();
@@ -1004,7 +1004,7 @@
     stopPolling();
     hideCellInfo();
     Object.assign(S, {
-      id, doc: null, draft: null, draftSeq: 0, tab: 'mine', length: null, showAllBest: false,
+      id, doc: null, draft: null, draftSeq: 0, tab: 'group', tabReady: false, length: null, showAllBest: false,
       pollDelay: POLL_MS, gridSig: '', ticketKey: null, joinPrefilled: false, localTimes: false, seenVersion: 0
     });
     const hash = new URLSearchParams(location.hash.slice(1));
@@ -1096,9 +1096,9 @@
     S.draftSeq++;
     persistDraft();
     queueSave(0);
-    S.tab = 'mine';
+    S.tab = defaultTab();
     renderBoard(true);
-    toast(`Welcome, ${name}! Now mark the hours you can do.`);
+    toast(role === 'facilitator' ? `Welcome, ${name}! Now mark the hours you can facilitate.` : `Welcome, ${name}! Browse the combined facilitator availability.`);
   }
 
   function openMeModal() {
@@ -1123,6 +1123,7 @@
     }
     S.draft.name = name;
     S.draft.role = role;
+    S.tab = defaultTab();
     S.draftSeq++;
     persistDraft();
     local.set(K.profile, { name, role });
@@ -1143,6 +1144,7 @@
       delete S.doc.participants[S.me.pid];
       S.draft = null;
       S.joinPrefilled = false;
+      S.tab = 'group';
       local.del(K.pending(S.id));
       S.doc.version = -1;
       closeModal('modal-me');
@@ -1274,24 +1276,18 @@
     const start = Number($('book-start').value);
     const len = Number($('book-len').value);
     const fits = start + len <= b.endHour;
-    const ps = people();
+    const ps = facilitators();
     const hours = Array.from({ length: len }, (_, i) => slotKey(date, start + i));
     const free = ps.filter((p) => hours.every((s) => p.slots.has(s)));
     const missing = ps.filter((p) => !free.includes(p));
     const diff = fits ? diffOn(date, start) : 0;
-    const needFac = ps.some((p) => p.role === 'facilitator');
-    const needTea = ps.some((p) => p.role === 'teacher');
-    const fac = free.filter((p) => p.role === 'facilitator').length;
-    const tea = free.filter((p) => p.role === 'teacher').length;
-    let warn = '';
-    if (fits && needFac && !fac) warn = 'No facilitator has marked this whole time as free.';
-    else if (fits && needTea && !tea) warn = 'No teacher has marked this whole time as free.';
+    const warn = fits && !free.length ? 'No facilitator has marked this whole time as available. Check with a facilitator before booking.' : '';
     $('book-summary').innerHTML = !fits
       ? `<p class="cb-error">This session would run past ${fmtHour(b.endHour)}. Choose an earlier start or a shorter session.</p>`
       : `<p class="cb-book-when">${esc(fmtLongDate(date))}<br><strong>${fmtHour(start)}–${fmtHour(start + len)}</strong> ${esc(cityOf(b.timezone))} time</p>
          ${diff ? `<p class="cb-book-local">That is ${esc(viewerRange(date, start, len))} your time.</p>` : ''}
-         <p class="cb-book-free">${ps.length ? (free.length === ps.length ? 'Everyone is free for the whole session.' : `${free.length} of ${ps.length} people are free for the whole session.`) : 'Nobody has marked their hours yet.'}</p>
-         ${missing.length && free.length !== ps.length ? `<p class="cb-book-missing">Not free: ${esc(missing.map((p) => p.name).join(', '))}</p>` : ''}
+         <p class="cb-book-free">${plural(free.length, 'facilitator')} available for the whole session.${free.length ? ` ${esc(free.map((p) => p.name).join(', '))}` : ''}</p>
+         ${missing.length ? `<p class="cb-book-missing">Not marked available: ${esc(missing.map((p) => p.name).join(', '))}</p>` : ''}
          ${warn ? `<p class="cb-warn">${esc(warn)}</p>` : ''}`;
     $('book-confirm').disabled = !fits;
   }
@@ -1597,10 +1593,10 @@
   /* ── Sharing ───────────────────────────────────── */
   function openShare() {
     const link = boardLink();
-    const text = `Please mark when you’re free for “${S.doc.board.title}” on CommonBoard: ${link}`;
+    const text = `Facilitators: add when you are available for “${S.doc.board.title}”. Teachers: view the combined facilitator availability and choose a session on CommonBoard: ${link}`;
     $('share-link').value = link;
     $('share-whatsapp').href = `https://wa.me/?text=${encodeURIComponent(text)}`;
-    $('share-email').href = `mailto:?subject=${encodeURIComponent(`When are you free? ${S.doc.board.title}`)}&body=${encodeURIComponent(text)}`;
+    $('share-email').href = `mailto:?subject=${encodeURIComponent(`Workshop availability: ${S.doc.board.title}`)}&body=${encodeURIComponent(text)}`;
     $('share-native').hidden = !navigator.share;
     $('share-admin').hidden = !S.adminKey;
     if (S.adminKey) $('share-admin-link').value = `${link}#admin=${S.adminKey}`;
@@ -1655,7 +1651,7 @@
       .join('');
     const profile = local.get(K.profile) || {};
     $('create-me-name').value = profile.name || '';
-    setRadio('create-role', profile.role || 'other');
+    setRadio('create-role', profile.role || 'facilitator');
 
     $('create-start').addEventListener('change', () => {
       const start = $('create-start').value;
@@ -1746,7 +1742,7 @@
     $('create-tz').value = VIEWER_TZ;
     const profile = local.get(K.profile) || {};
     $('create-me-name').value = profile.name || '';
-    setRadio('create-role', profile.role || 'other');
+    setRadio('create-role', profile.role || 'facilitator');
   }
 
   function idFromInput(raw) {
@@ -1867,7 +1863,7 @@
     });
     $('share-native').addEventListener('click', async () => {
       try {
-        await navigator.share({ title: S.doc.board.title, text: `Please mark when you’re free for “${S.doc.board.title}”.`, url: boardLink() });
+        await navigator.share({ title: S.doc.board.title, text: 'Facilitators: add your available hours. Teachers: view the combined facilitator availability and choose a session.', url: boardLink() });
       } catch {}
     });
     document.querySelectorAll('.modal-overlay').forEach((overlay) => {
