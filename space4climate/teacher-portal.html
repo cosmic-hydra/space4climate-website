@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Teacher Portal | Space4Climate CommonBoard</title>
+  <meta name="description" content="Browse current workshop boards, see combined facilitator availability, copy the timings and add your own available hours.">
+  <link rel="canonical" href="https://www.space4climate.org/teacher-portal.html">
+  <link rel="icon" href="images/favicon-32.png" type="image/png">
+  <link rel="stylesheet" href="teacher-portal.css?v=1">
+  <script src="teacher-portal.js?v=1" defer></script>
+</head>
+<body>
+  <a class="tp-skip" href="#main">Skip to content</a>
+  <header class="tp-nav">
+    <a class="tp-brand" href="index.html"><img src="images/logo.png" alt="" width="48" height="48"><span>Space4Climate</span></a>
+    <nav aria-label="Main navigation"><a href="mission.html">Our mission</a><a href="commonboard.html">CommonBoard</a><a href="teacher-portal.html" aria-current="page">Teacher portal</a><a class="tp-contact" href="contact.html">Contact ↗</a></nav>
+  </header>
+
+  <main id="main" class="tp-main">
+    <header class="tp-hero">
+      <div><span class="tp-eyebrow"><span></span> CommonBoard · Teacher portal</span><h1>Your next workshop,<br><em>one shared view.</em></h1><p>See when facilitators are available across current boards. Find a time for your class, copy the details, and add your own hours.</p></div>
+      <div class="tp-hero-actions"><a class="tp-btn tp-primary" href="#boards-section">Explore current boards <span aria-hidden="true">↘</span></a><a class="tp-text-link" href="commonboard.html#orbit-launch">Facilitator? Launch a board ↗</a></div>
+    </header>
+
+    <section class="tp-stats" aria-label="Current scheduling overview">
+      <div><strong id="stat-boards">—</strong><span>current boards</span></div><div><strong id="stat-facilitators">—</strong><span>facilitator entries</span></div><div><strong id="stat-hours">—</strong><span>hours you have shared</span></div><div class="tp-sync"><span class="tp-live-dot"></span><span id="sync-status" role="status" aria-live="polite">Connecting to CommonBoard…</span><button type="button" class="tp-icon-btn" id="refresh-btn" aria-label="Refresh current boards">↻</button></div>
+    </section>
+
+    <p class="tp-error" id="load-error" role="alert" hidden></p>
+    <form class="tp-filters" id="filters-form" aria-label="Find workshop availability">
+      <div class="tp-field tp-search"><label for="board-search">Find a board or facilitator</label><input id="board-search" type="search" placeholder="Search by name, e.g. FaC2" autocomplete="off"></div>
+      <div class="tp-field"><label for="filter-from">From</label><input id="filter-from" type="date" required></div>
+      <div class="tp-field"><label for="filter-to">Until</label><input id="filter-to" type="date" required></div>
+      <div class="tp-field"><label for="display-tz">Show times in</label><select id="display-tz"></select></div>
+    </form>
+    <p class="tp-error" id="filter-error" role="alert" hidden></p>
+
+    <section class="tp-section" aria-labelledby="combined-title">
+      <div class="tp-section-head"><div><span class="tp-section-number">01 / SEE THE OVERLAP</span><h2 id="combined-title">Combined facilitator availability</h2><p id="combined-note">Availability from all matching, unbooked boards, shown in one time zone.</p></div><button class="tp-btn tp-secondary" type="button" id="copy-combined" disabled>Copy timings <span aria-hidden="true">↗</span></button></div>
+      <div class="tp-combined" id="combined-list" aria-live="polite"><p class="tp-empty">Loading current availability…</p></div>
+      <button class="tp-btn tp-secondary tp-more" type="button" id="combined-more" hidden>Show more times</button>
+      <p class="tp-footnote">Counts refer to facilitator entries on boards. Someone listed on more than one board may appear more than once. A shared hour does not reserve a session.</p>
+    </section>
+
+    <section class="tp-section" id="boards-section" aria-labelledby="boards-title">
+      <div class="tp-section-head"><div><span class="tp-section-number">02 / CHOOSE YOUR BOARD</span><h2 id="boards-title">Current boards <span id="board-count" class="tp-count"></span></h2><p>Open a board for its full calendar, or add your times right here.</p></div><label class="tp-checkbox"><input type="checkbox" id="show-empty"> Include boards without facilitator hours</label></div>
+      <div class="tp-boards" id="board-list" aria-live="polite"><p class="tp-empty">Loading boards…</p></div>
+    </section>
+
+    <section class="tp-editor tp-section" id="teacher-editor" aria-labelledby="editor-title" hidden>
+      <div class="tp-section-head"><div><span class="tp-section-number">03 / SHARE YOUR HOURS</span><h2 id="editor-title">Your availability</h2><p id="editor-board"></p></div><button type="button" class="tp-icon-btn" id="close-editor" aria-label="Close your availability editor">✕</button></div>
+      <form id="teacher-form">
+        <div class="tp-editor-top"><div class="tp-field"><label for="teacher-name">Your name</label><input id="teacher-name" maxlength="40" autocomplete="name" placeholder="Name of the teacher" required></div><p id="editor-tz" class="tp-note"></p></div>
+        <p class="tp-note">Select each hour you could attend. Select a day heading to mark its whole day. Your hours are saved as a teacher and do not change facilitator availability.</p>
+        <div class="tp-editor-scroll"><div id="teacher-grid" class="tp-grid" role="group" aria-label="Your available hours by day and time"></div></div>
+        <div class="tp-editor-footer"><p id="selection-count" role="status" aria-live="polite"></p><div><button type="button" class="tp-btn tp-secondary" id="clear-hours">Clear selection</button><button type="submit" class="tp-btn tp-primary" id="save-hours">Save my availability <span aria-hidden="true">↗</span></button></div></div>
+        <p id="save-status" class="tp-note" role="status" aria-live="polite"></p>
+        <p class="tp-footnote">Your name and hours will be visible to people using this board. This browser remembers your entry so you can update it later.</p>
+      </form>
+    </section>
+
+    <section id="copy-fallback" class="tp-copy-fallback" hidden aria-labelledby="copy-title"><div class="tp-section-head"><h2 id="copy-title">Copy these details</h2><button id="close-copy" class="tp-icon-btn" type="button" aria-label="Close copy details">✕</button></div><p>Automatic copying is unavailable. Select the text below and copy it.</p><textarea id="copy-text" rows="10" readonly aria-label="Availability details to copy"></textarea></section>
+    <noscript><p class="tp-empty">Enable JavaScript to load live boards and save your availability. You can also <a href="commonboard.html">open CommonBoard</a>.</p></noscript>
+  </main>
+  <footer class="tp-footer"><a class="tp-brand" href="index.html">Space4Climate</a><p>Make room for a different perspective.</p><nav aria-label="Footer"><a href="commonboard.html">CommonBoard</a><a href="commonboard-instructions.html">How it works</a><a href="mailto:info@space4climate.org">Get in touch ↗</a></nav></footer>
+  <div id="portal-toast" role="status" aria-live="polite"></div>
+</body>
+</html>

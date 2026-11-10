@@ -7,6 +7,7 @@
  *
  * Routes (JSON in and out; secrets travel in the X-Orbit-Key header):
  *   GET    /api/orbit                     health and storage type
+ *   GET    /api/orbit?action=boards[&cursor=C] current boards for the teacher portal
  *   POST   /api/orbit                     create a board (X-Orbit-Key = new organiser key)
  *   GET    /api/orbit?id=ID[&since=V]     read a board, or { unchanged: true } if still at version V
  *   PATCH  /api/orbit?id=ID               edit the board (organiser key)
@@ -24,6 +25,7 @@ const MAX_BODY_BYTES = 64 * 1024;
 const MAX_DAYS = 28;
 const MAX_SESSION_HOURS = 8;
 const KEEP_DAYS_AFTER_END = 120;
+const BOARD_PAGE_SIZE = 50;
 const ROLES = ['facilitator', 'teacher', 'other'];
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 const SLOT_RE = /^(\d{4}-\d{2}-\d{2})T(\d{2})$/;
@@ -98,6 +100,16 @@ function expiryFor(board) {
 
 // Yesterday in UTC, so organisers anywhere in the world can still pick their own "today".
 const earliestEndDate = () => new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+
+function boardIsCurrent(board, now) {
+  if (!board || !isValidDate(board.endDate)) return false;
+  const parts = new Intl.DateTimeFormat('en-CA', {
+    timeZone: isValidTimezone(board.timezone) ? board.timezone : 'UTC',
+    year: 'numeric', month: '2-digit', day: '2-digit'
+  }).formatToParts(new Date(now));
+  const value = (type) => parts.find((part) => part.type === type).value;
+  return board.endDate >= `${value('year')}-${value('month')}-${value('day')}`;
+}
 
 /* ── Validation ──────────────────────────────────── */
 
@@ -222,6 +234,31 @@ class RedisStore {
     return { board: JSON.parse(board), participants, booking: booking ? JSON.parse(booking) : null, version: Number(version) || 0 };
   }
 
+  async list(cursor) {
+    const [scan] = await this.call('pipeline', [['SCAN', cursor, 'MATCH', 'cb:*:board', 'COUNT', String(BOARD_PAGE_SIZE)]]);
+    if (!Array.isArray(scan) || !Array.isArray(scan[1])) throw new HttpError(503, 'Board listing is unavailable.');
+    // SCAN discovers boards created before the portal existed, without a migration.
+    const ids = [...new Set(scan[1].map((key) => /^cb:(ob_[A-Za-z0-9_-]{6,24}):board$/.exec(key)?.[1]).filter(Boolean))];
+    const docs = [];
+    // COUNT is a Redis hint, so batch any larger response rather than truncating it.
+    for (let start = 0; start < ids.length; start += BOARD_PAGE_SIZE) {
+      const batch = ids.slice(start, start + BOARD_PAGE_SIZE);
+      const values = await this.call('pipeline', batch.flatMap((id) => {
+        const k = this.keys(id);
+        return [['GET', k.version], ['GET', k.board], ['HGETALL', k.people], ['GET', k.booking]];
+      }));
+      batch.forEach((id, index) => {
+        const [version, board, people, booking] = values.slice(index * 4, index * 4 + 4);
+        if (!board) return; // A board may expire between SCAN and the read.
+        const participants = {};
+        const flat = Array.isArray(people) ? people : [];
+        for (let i = 0; i + 1 < flat.length; i += 2) participants[flat[i]] = JSON.parse(flat[i + 1]);
+        docs.push({ board: JSON.parse(board), participants, booking: booking ? JSON.parse(booking) : null, version: Number(version) || 0 });
+      });
+    }
+    return { docs, nextCursor: String(scan[0]) === '0' ? null : String(scan[0]) };
+  }
+
   async version(id) {
     const [v] = await this.call('pipeline', [['GET', this.keys(id).version]]);
     return v == null ? null : Number(v);
@@ -302,6 +339,16 @@ class MemoryStore {
   async get(id) {
     const doc = this.boards.get(id);
     return doc ? JSON.parse(JSON.stringify(doc)) : null;
+  }
+
+  async list(cursor) {
+    const ids = [...this.boards.keys()].sort();
+    const start = Number(cursor);
+    const page = ids.slice(start, start + BOARD_PAGE_SIZE);
+    return {
+      docs: page.map((id) => JSON.parse(JSON.stringify(this.boards.get(id)))),
+      nextCursor: start + BOARD_PAGE_SIZE < ids.length ? String(start + BOARD_PAGE_SIZE) : null
+    };
   }
 
   async version(id) {
@@ -522,6 +569,19 @@ async function readBoard(store, id, since) {
   return { status: 200, body: publicDoc(doc) };
 }
 
+async function listBoards(store, cursorRaw) {
+  const cursor = cursorRaw == null ? '0' : cursorRaw;
+  // Redis uses an unsigned 64-bit numeric cursor. Never accept command syntax.
+  if (!/^(0|[1-9]\d{0,19})$/.test(cursor) || BigInt(cursor) > 18446744073709551615n) {
+    throw new HttpError(400, 'Invalid board-list cursor.');
+  }
+  const page = await store.list(cursor);
+  const now = Date.now();
+  const boards = page.docs.filter((doc) => boardIsCurrent(doc.board, now)).map(publicDoc);
+  boards.sort((a, b) => (b.board.createdAt - a.board.createdAt) || a.board.id.localeCompare(b.board.id));
+  return { status: 200, body: { boards, nextCursor: page.nextCursor } };
+}
+
 function createHandler(store) {
   return async function handler(req, res) {
     const url = new URL(req.url, 'http://localhost');
@@ -533,7 +593,9 @@ function createHandler(store) {
     const s = store || storeFromEnv();
     try {
       let result;
-      if (req.method === 'GET' && !id) {
+      if (req.method === 'GET' && !id && action === 'boards') {
+        result = await listBoards(s, url.searchParams.get('cursor'));
+      } else if (req.method === 'GET' && !id) {
         result = { status: 200, body: { ok: true, service: 'commonboard', storage: s.kind } };
       } else if (req.method === 'GET') {
         result = await readBoard(s, id, since);

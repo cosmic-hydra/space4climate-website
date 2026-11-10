@@ -41,13 +41,29 @@
   };
   const K = {
     profile: 'cb:profile',
+    teacherProfile: 'cb:teacher:profile',
     recent: 'cb:recent',
     me: (id) => `cb:me:${id}`,
+    teacherMe: (id) => `cb:teacher:me:${id}`,
     admin: (id) => `cb:admin:${id}`,
     bookKey: (id) => `cb:bookkey:${id}`,
     pending: (id) => `cb:pending:${id}`,
+    teacherPending: (id) => `cb:teacher:pending:${id}`,
     cache: (id) => `cb:cache:${id}`
   };
+
+  // A teacher link has its own identity, even on a facilitator's device.
+  function identityKeys(id, teacherMode = S.teacherMode) {
+    return teacherMode
+      ? { me: K.teacherMe(id), pending: K.teacherPending(id), profile: K.teacherProfile }
+      : { me: K.me(id), pending: K.pending(id), profile: K.profile };
+  }
+
+  function boardLinkOptions(search) {
+    const params = new URLSearchParams(search);
+    const view = params.get('view');
+    return { teacherMode: params.get('role') === 'teacher', requestedTab: view === 'mine' || view === 'group' ? view : null };
+  }
 
   function toast(message, kind = 'ok') {
     const el = $('toast');
@@ -196,6 +212,8 @@
     draftSeq: 0,
     tab: 'group',
     tabReady: false,
+    teacherMode: false,
+    requestedTab: null,
     length: null,
     localTimes: false,
     showAllBest: false,
@@ -367,6 +385,8 @@
       `${cityOf(b.timezone)} time (${fmtOffset(tzOffset(b.timezone, boardInstant(b.startDate, b.startHour, b.timezone)))})`
     ].map((t) => `<span>${esc(t)}</span>`).join('');
     $('bv-edit-btn').hidden = !S.adminKey;
+    $('bv-back').href = S.teacherMode ? 'teacher-portal.html' : 'commonboard.html';
+    $('bv-back').textContent = S.teacherMode ? 'Teacher portal' : 'All boards';
     document.title = `${b.title} · CommonBoard | Space4Climate`;
   }
 
@@ -416,9 +436,10 @@
     $('bv-me').hidden = !joined;
     if (!joined) {
       if (!S.joinPrefilled) {
-        const profile = local.get(K.profile) || {};
+        const profile = local.get(identityKeys(S.id).profile) || {};
         $('me-name').value = profile.name || '';
-        setRadio('me-role', profile.role || 'facilitator');
+        setRadio('me-role', S.teacherMode ? 'teacher' : profile.role || 'facilitator');
+        document.querySelectorAll('input[name="me-role"]').forEach((el) => { el.disabled = S.teacherMode; });
         S.joinPrefilled = true;
       }
       return;
@@ -822,13 +843,14 @@
     $('bv-content').hidden = true;
     const el = $('bv-empty');
     el.hidden = false;
-    el.innerHTML = `<h1 class="cb-title">${esc(title)}</h1><p>${esc(text)}</p><a class="s4c-btn" href="commonboard.html" data-home><span>Back to CommonBoard</span><span class="s4c-btn_icon">${ARROW}</span></a>`;
+    const home = S.teacherMode ? 'teacher-portal.html' : 'commonboard.html';
+    el.innerHTML = `<h1 class="cb-title">${esc(title)}</h1><p>${esc(text)}</p><a class="s4c-btn" href="${home}" data-home><span>${S.teacherMode ? 'Back to Teacher portal' : 'Back to CommonBoard'}</span><span class="s4c-btn_icon">${ARROW}</span></a>`;
   }
 
   function renderBoard(forceGrid) {
     if (!S.doc) return;
     if (!S.tabReady) {
-      S.tab = defaultTab();
+      S.tab = S.requestedTab || defaultTab();
       S.tabReady = true;
     }
     $('bv-empty').hidden = true;
@@ -854,13 +876,20 @@
     if (S.doc && version < S.seenVersion) return false;
     S.seenVersion = Math.max(S.seenVersion, version);
     S.doc = { board: doc.board, participants: doc.participants || {}, booking: doc.booking || null, version };
+    if (S.teacherMode && S.me && S.doc.participants[S.me.pid] && S.doc.participants[S.me.pid].role !== 'teacher') {
+      const keys = identityKeys(S.id);
+      S.me = null;
+      S.draft = null;
+      local.del(keys.me);
+      local.del(keys.pending);
+    }
     local.set(K.cache(S.id), S.doc);
     return true;
   }
   const noteVersion = (v) => { S.seenVersion = Math.max(S.seenVersion, Number(v) || 0); };
 
   function persistDraft() {
-    local.set(K.pending(S.id), { name: S.draft.name, role: S.draft.role, slots: [...S.draft.slots] });
+    local.set(identityKeys(S.id).pending, { name: S.draft.name, role: S.draft.role, slots: [...S.draft.slots] });
   }
 
   function queueSave(delay = SAVE_DELAY_MS) {
@@ -877,6 +906,8 @@
     }
     S.saving = true;
     const id = S.id;
+    const teacherMode = S.teacherMode;
+    const keys = identityKeys(id);
     const me = S.me;
     const seq = S.draftSeq;
     const before = S.doc.version;
@@ -884,14 +915,14 @@
     const board = S.doc.board;
     // Only clear the stored draft if it is what we just sent; another tab may have queued newer edits.
     const clearPending = () => {
-      const p = local.get(K.pending(id));
+      const p = local.get(keys.pending);
       if (!p || p.name !== body.name || p.role !== body.role) return;
       const pend = new Set((p.slots || []).filter((x) => slotOnBoard(board, x)));
-      if (pend.size === body.slots.length && body.slots.every((x) => pend.has(x))) local.del(K.pending(id));
+      if (pend.size === body.slots.length && body.slots.every((x) => pend.has(x))) local.del(keys.pending);
     };
     try {
       const res = await api('PUT', { id, p: me.pid }, { key: me.key, body });
-      if (S.id !== id) {
+      if (S.id !== id || S.teacherMode !== teacherMode) {
         clearPending();
         return;
       }
@@ -908,15 +939,15 @@
       broadcast();
       if (S.doc.version === -1) poll(true);
     } catch (e) {
-      if (S.id !== id) return;
+      if (S.id !== id || S.teacherMode !== teacherMode) return;
       if (e.status === 403) {
         S.me = { pid: newPid(), key: randomKey() };
-        local.set(K.me(S.id), S.me);
+        local.set(keys.me, S.me);
         S.saveQueued = true;
       } else if (e.status === 400 || e.status === 404) {
         toast(e.message, 'err');
         S.draft = null;
-        local.del(K.pending(S.id));
+        local.del(keys.pending);
         setStatus('live');
         renderBoard();
       } else {
@@ -1005,19 +1036,21 @@
     hideCellInfo();
     Object.assign(S, {
       id, doc: null, draft: null, draftSeq: 0, tab: 'group', tabReady: false, length: null, showAllBest: false,
-      pollDelay: POLL_MS, gridSig: '', ticketKey: null, joinPrefilled: false, localTimes: false, seenVersion: 0
+      pollDelay: POLL_MS, gridSig: '', ticketKey: null, joinPrefilled: false, localTimes: false, seenVersion: 0,
+      ...boardLinkOptions(location.search)
     });
     const hash = new URLSearchParams(location.hash.slice(1));
     if (hash.get('admin')) {
       storeAdminKey(id, hash.get('admin'));
       history.replaceState(history.state, '', location.pathname + location.search);
     }
-    S.me = local.get(K.me(id));
+    const keys = identityKeys(id);
+    S.me = local.get(keys.me);
     S.adminKey = local.get(K.admin(id));
     S.bookingKey = local.get(K.bookKey(id));
     S.refParam = new URLSearchParams(location.search).get('ref');
-    const pending = local.get(K.pending(id));
-    if (pending && S.me) S.draft = { name: pending.name, role: pending.role, slots: new Set(pending.slots || []) };
+    const pending = local.get(keys.pending);
+    if (pending && S.me && (!S.teacherMode || pending.role === 'teacher')) S.draft = { name: pending.name, role: pending.role, slots: new Set(pending.slots || []) };
 
     showView('board');
     window.scrollTo(0, 0);
@@ -1079,24 +1112,26 @@
   function joinBoard(ev) {
     ev.preventDefault();
     const name = $('me-name').value.trim();
-    const role = radioValue('me-role');
+    const role = S.teacherMode ? 'teacher' : radioValue('me-role');
     if (!name) {
       $('me-name').focus();
       toast('Add your name first.', 'err');
       return;
     }
-    local.set(K.profile, { name, role });
-    if (!S.me) S.me = local.get(K.me(S.id));
+    const keys = identityKeys(S.id);
+    local.set(keys.profile, { name, role });
+    if (!S.me) S.me = local.get(keys.me);
     if (!S.me) {
       S.me = { pid: newPid(), key: randomKey() };
-      local.set(K.me(S.id), S.me);
+      local.set(keys.me, S.me);
     }
     const existing = myEntry();
     S.draft = { name, role, slots: S.draft ? S.draft.slots : new Set(existing ? existing.slots : []) };
     S.draftSeq++;
     persistDraft();
     queueSave(0);
-    S.tab = defaultTab();
+    S.tab = S.requestedTab || defaultTab();
+    S.requestedTab = null;
     renderBoard(true);
     toast(role === 'facilitator' ? `Welcome, ${name}! Now mark the hours you can facilitate.` : `Welcome, ${name}! Browse the combined facilitator availability.`);
   }
@@ -1106,6 +1141,7 @@
     if (!p) return;
     $('me-edit-name').value = p.name;
     setRadio('me-edit-role', p.role);
+    document.querySelectorAll('input[name="me-edit-role"]').forEach((el) => { el.disabled = S.teacherMode; });
     openModal('modal-me');
   }
 
@@ -1116,7 +1152,7 @@
       toast('Your name can’t be empty.', 'err');
       return;
     }
-    const role = radioValue('me-edit-role');
+    const role = S.teacherMode ? 'teacher' : radioValue('me-edit-role');
     if (!S.draft) {
       const e = myEntry();
       S.draft = { name, role, slots: new Set(e ? e.slots : []) };
@@ -1126,7 +1162,7 @@
     S.tab = defaultTab();
     S.draftSeq++;
     persistDraft();
-    local.set(K.profile, { name, role });
+    local.set(identityKeys(S.id).profile, { name, role });
     queueSave(0);
     closeModal('modal-me');
     renderBoard();
@@ -1137,7 +1173,7 @@
     clearTimeout(S.saveTimer);
     S.saveQueued = false;
     S.draft = null;
-    local.del(K.pending(S.id));
+    local.del(identityKeys(S.id).pending);
     for (let i = 0; S.saving && i < 50; i++) await new Promise((r) => setTimeout(r, 100));
     try {
       if (myEntry()) await api('DELETE', { id: S.id, p: S.me.pid }, { key: S.me.key });
@@ -1145,7 +1181,7 @@
       S.draft = null;
       S.joinPrefilled = false;
       S.tab = 'group';
-      local.del(K.pending(S.id));
+      local.del(identityKeys(S.id).pending);
       S.doc.version = -1;
       closeModal('modal-me');
       renderBoard(true);
@@ -1264,7 +1300,7 @@
     $('book-date').value = w.date;
     fillHours($('book-start'), b.startHour, b.endHour - 1, w.start);
     fillLengths($('book-len'), b.endHour - b.startHour, w.length);
-    const profile = myProfile() || local.get(K.profile) || {};
+    const profile = myProfile() || local.get(identityKeys(S.id).profile) || {};
     $('book-name').value = profile.name || '';
     updateBookSummary();
     openModal('modal-book');
@@ -1771,8 +1807,14 @@
 
   function route() {
     const id = new URLSearchParams(location.search).get('b');
+    const options = boardLinkOptions(location.search);
     if (id) {
-      if (id !== S.id || !S.doc) openBoard(id);
+      if (id !== S.id || !S.doc || options.teacherMode !== S.teacherMode) openBoard(id);
+      else if (options.requestedTab) {
+        S.tab = options.requestedTab;
+        S.requestedTab = null;
+        renderBoard();
+      }
       return;
     }
     stopPolling();
@@ -1780,6 +1822,8 @@
     if (S.channel) { try { S.channel.close(); } catch {} S.channel = null; }
     S.id = null;
     S.doc = null;
+    S.teacherMode = false;
+    S.requestedTab = null;
     document.title = DEFAULT_TITLE;
     showView('landing');
     renderRecent();
@@ -1801,12 +1845,14 @@
     $('bv-edit-btn').addEventListener('click', openEdit);
     $('edit-form').addEventListener('submit', saveEdit);
     $('bv-back').addEventListener('click', (ev) => {
+      if (S.teacherMode) return;
       ev.preventDefault();
       navigate(location.pathname);
       window.scrollTo(0, 0);
     });
     $('bv-empty').addEventListener('click', (ev) => {
       if (!ev.target.closest('[data-home]')) return;
+      if (S.teacherMode) return;
       ev.preventDefault();
       navigate(location.pathname);
     });
@@ -1814,8 +1860,8 @@
       S.localTimes = !S.localTimes;
       renderBoard();
     });
-    $('tab-mine').addEventListener('click', () => { S.tab = 'mine'; hideCellInfo(); renderBoard(); });
-    $('tab-group').addEventListener('click', () => { S.tab = 'group'; renderBoard(); });
+    $('tab-mine').addEventListener('click', () => { S.tab = 'mine'; S.requestedTab = null; hideCellInfo(); renderBoard(); });
+    $('tab-group').addEventListener('click', () => { S.tab = 'group'; S.requestedTab = null; renderBoard(); });
     $('clear-mine').addEventListener('click', () => {
       if (confirm('Clear all the hours you have marked on this board?')) editMySlots((set) => set.clear());
     });
@@ -1898,8 +1944,8 @@
       if (ev.key === K.admin(S.id)) {
         S.adminKey = local.get(K.admin(S.id));
         renderBoard();
-      } else if (ev.key === K.me(S.id)) {
-        S.me = local.get(K.me(S.id));
+      } else if (ev.key === identityKeys(S.id).me) {
+        S.me = local.get(identityKeys(S.id).me);
         renderBoard();
       }
     });

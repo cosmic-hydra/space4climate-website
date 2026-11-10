@@ -36,6 +36,15 @@ function fakeUpstash() {
       }
       case 'HDEL': return hashes.has(key) && hashes.get(key).delete(args[0]) ? 1 : 0;
       case 'HGETALL': return [...(hashes.get(key) || new Map())].flat();
+      case 'SCAN': {
+        const all = [...new Set([...strings.keys(), ...hashes.keys()])].sort();
+        const count = Number(args[args.indexOf('COUNT') + 1]);
+        const pattern = args[args.indexOf('MATCH') + 1];
+        const match = new RegExp('^' + pattern.split('*').map((part) => part.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('.*') + '$');
+        const start = Number(key);
+        const next = start + count < all.length ? String(start + count) : '0';
+        return [next, all.slice(start, start + count).filter((entry) => match.test(entry))];
+      }
       case 'EXPIREAT': {
         const exists = strings.has(key) || hashes.has(key);
         if (exists && Number(args[0]) * 1000 <= Date.now()) {
@@ -64,8 +73,8 @@ const STORES = {
 };
 const KIND = process.env.ORBIT_TEST_STORE || 'memory';
 
-function client() {
-  const handler = orbit.createHandler(STORES[KIND]());
+function client(store = STORES[KIND]()) {
+  const handler = orbit.createHandler(store);
   return async function call(method, query, { key, body } = {}) {
     const req = Readable.from(body === undefined ? [] : [Buffer.from(JSON.stringify(body))]);
     req.method = method;
@@ -249,5 +258,117 @@ test('an edit cannot strand the booked session', async () => {
   await call('POST', { id, action: 'book' }, { key: ALICE, body: { slot: `${D(3)}T10`, hours: 3, name: 'Alice' } });
   assert.equal((await call('PATCH', { id }, { key: ADMIN, body: { endDate: D(2) } })).status, 409);
   assert.equal((await call('PATCH', { id }, { key: ADMIN, body: { endDate: D(4), title: 'Renamed' } })).status, 200);
+});
+
+async function seedBoard(store, id, fields = {}) {
+  const board = { id, ...BOARD, createdAt: Date.now(), updatedAt: Date.now(), adminHash: 'private-admin-hash', ...fields };
+  assert.equal(await store.create(board), true);
+  return board;
+}
+
+async function collectBoards(call) {
+  const found = new Map();
+  let cursor = null;
+  let pages = 0;
+  do {
+    const res = await call('GET', { action: 'boards', ...(cursor == null ? {} : { cursor }) });
+    assert.equal(res.status, 200);
+    assert.ok(Array.isArray(res.body.boards));
+    res.body.boards.forEach((doc) => found.set(doc.board.id, doc));
+    cursor = res.body.nextCursor;
+    assert.ok(++pages < 30, 'listing must eventually reach its terminal cursor');
+  } while (cursor !== null);
+  return { docs: [...found.values()], pages };
+}
+
+test('teacher portal lists existing current boards with public participant and booking data', async () => {
+  const store = STORES[KIND]();
+  const board = await seedBoard(store, 'ob_catalog001');
+  await store.putParticipant(board, { id: 'p_fac00001', name: 'Facilitator', role: 'facilitator', slots: [`${D(0)}T10`], keyHash: 'private-facilitator-hash' });
+  await store.putParticipant(board, { id: 'p_tea00001', name: 'Teacher', role: 'teacher', slots: [], keyHash: 'private-teacher-hash' });
+  await store.book(board, { ref: 'S4C-ABC123', name: 'Teacher', slot: `${D(0)}T10`, hours: 1, keyHash: 'private-booking-hash' });
+  const empty = await seedBoard(store, 'ob_catalog002', { title: 'Empty future board' });
+  await seedBoard(store, 'ob_catalog003', { title: 'Expired board', startDate: '2025-01-01', endDate: '2025-01-02' });
+  const { docs } = await collectBoards(client(store));
+  assert.deepEqual(docs.map((doc) => doc.board.id).sort(), [board.id, empty.id]);
+  const listed = docs.find((doc) => doc.board.id === board.id);
+  assert.equal(listed.version, 4);
+  assert.deepEqual(listed.participants.p_fac00001.slots, [`${D(0)}T10`]);
+  assert.equal(listed.participants.p_tea00001.role, 'teacher');
+  assert.deepEqual(listed.participants.p_tea00001.slots, []);
+  assert.equal(listed.booking.ref, 'S4C-ABC123');
+  assert.equal(listed.board.adminHash, undefined);
+  assert.equal(listed.participants.p_fac00001.keyHash, undefined);
+  assert.equal(listed.participants.p_tea00001.keyHash, undefined);
+  assert.equal(listed.booking.keyHash, undefined);
+  assert.doesNotMatch(JSON.stringify(docs), /private-.*-hash/);
+});
+
+test('current board dates use each board time zone, including future boards', async () => {
+  const realNow = Date.now;
+  Date.now = () => Date.UTC(2030, 5, 11, 0, 30);
+  try {
+    const store = STORES[KIND]();
+    await seedBoard(store, 'ob_honolulu01', { startDate: '2030-06-10', endDate: '2030-06-10', timezone: 'Pacific/Honolulu' });
+    await seedBoard(store, 'ob_kiritimati', { startDate: '2030-06-10', endDate: '2030-06-10', timezone: 'Pacific/Kiritimati' });
+    await seedBoard(store, 'ob_future001', { startDate: '2030-06-12', endDate: '2030-06-13', timezone: 'UTC' });
+    const { docs } = await collectBoards(client(store));
+    assert.deepEqual(docs.map((doc) => doc.board.id).sort(), ['ob_future001', 'ob_honolulu01']);
+  } finally {
+    Date.now = realNow;
+  }
+});
+
+test('teacher portal validates bounded numeric cursors and preserves health', async () => {
+  const call = client();
+  for (const cursor of ['', '-1', '1e3', '01', '0;SCAN', '18446744073709551616', '999999999999999999999']) {
+    assert.equal((await call('GET', { action: 'boards', cursor })).status, 400, cursor);
+  }
+  assert.deepEqual((await call('GET', { action: 'boards', cursor: '0' })).body, { boards: [], nextCursor: null });
+  const health = await call('GET', null);
+  assert.equal(health.status, 200);
+  assert.equal(health.body.storage, KIND);
+});
+
+test('teacher portal pagination returns all boards without requiring an index migration', async () => {
+  const store = STORES[KIND]();
+  for (let index = 0; index < 63; index++) {
+    await seedBoard(store, 'ob_page' + String(index).padStart(6, '0'), { title: `Existing board ${index}` });
+  }
+  const { docs, pages } = await collectBoards(client(store));
+  assert.equal(docs.length, 63);
+  assert.ok(pages > 1);
+  assert.equal(new Set(docs.map((doc) => doc.board.id)).size, 63);
+});
+
+test('teacher portal can return an empty non-terminal page and continue to current boards', async () => {
+  const store = STORES[KIND]();
+  for (let index = 0; index < 51; index++) {
+    await seedBoard(store, 'ob_aexpired' + String(index).padStart(3, '0'), { startDate: '2025-01-01', endDate: '2025-01-02' });
+  }
+  await seedBoard(store, 'ob_zcurrent01');
+  const call = client(store);
+  const first = await call('GET', { action: 'boards' });
+  assert.equal(first.status, 200);
+  assert.deepEqual(first.body.boards, []);
+  assert.match(first.body.nextCursor, /^\d+$/);
+  const { docs } = await collectBoards(call);
+  assert.deepEqual(docs.map((doc) => doc.board.id), ['ob_zcurrent01']);
+});
+
+test('Redis board listing batches reads and skips boards that expire after SCAN', async () => {
+  const store = new orbit.RedisStore('https://fake.upstash.io', 'test-token');
+  const calls = [];
+  store.call = async (endpoint, commands) => {
+    calls.push({ endpoint, commands });
+    if (commands[0][0] === 'SCAN') return [['0', ['cb:ob_present01:board', 'cb:ob_expired01:board', 'unrelated:key', 'cb:ob_present01:board']]];
+    return [3, JSON.stringify({ ...BOARD, id: 'ob_present01' }), ['p_fac00001', JSON.stringify({ id: 'p_fac00001', name: 'Facilitator', role: 'facilitator', slots: [] })], null, null, null, [], null];
+  };
+  const result = await store.list('0');
+  assert.equal(result.docs.length, 1);
+  assert.equal(result.docs[0].board.id, 'ob_present01');
+  assert.equal(result.nextCursor, null);
+  assert.equal(calls.length, 2, 'one scan plus one batched read for both IDs');
+  assert.equal(calls[1].commands.length, 8, 'duplicate and unrelated keys are excluded');
 });
 
